@@ -1,16 +1,43 @@
-.PHONY: up down start stop
+.PHONY: up down start stop install
 
-up: stop
-	docker-compose up -d
-	@echo "✅ Проект запущен"
-	@echo "Backend:  http://api.localhost"
-	@echo "Frontend: http://localhost"
+up: install
+	@echo "🚀 Запуск Docker контейнеров..."
+	docker-compose up -d --build
+	@echo ""
+	@echo "✅ Проект запущен!"
+	@echo ""
+	@echo "📍 Frontend: http://localhost"
+	@echo "📍 Backend API: http://api.localhost"
+	@echo "📍 Тестовая страница: http://localhost/test"
+	@echo ""
 
-down: ## Остановить и удалить контейнеры
+down:
+	@echo "🛑 Остановка и удаление контейнеров..."
 	docker-compose down
+	@echo "✅ Контейнеры остановлены"
 
-start: stop ## Запустить остановленные контейнеры
+start:
+	@echo "▶️  Запуск контейнеров..."
 	docker-compose start
+	@echo "✅ Контейнеры запущены"
 
-stop: ## Остановить контейнеры (без удаления)
+stop:
+	@echo "⏸️  Остановка контейнеров..."
 	docker-compose stop
+	@echo "✅ Контейнеры остановлены"
+
+install:
+	@echo "📦 Проверка и копирование .env файлов..."
+	@if [ ! -f frontend/.env.local ]; then \
+		cp frontend/env.example frontend/.env.local; \
+		echo "✅ Создан frontend/.env.local"; \
+	else \
+		echo "✓ frontend/.env.local уже существует"; \
+	fi
+	@if [ ! -f backend/.env ]; then \
+		echo "⚠️  backend/.env будет создан автоматически при установке Symfony"; \
+	else \
+		echo "✓ backend/.env существует"; \
+	fi
+	@echo "✅ Проверка завершена"
+	@echo ""
