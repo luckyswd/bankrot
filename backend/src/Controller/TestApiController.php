@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TestApiController extends AbstractController
 {
-    #[Route('/api/test', name: 'api_test', methods: ['GET'])]
+    #[Route('/api/v1/test', name: 'api_test', methods: ['GET'])]
     public function test(): JsonResponse
     {
         return $this->json([
@@ -22,7 +22,7 @@ class TestApiController extends AbstractController
         ]);
     }
 
-    #[Route('/api/health', name: 'api_health', methods: ['GET'])]
+    #[Route('/api/v1/health', name: 'api_health', methods: ['GET'])]
     public function health(): JsonResponse
     {
         return $this->json([

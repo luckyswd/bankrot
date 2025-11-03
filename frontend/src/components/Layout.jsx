@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useApp } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { Button } from './ui/button'
 import { Separator } from './ui/separator'
@@ -26,7 +26,7 @@ import {
 export default function Layout({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { currentUser, logout } = useApp()
+  const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [databasesOpen, setDatabasesOpen] = useState(false)
@@ -142,8 +142,11 @@ export default function Layout({ children }) {
             <div className="flex items-center gap-3 p-3 rounded-md bg-accent/50">
               <UserCircle className="h-8 w-8 text-primary" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{currentUser?.fullName}</p>
-                <p className="text-xs text-muted-foreground truncate">{currentUser?.role === 'admin' ? 'Администратор' : 'Менеджер'}</p>
+                <p className="text-sm font-medium truncate">{user?.username}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
+                   user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
+                </p>
               </div>
             </div>
             <Button 

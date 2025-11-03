@@ -1,8 +1,13 @@
-.PHONY: up down start stop install
+.PHONY: up down start stop install db-migrate cc
 
 up: install
 	@echo "🚀 Запуск Docker контейнеров..."
 	docker-compose up -d --build
+	@echo ""
+	@echo "⏳ Ожидание запуска контейнеров..."
+	@sleep 5
+	@echo "🗄️  Выполнение миграций базы данных..."
+	@make db-migrate
 	@echo ""
 	@echo "✅ Проект запущен!"
 	@echo ""
@@ -25,6 +30,16 @@ stop:
 	@echo "⏸️  Остановка контейнеров..."
 	docker-compose stop
 	@echo "✅ Контейнеры остановлены"
+
+db-migrate:
+	@echo "🗄️  Выполнение миграций..."
+	docker exec bankruptcy-php php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "✅ Миграции применены"
+
+cc:
+	@echo "🧹 Очистка кеша..."
+	docker exec bankruptcy-php php bin/console cache:clear
+	@echo "✅ Кеш очищен"
 
 install:
 	@echo "📦 Проверка и копирование .env файлов..."

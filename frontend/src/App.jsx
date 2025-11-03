@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
@@ -14,20 +15,19 @@ import { FnsDatabase, MchsDatabase, RosgvardiaDatabase } from './components/data
 import TestApi from './pages/TestApi'
 
 function ProtectedRoute({ children }) {
-  const { currentUser } = useApp()
-  return currentUser ? children : <Navigate to="/login" />
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return <div>Loading...</div>
+  }
+  
+  return user ? children : <Navigate to="/login" />
 }
 
 function AppRoutes() {
-  const { currentUser } = useApp()
-
   return (
     <Routes>
       <Route path="/test" element={<TestApi />} />
-      <Route 
-        path="/login" 
-        element={currentUser ? <Navigate to="/contracts" /> : <Login />} 
-      />
       <Route
         path="/*"
         element={
@@ -56,14 +56,29 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ThemeProvider>
+    <AuthProvider>
       <AppProvider>
         <Router>
-          <AppRoutes />
+          <Routes>
+            {/* Login БЕЗ ThemeProvider - всегда светлая */}
+            <Route path="/login" element={<LoginWrapper />} />
+            
+            {/* Остальные роуты С ThemeProvider */}
+            <Route path="/*" element={
+              <ThemeProvider>
+                <AppRoutes />
+              </ThemeProvider>
+            } />
+          </Routes>
         </Router>
       </AppProvider>
-    </ThemeProvider>
+    </AuthProvider>
   )
+}
+
+function LoginWrapper() {
+  const { user } = useAuth()
+  return user ? <Navigate to="/contracts" /> : <Login />
 }
 
 export default App

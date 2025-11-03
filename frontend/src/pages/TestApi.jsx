@@ -14,8 +14,8 @@ const TestApi = () => {
 
       try {
         // Тест основного endpoint
-        console.log('📡 Запрос к /api/test...');
-        const testResponse = await fetch(`${apiUrl}/api/test`);
+        console.log('📡 Запрос к /api/v1/test...');
+        const testResponse = await fetch(`${apiUrl}/api/v1/test`);
         console.log('📡 Response status:', testResponse.status);
         console.log('📡 Response headers:', Object.fromEntries(testResponse.headers));
         
@@ -28,8 +28,8 @@ const TestApi = () => {
         setApiResponse(testData);
 
         // Тест health endpoint
-        console.log('📡 Запрос к /api/health...');
-        const healthResp = await fetch(`${apiUrl}/api/health`);
+        console.log('📡 Запрос к /api/v1/health...');
+        const healthResp = await fetch(`${apiUrl}/api/v1/health`);
         const healthData = await healthResp.json();
         console.log('✅ Данные от /api/health:', healthData);
         setHealthResponse(healthData);
@@ -128,7 +128,7 @@ const TestApi = () => {
               alignItems: 'center',
               gap: '10px'
             }}>
-              <span>🎯</span> GET /api/test
+              <span>🎯</span> GET /api/v1/test
             </h3>
             <pre style={{ 
               backgroundColor: '#0a0a0a', 
@@ -154,7 +154,7 @@ const TestApi = () => {
               alignItems: 'center',
               gap: '10px'
             }}>
-              <span>💚</span> GET /api/health
+              <span>💚</span> GET /api/v1/health
             </h3>
             <pre style={{ 
               backgroundColor: '#0a0a0a', 
