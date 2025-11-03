@@ -11,6 +11,7 @@ import CreditorsDatabase from './components/databases/CreditorsDatabase'
 import CourtsDatabase from './components/databases/CourtsDatabase'
 import BailiffsDatabase from './components/databases/BailiffsDatabase'
 import { FnsDatabase, MchsDatabase, RosgvardiaDatabase } from './components/databases/OtherDatabases'
+import TestApi from './pages/TestApi'
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useApp()
@@ -22,6 +23,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/test" element={<TestApi />} />
       <Route 
         path="/login" 
         element={currentUser ? <Navigate to="/contracts" /> : <Login />} 

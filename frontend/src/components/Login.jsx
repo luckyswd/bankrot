@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { Button } from './ui/button'
@@ -11,8 +11,41 @@ function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [apiStatus, setApiStatus] = useState('testing')
   const { login } = useApp()
   const navigate = useNavigate()
+
+  // Тест API при загрузке компонента
+  useEffect(() => {
+    const testApi = async () => {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      console.log('🔍 API URL:', apiUrl);
+      console.log('🚀 Отправляю запрос на backend...');
+
+      try {
+        const response = await fetch(`${apiUrl}/api/test`);
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', Object.fromEntries(response.headers));
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ API работает! Данные получены:', data);
+        console.log('📦 Backend:', data.data.backend);
+        console.log('🐘 PHP Version:', data.data.php_version);
+        
+        setApiStatus('success');
+      } catch (err) {
+        console.error('❌ Ошибка при запросе к API:', err);
+        setApiStatus('error');
+      }
+    };
+
+    testApi();
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -87,6 +120,19 @@ function Login() {
                 Войти
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* API Status */}
+        <Card className={apiStatus === 'success' ? 'bg-green-500/10 border-green-500/20' : apiStatus === 'error' ? 'bg-red-500/10 border-red-500/20' : 'bg-muted/50'}>
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium mb-2">🔌 Статус API:</p>
+            <div className="flex items-center gap-2">
+              {apiStatus === 'testing' && <span className="text-yellow-500">⏳ Проверка соединения...</span>}
+              {apiStatus === 'success' && <span className="text-green-500">✅ Подключено к {import.meta.env.VITE_API_URL}</span>}
+              {apiStatus === 'error' && <span className="text-red-500">❌ Ошибка подключения</span>}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Проверь консоль браузера (F12) для деталей</p>
           </CardContent>
         </Card>
 
