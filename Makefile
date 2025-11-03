@@ -50,7 +50,12 @@ install:
 		echo "✓ frontend/.env.local уже существует"; \
 	fi
 	@if [ ! -f backend/.env ]; then \
-		echo "⚠️  backend/.env будет создан автоматически при установке Symfony"; \
+		if [ -f backend/.env.dev ]; then \
+			cp backend/.env.dev backend/.env; \
+			echo "✅ Создан backend/.env из .env.dev"; \
+		else \
+			echo "⚠️  backend/.env будет создан автоматически при установке Symfony"; \
+		fi \
 	else \
 		echo "✓ backend/.env существует"; \
 	fi
