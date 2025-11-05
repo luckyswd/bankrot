@@ -14,6 +14,13 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        api_doc:
+            pattern: ^/api/doc
+            stateless: true
+            provider: app_user_provider
+            http_basic:
+                realm: 'API Documentation'
+
         api:
             pattern: ^/api
             stateless: true
@@ -27,6 +34,7 @@ security:
         - { path: ^/api/v1/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/test, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/health, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc, roles: ROLE_ADMIN }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
     role_hierarchy:

@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -27,6 +31,16 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
 
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $fio = null;
+
+    #[ORM\OneToMany(targetEntity: Contracts::class, mappedBy: 'author')]
+    private Collection $contracts;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->contracts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -89,8 +103,28 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
         return $this;
     }
 
+    /**
+     * @return Collection<int, Contracts>
+     */
+    public function getContracts(): Collection
+    {
+        return $this->contracts;
+    }
+
+    public function addContract(Contracts $contract): self
+    {
+        if (!$this->contracts->contains($contract)) {
+            $this->contracts->add($contract);
+
+            if ($contract->getAuthor() !== $this) {
+                $contract->setAuthor($this);
+            }
+        }
+
+        return $this;
+    }
+
     public function eraseCredentials(): void
     {
     }
 }
-
