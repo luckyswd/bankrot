@@ -13,8 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api')]
-#[IsGranted('ROLE_USER')]
+#[Route('/api/v1')]
 class ContractsController extends AbstractController
 {
     public function __construct(
@@ -23,8 +22,9 @@ class ContractsController extends AbstractController
     }
 
     #[Route('/contracts', name: 'api_contracts_list', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     #[OA\Get(
-        path: '/api/contracts',
+        path: '/api/v1/contracts',
         summary: 'Получить список всех контрактов',
         security: [['Bearer' => []]],
         tags: ['Contracts'],
