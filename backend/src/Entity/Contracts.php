@@ -444,7 +444,7 @@ class Contracts
         $parts = array_filter([
             $this->lastName,
             $this->firstName,
-            $this->middleName
+            $this->middleName,
         ]);
 
         return $parts ? implode(' ', $parts) : null;
@@ -548,7 +548,7 @@ class Contracts
     }
 
     /**
-     * Возвращает полный адрес регистрации
+     * Возвращает полный адрес регистрации.
      */
     public function getFullRegistrationAddress(): ?string
     {
@@ -558,25 +558,25 @@ class Contracts
             $parts[] = $this->registrationRegion;
         }
         if ($this->registrationDistrict) {
-            $parts[] = $this->registrationDistrict . ' район';
+            $parts[] = $this->registrationDistrict.' район';
         }
         if ($this->registrationCity) {
-            $parts[] = 'г. ' . $this->registrationCity;
+            $parts[] = 'г. '.$this->registrationCity;
         }
         if ($this->registrationSettlement) {
             $parts[] = $this->registrationSettlement;
         }
         if ($this->registrationStreet) {
-            $parts[] = 'ул. ' . $this->registrationStreet;
+            $parts[] = 'ул. '.$this->registrationStreet;
         }
         if ($this->registrationHouse) {
-            $parts[] = 'д. ' . $this->registrationHouse;
+            $parts[] = 'д. '.$this->registrationHouse;
         }
         if ($this->registrationBuilding) {
-            $parts[] = 'корп. ' . $this->registrationBuilding;
+            $parts[] = 'корп. '.$this->registrationBuilding;
         }
         if ($this->registrationApartment) {
-            $parts[] = 'кв. ' . $this->registrationApartment;
+            $parts[] = 'кв. '.$this->registrationApartment;
         }
 
         return $parts ? implode(', ', $parts) : null;
@@ -758,7 +758,7 @@ class Contracts
         $parts = array_filter([
             $this->spouseLastName,
             $this->spouseFirstName,
-            $this->spouseMiddleName
+            $this->spouseMiddleName,
         ]);
 
         return $parts ? implode(' ', $parts) : null;
@@ -862,7 +862,7 @@ class Contracts
     }
 
     /**
-     * Возвращает полный адрес регистрации супруга
+     * Возвращает полный адрес регистрации супруга.
      */
     public function getSpouseFullRegistrationAddress(): ?string
     {
@@ -872,25 +872,25 @@ class Contracts
             $parts[] = $this->spouseRegistrationRegion;
         }
         if ($this->spouseRegistrationDistrict) {
-            $parts[] = $this->spouseRegistrationDistrict . ' район';
+            $parts[] = $this->spouseRegistrationDistrict.' район';
         }
         if ($this->spouseRegistrationCity) {
-            $parts[] = 'г. ' . $this->spouseRegistrationCity;
+            $parts[] = 'г. '.$this->spouseRegistrationCity;
         }
         if ($this->spouseRegistrationSettlement) {
             $parts[] = $this->spouseRegistrationSettlement;
         }
         if ($this->spouseRegistrationStreet) {
-            $parts[] = 'ул. ' . $this->spouseRegistrationStreet;
+            $parts[] = 'ул. '.$this->spouseRegistrationStreet;
         }
         if ($this->spouseRegistrationHouse) {
-            $parts[] = 'д. ' . $this->spouseRegistrationHouse;
+            $parts[] = 'д. '.$this->spouseRegistrationHouse;
         }
         if ($this->spouseRegistrationBuilding) {
-            $parts[] = 'корп. ' . $this->spouseRegistrationBuilding;
+            $parts[] = 'корп. '.$this->spouseRegistrationBuilding;
         }
         if ($this->spouseRegistrationApartment) {
-            $parts[] = 'кв. ' . $this->spouseRegistrationApartment;
+            $parts[] = 'кв. '.$this->spouseRegistrationApartment;
         }
 
         return $parts ? implode(', ', $parts) : null;
@@ -989,13 +989,13 @@ class Contracts
     }
 
     /**
-     * Добавить ребенка в список
+     * Добавить ребенка в список.
      *
      * @param array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string} $child
      */
     public function addChild(array $child): self
     {
-        if ($this->children === null) {
+        if (null === $this->children) {
             $this->children = [];
         }
 

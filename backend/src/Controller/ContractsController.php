@@ -6,8 +6,8 @@ namespace App\Controller;
 
 use App\Entity\Contracts;
 use App\Repository\ContractsRepository;
-use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ContractsController extends AbstractController
 {
     public function __construct(
-        private readonly ContractsRepository $contractsRepository
+        private readonly ContractsRepository $contractsRepository,
     ) {
     }
 
@@ -42,7 +42,7 @@ class ContractsController extends AbstractController
             new OA\Response(
                 response: 401,
                 description: 'Неавторизован'
-            )
+            ),
         ]
     )]
     public function list(): JsonResponse
@@ -52,4 +52,3 @@ class ContractsController extends AbstractController
         return $this->json(data: $contracts, context: ['groups' => ['contracts:read']]);
     }
 }
-

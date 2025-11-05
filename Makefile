@@ -1,13 +1,13 @@
-.PHONY: up down start stop install db-migrate cc
+.PHONY: up down start stop install db-migrate cc check-code stan lint
 
 up: install
 	@echo "🚀 Запуск Docker контейнеров..."
-	docker-compose up -d --build
+	docker-compose up -d
 	@echo ""
 	@echo "⏳ Ожидание запуска контейнеров..."
 	@sleep 5
 	@echo "🗄️  Выполнение миграций базы данных..."
-	@make db-migrate
+	docker exec bankruptcy-php php bin/console doctrine:migrations:migrate --no-interaction
 	@echo ""
 	@echo "✅ Проект запущен!"
 	@echo ""
@@ -31,16 +31,6 @@ stop:
 	docker-compose stop
 	@echo "✅ Контейнеры остановлены"
 
-db-migrate:
-	@echo "🗄️  Выполнение миграций..."
-	docker exec bankruptcy-php php bin/console doctrine:migrations:migrate --no-interaction
-	@echo "✅ Миграции применены"
-
-cc:
-	@echo "🧹 Очистка кеша..."
-	docker exec bankruptcy-php php bin/console cache:clear
-	@echo "✅ Кеш очищен"
-
 install:
 	@echo "📦 Проверка и копирование .env файлов..."
 	@if [ ! -f frontend/.env.local ]; then \
@@ -61,3 +51,17 @@ install:
 	fi
 	@echo "✅ Проверка завершена"
 	@echo ""
+
+db-migrate:
+	php bin/console doctrine:migrations:migrate --no-interaction
+
+cc:
+	php bin/console cache:clear
+
+check-code: stan lint
+
+stan:
+	vendor/bin/phpstan analyse --memory-limit=1G --configuration=phpstan.neon
+
+lint:
+	vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.dist.php

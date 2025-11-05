@@ -18,7 +18,7 @@ class TestApiController extends AbstractController
             'data' => [
                 'backend' => 'Symfony 6.4',
                 'php_version' => PHP_VERSION,
-            ]
+            ],
         ]);
     }
 
@@ -27,8 +27,7 @@ class TestApiController extends AbstractController
     {
         return $this->json([
             'status' => 'ok',
-            'service' => 'bankruptcy-api'
+            'service' => 'bankruptcy-api',
         ]);
     }
 }
-

@@ -18,14 +18,15 @@ class AuthController extends AbstractController
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly UserRepository $userRepository,
-        private readonly JWTTokenManagerInterface $jwtManager
-    ) {}
+        private readonly JWTTokenManagerInterface $jwtManager,
+    ) {
+    }
 
     #[Route('/api/v1/login', name: 'api_login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        
+
         $user = $this->userRepository->findByUsername(username: $data['username']);
 
         if (!$user || !$this->passwordHasher->isPasswordValid(user: $user, plainPassword: $data['password'])) {
@@ -40,7 +41,7 @@ class AuthController extends AbstractController
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
                 'roles' => $user->getRoles(),
-            ]
+            ],
         ]);
     }
 

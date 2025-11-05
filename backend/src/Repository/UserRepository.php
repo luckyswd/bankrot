@@ -23,7 +23,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         if (!$user instanceof User) {
-            throw new \InvalidArgumentException("Invalid user type");
+            throw new \InvalidArgumentException('Invalid user type');
         }
 
         $user->setPassword($newHashedPassword);
@@ -33,6 +33,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function findByUsername(string $username): ?User
     {
-        return $this->findOneBy(["username" => $username]);
+        return $this->findOneBy(['username' => $username]);
     }
 }

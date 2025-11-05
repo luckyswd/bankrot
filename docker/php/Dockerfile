@@ -5,6 +5,7 @@ RUN apk add --no-cache \
     git \
     unzip \
     bash \
+    make \
     libzip-dev \
     libpng-dev \
     freetype-dev \
@@ -19,7 +20,6 @@ RUN apk add --no-cache --virtual .build-deps \
     icu-dev \
     zlib-dev \
     g++ \
-    make \
     autoconf
 
 # Устанавливаем PHP расширения
