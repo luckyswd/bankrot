@@ -26,24 +26,51 @@ export const API_CONFIG = {
  */
 export async function apiRequest(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
-  
+  const { auth = true, headers: customHeaders = {}, ...restOptions } = options;
+  const token = auth ? localStorage.getItem('token') : null;
+  const isFormData =
+    typeof FormData !== 'undefined' && restOptions.body instanceof FormData;
+  const baseHeaders = isFormData
+    ? { Accept: API_CONFIG.headers.Accept }
+    : API_CONFIG.headers;
+
   const config = {
     ...API_CONFIG,
-    ...options,
+    ...restOptions,
     headers: {
-      ...API_CONFIG.headers,
-      ...options.headers,
+      ...baseHeaders,
+      ...customHeaders,
+      ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
     },
   };
 
   try {
     const response = await fetch(url, config);
-    
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    let responseBody = null;
+
+    if (isJson) {
+      try {
+        responseBody = await response.json();
+      } catch {
+        responseBody = null;
+      }
+    } else {
+      responseBody = await response.text();
+    }
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorMessage =
+        (responseBody && typeof responseBody === 'object' && responseBody.message) ||
+        `HTTP error! status: ${response.status}`;
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.body = responseBody;
+      throw error;
     }
     
-    return await response.json();
+    return responseBody;
   } catch (error) {
     console.error('API Request failed:', error);
     throw error;
@@ -61,4 +88,3 @@ export async function apiRequest(endpoint, options = {}) {
 //   method: 'POST',
 //   body: JSON.stringify({ name: 'John' })
 // });
-
