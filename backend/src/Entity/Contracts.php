@@ -558,25 +558,25 @@ class Contracts
             $parts[] = $this->registrationRegion;
         }
         if ($this->registrationDistrict) {
-            $parts[] = $this->registrationDistrict.' район';
+            $parts[] = $this->registrationDistrict . ' район';
         }
         if ($this->registrationCity) {
-            $parts[] = 'г. '.$this->registrationCity;
+            $parts[] = 'г. ' . $this->registrationCity;
         }
         if ($this->registrationSettlement) {
             $parts[] = $this->registrationSettlement;
         }
         if ($this->registrationStreet) {
-            $parts[] = 'ул. '.$this->registrationStreet;
+            $parts[] = 'ул. ' . $this->registrationStreet;
         }
         if ($this->registrationHouse) {
-            $parts[] = 'д. '.$this->registrationHouse;
+            $parts[] = 'д. ' . $this->registrationHouse;
         }
         if ($this->registrationBuilding) {
-            $parts[] = 'корп. '.$this->registrationBuilding;
+            $parts[] = 'корп. ' . $this->registrationBuilding;
         }
         if ($this->registrationApartment) {
-            $parts[] = 'кв. '.$this->registrationApartment;
+            $parts[] = 'кв. ' . $this->registrationApartment;
         }
 
         return $parts ? implode(', ', $parts) : null;
@@ -872,25 +872,25 @@ class Contracts
             $parts[] = $this->spouseRegistrationRegion;
         }
         if ($this->spouseRegistrationDistrict) {
-            $parts[] = $this->spouseRegistrationDistrict.' район';
+            $parts[] = $this->spouseRegistrationDistrict . ' район';
         }
         if ($this->spouseRegistrationCity) {
-            $parts[] = 'г. '.$this->spouseRegistrationCity;
+            $parts[] = 'г. ' . $this->spouseRegistrationCity;
         }
         if ($this->spouseRegistrationSettlement) {
             $parts[] = $this->spouseRegistrationSettlement;
         }
         if ($this->spouseRegistrationStreet) {
-            $parts[] = 'ул. '.$this->spouseRegistrationStreet;
+            $parts[] = 'ул. ' . $this->spouseRegistrationStreet;
         }
         if ($this->spouseRegistrationHouse) {
-            $parts[] = 'д. '.$this->spouseRegistrationHouse;
+            $parts[] = 'д. ' . $this->spouseRegistrationHouse;
         }
         if ($this->spouseRegistrationBuilding) {
-            $parts[] = 'корп. '.$this->spouseRegistrationBuilding;
+            $parts[] = 'корп. ' . $this->spouseRegistrationBuilding;
         }
         if ($this->spouseRegistrationApartment) {
-            $parts[] = 'кв. '.$this->spouseRegistrationApartment;
+            $parts[] = 'кв. ' . $this->spouseRegistrationApartment;
         }
 
         return $parts ? implode(', ', $parts) : null;

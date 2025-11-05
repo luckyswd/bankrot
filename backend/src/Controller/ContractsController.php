@@ -112,7 +112,7 @@ class ContractsController extends AbstractController
     public function list(Request $request): JsonResponse
     {
         $search = $request->query->get('search');
-        $page = max(1, (int) ($request->query->get('page') ?? 1));
+        $page = max(1, (int)($request->query->get('page') ?? 1));
         $limit = 20;
 
         $contracts = $this->contractsRepository->findAllOptimized(
@@ -143,7 +143,7 @@ class ContractsController extends AbstractController
                 'total' => $total,
                 'page' => $page,
                 'limit' => $limit,
-                'pages' => (int) ceil($total / $limit),
+                'pages' => (int)ceil($total / $limit),
             ],
         ];
 
@@ -152,10 +152,6 @@ class ContractsController extends AbstractController
 
     /**
      * Рекурсивно удаляет null значения из массива.
-     *
-     * @param array<mixed> $data
-     *
-     * @return array<mixed>
      */
     private function removeNullValues(array $data): array
     {

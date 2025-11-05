@@ -10,6 +10,8 @@ return (new PhpCsFixer\Config())
         '@Symfony' => true,
         '@PSR12' => true,
         'yoda_style' => false,
+        'cast_spaces' => ['space' => 'none'],
+        'concat_space' => ['spacing' => 'one'],
     ])
     ->setFinder($finder)
     ->setRiskyAllowed(true)

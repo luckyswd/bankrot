@@ -41,8 +41,8 @@ class BaseCommand extends Command
 
         $executionTime = round($this->execInfo['finish_time'] - $this->execInfo['start_time'], 2);
         $memoryUsage = round(($this->execInfo['finish_memory'] - $this->execInfo['start_memory']) / 1024 / 1024, 2);
-        $startTime = date('Y-m-d H:i:s', (int) $this->execInfo['start_time']);
-        $finishTime = date('Y-m-d H:i:s', (int) $this->execInfo['finish_time']);
+        $startTime = date('Y-m-d H:i:s', (int)$this->execInfo['start_time']);
+        $finishTime = date('Y-m-d H:i:s', (int)$this->execInfo['finish_time']);
 
         $this->io->writeln("<fg=green>command_name:</> <fg=yellow>{$this->getName()}</>;");
         $this->io->writeln("<fg=green>start_time:</> <fg=yellow>{$startTime}</>;");

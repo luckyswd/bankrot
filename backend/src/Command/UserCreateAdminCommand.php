@@ -63,7 +63,7 @@ class UserCreateAdminCommand extends Command
                 return Command::SUCCESS;
             }
 
-            $output->writeln('<info>Текущие роли пользователя: '.implode(', ', $existingUser->getRoles()).'</info>');
+            $output->writeln('<info>Текущие роли пользователя: ' . implode(', ', $existingUser->getRoles()) . '</info>');
 
             return Command::SUCCESS;
         }
@@ -96,7 +96,7 @@ class UserCreateAdminCommand extends Command
         $output->writeln("  Username: <comment>{$user->getUsername()}</comment>");
         $output->writeln('  Password: <comment>***</comment>');
         $output->writeln("  FIO: {$user->getFio()}");
-        $output->writeln('  Roles: '.implode(', ', $user->getRoles()));
+        $output->writeln('  Roles: ' . implode(', ', $user->getRoles()));
 
         return Command::SUCCESS;
     }

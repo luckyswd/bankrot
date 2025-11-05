@@ -29,8 +29,8 @@ class ContractsRepository extends ServiceEntityRepository
             return;
         }
 
-        $searchTerm = '%'.$search.'%';
-        $searchId = is_numeric($search) ? (int) $search : null;
+        $searchTerm = '%' . $search . '%';
+        $searchId = is_numeric($search) ? (int)$search : null;
 
         $orConditions = $qb->expr()->orX(
             $qb->expr()->like('c.firstName', ':search'),
@@ -81,6 +81,6 @@ class ContractsRepository extends ServiceEntityRepository
 
         $this->applySearchConditions($qb, $search);
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 }
