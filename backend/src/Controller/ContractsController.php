@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Contracts;
+use App\Entity\Enum\BankruptcyStage;
 use App\Repository\ContractsRepository;
+use App\Service\Serializer;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,18 +27,45 @@ class ContractsController extends AbstractController
     #[IsGranted('ROLE_USER')]
     #[OA\Get(
         path: '/api/v1/contracts',
-        summary: 'Получить список всех контрактов',
+        summary: 'Получить список всех контрактов, сгруппированных по этапам банкротства',
         security: [['Bearer' => []]],
         tags: ['Contracts'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Список всех контрактов с полной информацией',
+                description: 'Контракты, сгруппированные по этапам банкротства',
                 content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(
-                        ref: new Model(type: Contracts::class)
-                    )
+                    properties: [
+                        new OA\Property(
+                            property: 'basic_info',
+                            description: 'Контракты с данными этапа "Основная информация"',
+                            type: 'array',
+                            items: new OA\Items(ref: new Model(type: Contracts::class, groups: ['basic_info'])),
+                            nullable: true
+                        ),
+                        new OA\Property(
+                            property: 'pre_court',
+                            description: 'Контракты с данными этапа "Досудебка"',
+                            type: 'array',
+                            items: new OA\Items(type: 'object'),
+                            nullable: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure_initiation',
+                            description: 'Контракты с данными этапа "Введение процедуры"',
+                            type: 'array',
+                            items: new OA\Items(type: 'object'),
+                            nullable: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure',
+                            description: 'Контракты с данными этапа "Процедура"',
+                            type: 'array',
+                            items: new OA\Items(type: 'object'),
+                            nullable: true
+                        ),
+                    ],
+                    type: 'object'
                 )
             ),
             new OA\Response(
@@ -49,6 +78,18 @@ class ContractsController extends AbstractController
     {
         $contracts = $this->contractsRepository->findAllOptimized();
 
-        return $this->json(data: $contracts, context: ['groups' => ['contracts:read']]);
+        $result = [];
+        foreach (BankruptcyStage::cases() as $stage) {
+            $groupName = $stage->value;
+
+            try {
+                $normalized = Serializer::normalize($contracts, null, ['groups' => [$groupName]]);
+                $result[$stage->value] = $normalized;
+            } catch (\Exception) {
+                $result[$stage->value] = null;
+            }
+        }
+
+        return $this->json(data: $result);
     }
 }
