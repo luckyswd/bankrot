@@ -12,6 +12,8 @@ return (new PhpCsFixer\Config())
         'yoda_style' => false,
         'cast_spaces' => ['space' => 'none'],
         'concat_space' => ['spacing' => 'one'],
+        'phpdoc_align' => false,
+        'align_multiline_comment' => false,
     ])
     ->setFinder($finder)
     ->setRiskyAllowed(true)

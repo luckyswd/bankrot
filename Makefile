@@ -1,4 +1,4 @@
-.PHONY: up down start stop install db-migrate cc check-code stan lint
+.PHONY: up down start stop install db-migrate cc check-code stan lint test
 
 up: install
 	@echo "🚀 Запуск Docker контейнеров..."
@@ -65,3 +65,6 @@ stan:
 
 lint:
 	vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.dist.php
+
+test:
+	 php bin/phpunit --no-coverage

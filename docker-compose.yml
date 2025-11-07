@@ -31,10 +31,6 @@ services:
             - ./backend:/var/www/html
             - ./Makefile:/var/www/html/Makefile:ro
             - ./docker/php/config/php.ini:/usr/local/etc/php/php.ini
-        environment:
-            DATABASE_URL: "mysql://bankruptcy:bankruptcy@mysql:3306/bankruptcy?serverVersion=8.0"
-            APP_ENV: dev
-            APP_SECRET: "change_me_in_production"
         networks:
             - bankruptcy-network
 

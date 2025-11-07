@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Contracts;
-use App\Entity\Enum\BankruptcyStage;
+use App\Entity\User;
 use App\Repository\ContractsRepository;
-use App\Service\Serializer;
-use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/v1')]
+#[IsGranted('ROLE_USER')]
 class ContractsController extends AbstractController
 {
     public function __construct(
@@ -25,19 +23,32 @@ class ContractsController extends AbstractController
     }
 
     #[Route('/contracts', name: 'api_contracts_list', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
     #[OA\Get(
         path: '/api/v1/contracts',
-        summary: 'Получить список всех контрактов, сгруппированных по этапам банкротства',
+        summary: 'Получить список контрактов с фильтрацией, сортировкой и пагинацией',
         security: [['Bearer' => []]],
         tags: ['Contracts'],
         parameters: [
             new OA\Parameter(
-                name: 'search',
-                description: 'Поиск по ФИО или номеру дела (ID)',
+                name: 'filter',
+                description: 'Фильтр: all, my, in_progress, completed',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', default: 'all', enum: ['all', 'my', 'in_progress', 'completed'])
+            ),
+            new OA\Parameter(
+                name: 'sortBy',
+                description: 'Поле для сортировки: id, contractNumber, firstName, lastName, middleName, contractDate, status',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'sortOrder',
+                description: 'Направление сортировки: ASC или DESC',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', enum: ['ASC', 'DESC'], default: 'ASC')
             ),
             new OA\Parameter(
                 name: 'page',
@@ -46,47 +57,36 @@ class ContractsController extends AbstractController
                 required: false,
                 schema: new OA\Schema(type: 'integer', default: 1, minimum: 1)
             ),
+            new OA\Parameter(
+                name: 'limit',
+                description: 'Количество элементов на странице',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', default: 20, maximum: 100, minimum: 1)
+            ),
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Контракты, сгруппированные по этапам банкротства',
+                description: 'Список контрактов с метаданными',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'data',
-                            description: 'Контракты, сгруппированные по этапам',
-                            properties: [
-                                new OA\Property(
-                                    property: 'basic_info',
-                                    description: 'Контракты с данными этапа "Основная информация"',
-                                    type: 'array',
-                                    items: new OA\Items(ref: new Model(type: Contracts::class, groups: ['basic_info'])),
-                                    nullable: true
-                                ),
-                                new OA\Property(
-                                    property: 'pre_court',
-                                    description: 'Контракты с данными этапа "Досудебка"',
-                                    type: 'array',
-                                    items: new OA\Items(type: 'object'),
-                                    nullable: true
-                                ),
-                                new OA\Property(
-                                    property: 'procedure_initiation',
-                                    description: 'Контракты с данными этапа "Введение процедуры"',
-                                    type: 'array',
-                                    items: new OA\Items(type: 'object'),
-                                    nullable: true
-                                ),
-                                new OA\Property(
-                                    property: 'procedure',
-                                    description: 'Контракты с данными этапа "Процедура"',
-                                    type: 'array',
-                                    items: new OA\Items(type: 'object'),
-                                    nullable: true
-                                ),
-                            ],
-                            type: 'object'
+                            description: 'Список контрактов',
+                            type: 'array',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer'),
+                                    new OA\Property(property: 'contractNumber', type: 'string', nullable: true),
+                                    new OA\Property(property: 'fullName', type: 'string', nullable: true),
+                                    new OA\Property(property: 'contractDate', type: 'string', format: 'date', nullable: true),
+                                    new OA\Property(property: 'manager', type: 'object', nullable: true),
+                                    new OA\Property(property: 'author', type: 'object', nullable: true),
+                                    new OA\Property(property: 'status', type: 'string'),
+                                ],
+                                type: 'object'
+                            )
                         ),
                         new OA\Property(
                             property: 'pagination',
@@ -96,6 +96,17 @@ class ContractsController extends AbstractController
                                 new OA\Property(property: 'page', description: 'Текущая страница', type: 'integer'),
                                 new OA\Property(property: 'limit', description: 'Количество элементов на странице', type: 'integer'),
                                 new OA\Property(property: 'pages', description: 'Общее количество страниц', type: 'integer'),
+                            ],
+                            type: 'object'
+                        ),
+                        new OA\Property(
+                            property: 'counts',
+                            description: 'Количество контрактов по фильтрам',
+                            properties: [
+                                new OA\Property(property: 'all', type: 'integer'),
+                                new OA\Property(property: 'my', type: 'integer'),
+                                new OA\Property(property: 'in_progress', type: 'integer'),
+                                new OA\Property(property: 'completed', type: 'integer'),
                             ],
                             type: 'object'
                         ),
@@ -111,61 +122,56 @@ class ContractsController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
-        $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = 20;
+        /** @var User|null $user */
+        $user = $this->getUser();
 
-        $contracts = $this->contractsRepository->findAllOptimized(
-            search: $search,
+        $filter = $request->query->get('filter', 'all');
+        $sortBy = $request->query->get('sortBy');
+        $sortOrder = $request->query->get('sortOrder', 'ASC');
+        $page = max(1, (int)($request->query->get('page') ?? 1));
+        $limit = min(100, max(1, (int)($request->query->get('limit') ?? 20)));
+
+        $contracts = $this->contractsRepository->findWithFilters(
+            filter: $filter,
+            user: $user,
+            sortBy: $sortBy,
+            sortOrder: $sortOrder,
             page: $page,
             limit: $limit
         );
-        $total = $this->contractsRepository->countAll(search: $search);
 
-        $result = [];
+        $total = $this->contractsRepository->countByFilter(filter: $filter, user: $user);
 
-        foreach (BankruptcyStage::cases() as $stage) {
-            $groupName = $stage->value;
+        $data = [];
 
-            try {
-                $normalized = Serializer::normalize($contracts, null, ['groups' => [$groupName]]);
-
-                if ($normalized !== null && $normalized !== []) {
-                    $result[$stage->value] = $normalized;
-                }
-            } catch (\Exception) {
-            }
+        foreach ($contracts as $contract) {
+            $data[] = [
+                'id' => $contract->getId(),
+                'contractNumber' => $contract->getContractNumber(),
+                'fullName' => $contract->getFullName(),
+                'contractDate' => $contract->getContractDate()?->format('Y-m-d'),
+                'manager' => $contract->getManager()?->getFio() ?? null,
+                'author' => $contract->getAuthor()->getFio(),
+                'status' => $contract->getStatus()->value,
+            ];
         }
 
-        $responseData = [
-            'data' => $result,
+        $counts = [
+            'all' => $this->contractsRepository->countByFilter(filter: 'all', user: $user),
+            'my' => $this->contractsRepository->countByFilter(filter: 'my', user: $user),
+            'in_progress' => $this->contractsRepository->countByFilter(filter: 'in_progress', user: $user),
+            'completed' => $this->contractsRepository->countByFilter(filter: 'completed', user: $user),
+        ];
+
+        return $this->json(data: [
+            'data' => $data,
             'pagination' => [
                 'total' => $total,
                 'page' => $page,
                 'limit' => $limit,
                 'pages' => (int)ceil($total / $limit),
             ],
-        ];
-
-        return $this->json(data: $this->removeNullValues($responseData));
-    }
-
-    /**
-     * Рекурсивно удаляет null значения из массива.
-     */
-    private function removeNullValues(array $data): array
-    {
-        foreach ($data as $key => $value) {
-            if ($value === null) {
-                unset($data[$key]);
-            } elseif (is_array($value)) {
-                $data[$key] = $this->removeNullValues($value);
-                if ($data[$key] === []) {
-                    unset($data[$key]);
-                }
-            }
-        }
-
-        return $data;
+            'counts' => $counts,
+        ]);
     }
 }

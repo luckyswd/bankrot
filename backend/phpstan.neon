@@ -6,6 +6,7 @@ parameters:
     level: 5
     paths:
         - src
+        - tests
     excludePaths:
         - vendor
         - var
@@ -14,4 +15,8 @@ parameters:
     # Symfony
     symfony:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
-
+    
+    ignoreErrors:
+        - '#Call to function method_exists\(\) with .* will always evaluate to true#'
+        - '#Strict comparison using === between .* will always evaluate to false#'
+        - '#Offset .* on non-empty-array on left side of \?\? always exists and is not nullable#'

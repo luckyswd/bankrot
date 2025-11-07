@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
@@ -12,7 +13,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: ContractsRepository::class)]
 #[OA\Schema(
     schema: 'Contracts',
-    description: 'Контракт банкротства с полной информацией о должнике',
     type: 'object'
 )]
 class Contracts
@@ -140,109 +140,13 @@ class Contracts
     // Данные супруга
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Имя супруга', type: 'string', example: 'Мария', nullable: true)]
-    private ?string $spouseFirstName = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Фамилия супруга', type: 'string', example: 'Иванова', nullable: true)]
-    private ?string $spouseLastName = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Отчество супруга', type: 'string', example: 'Петровна', nullable: true)]
-    private ?string $spouseMiddleName = null;
-
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Изменялось ли ФИО супруга', type: 'boolean', example: false, nullable: true)]
-    private ?bool $spouseIsLastNameChanged = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Предыдущее ФИО супруга (если изменялось)', type: 'string', example: 'Сидорова Мария Петровна', nullable: true)]
-    private ?string $spouseChangedLastName = null;
+    #[OA\Property(description: 'ФИО супруга', type: 'string', example: 'Иванова Мария Петровна', nullable: true)]
+    private ?string $spouseFullName = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['basic_info'])]
     #[OA\Property(description: 'Дата рождения супруга', type: 'string', format: 'date', example: '1992-03-25', nullable: true)]
     private ?\DateTimeInterface $spouseBirthDate = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Место рождения супруга', type: 'string', example: 'г. Москва', nullable: true)]
-    private ?string $spouseBirthPlace = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'СНИЛС супруга', type: 'string', example: '987-654-321 00', nullable: true)]
-    private ?string $spouseSnils = null;
-
-    // Адрес регистрации супруга
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Субъект РФ (регион) - супруг', type: 'string', example: 'Санкт-Петербург', nullable: true)]
-    private ?string $spouseRegistrationRegion = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Район - супруг', type: 'string', example: 'Московский', nullable: true)]
-    private ?string $spouseRegistrationDistrict = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Город - супруг', type: 'string', example: 'Санкт-Петербург', nullable: true)]
-    private ?string $spouseRegistrationCity = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Населенный пункт - супруг', type: 'string', example: 'пос. Ленинский', nullable: true)]
-    private ?string $spouseRegistrationSettlement = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Улица - супруг', type: 'string', example: 'Смоленская', nullable: true)]
-    private ?string $spouseRegistrationStreet = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дом - супруг', type: 'string', example: '9', nullable: true)]
-    private ?string $spouseRegistrationHouse = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Корпус - супруг', type: 'string', example: '1', nullable: true)]
-    private ?string $spouseRegistrationBuilding = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Квартира - супруг', type: 'string', example: '418', nullable: true)]
-    private ?string $spouseRegistrationApartment = null;
-
-    #[ORM\Column(length: 10, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Серия паспорта супруга', type: 'string', example: '4017', nullable: true)]
-    private ?string $spousePassportSeries = null;
-
-    #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Номер паспорта супруга', type: 'string', example: '654321', nullable: true)]
-    private ?string $spousePassportNumber = null;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Кем выдан паспорт супруга', type: 'string', example: 'ОУФМС России по СПб и ЛО в Московском районе', nullable: true)]
-    private ?string $spousePassportIssuedBy = null;
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дата выдачи паспорта супруга', type: 'string', format: 'date', example: '2012-06-20', nullable: true)]
-    private ?\DateTimeInterface $spousePassportIssuedDate = null;
-
-    #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Код подразделения - супруг', type: 'string', example: '780-089', nullable: true)]
-    private ?string $spousePassportDepartmentCode = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
     #[Groups(['basic_info'])]
@@ -325,6 +229,27 @@ class Contracts
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'contracts')]
     #[ORM\JoinColumn(name: 'author_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private User $author;
+
+    #[ORM\Column(type: 'string', nullable: false, enumType: ContractStatus::class)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Статус договора', type: 'string', enum: ContractStatus::class, example: 'in_progress')]
+    private ContractStatus $status = ContractStatus::IN_PROGRESS;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'manager_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Управляющий', type: 'object', nullable: true)]
+    private ?User $manager = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Номер договора', type: 'string', example: 'ДГ-2024-001', nullable: true)]
+    private ?string $contractNumber = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Дата договора', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
+    private ?\DateTimeInterface $contractDate = null;
 
     public function getId(): ?int
     {
@@ -450,7 +375,6 @@ class Contracts
         return $parts ? implode(' ', $parts) : null;
     }
 
-    // Адрес регистрации
     public function getRegistrationRegion(): ?string
     {
         return $this->registrationRegion;
@@ -547,9 +471,6 @@ class Contracts
         return $this;
     }
 
-    /**
-     * Возвращает полный адрес регистрации.
-     */
     public function getFullRegistrationAddress(): ?string
     {
         $parts = [];
@@ -582,7 +503,6 @@ class Contracts
         return $parts ? implode(', ', $parts) : null;
     }
 
-    // Паспорт
     public function getPassportSeries(): ?string
     {
         return $this->passportSeries;
@@ -643,7 +563,6 @@ class Contracts
         return $this;
     }
 
-    // Семейное положение
     public function getMaritalStatus(): ?string
     {
         return $this->maritalStatus;
@@ -656,63 +575,14 @@ class Contracts
         return $this;
     }
 
-    // Данные супруга
-    public function getSpouseFirstName(): ?string
+    public function getSpouseFullName(): ?string
     {
-        return $this->spouseFirstName;
+        return $this->spouseFullName;
     }
 
-    public function setSpouseFirstName(?string $spouseFirstName): self
+    public function setSpouseFullName(?string $spouseFullName): self
     {
-        $this->spouseFirstName = $spouseFirstName;
-
-        return $this;
-    }
-
-    public function getSpouseLastName(): ?string
-    {
-        return $this->spouseLastName;
-    }
-
-    public function setSpouseLastName(?string $spouseLastName): self
-    {
-        $this->spouseLastName = $spouseLastName;
-
-        return $this;
-    }
-
-    public function getSpouseMiddleName(): ?string
-    {
-        return $this->spouseMiddleName;
-    }
-
-    public function setSpouseMiddleName(?string $spouseMiddleName): self
-    {
-        $this->spouseMiddleName = $spouseMiddleName;
-
-        return $this;
-    }
-
-    public function getSpouseIsLastNameChanged(): ?bool
-    {
-        return $this->spouseIsLastNameChanged;
-    }
-
-    public function setSpouseIsLastNameChanged(?bool $spouseIsLastNameChanged): self
-    {
-        $this->spouseIsLastNameChanged = $spouseIsLastNameChanged;
-
-        return $this;
-    }
-
-    public function getSpouseChangedLastName(): ?string
-    {
-        return $this->spouseChangedLastName;
-    }
-
-    public function setSpouseChangedLastName(?string $spouseChangedLastName): self
-    {
-        $this->spouseChangedLastName = $spouseChangedLastName;
+        $this->spouseFullName = $spouseFullName;
 
         return $this;
     }
@@ -729,235 +599,6 @@ class Contracts
         return $this;
     }
 
-    public function getSpouseBirthPlace(): ?string
-    {
-        return $this->spouseBirthPlace;
-    }
-
-    public function setSpouseBirthPlace(?string $spouseBirthPlace): self
-    {
-        $this->spouseBirthPlace = $spouseBirthPlace;
-
-        return $this;
-    }
-
-    public function getSpouseSnils(): ?string
-    {
-        return $this->spouseSnils;
-    }
-
-    public function setSpouseSnils(?string $spouseSnils): self
-    {
-        $this->spouseSnils = $spouseSnils;
-
-        return $this;
-    }
-
-    public function getSpouseFullName(): ?string
-    {
-        $parts = array_filter([
-            $this->spouseLastName,
-            $this->spouseFirstName,
-            $this->spouseMiddleName,
-        ]);
-
-        return $parts ? implode(' ', $parts) : null;
-    }
-
-    // Адрес регистрации супруга
-    public function getSpouseRegistrationRegion(): ?string
-    {
-        return $this->spouseRegistrationRegion;
-    }
-
-    public function setSpouseRegistrationRegion(?string $spouseRegistrationRegion): self
-    {
-        $this->spouseRegistrationRegion = $spouseRegistrationRegion;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationDistrict(): ?string
-    {
-        return $this->spouseRegistrationDistrict;
-    }
-
-    public function setSpouseRegistrationDistrict(?string $spouseRegistrationDistrict): self
-    {
-        $this->spouseRegistrationDistrict = $spouseRegistrationDistrict;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationCity(): ?string
-    {
-        return $this->spouseRegistrationCity;
-    }
-
-    public function setSpouseRegistrationCity(?string $spouseRegistrationCity): self
-    {
-        $this->spouseRegistrationCity = $spouseRegistrationCity;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationSettlement(): ?string
-    {
-        return $this->spouseRegistrationSettlement;
-    }
-
-    public function setSpouseRegistrationSettlement(?string $spouseRegistrationSettlement): self
-    {
-        $this->spouseRegistrationSettlement = $spouseRegistrationSettlement;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationStreet(): ?string
-    {
-        return $this->spouseRegistrationStreet;
-    }
-
-    public function setSpouseRegistrationStreet(?string $spouseRegistrationStreet): self
-    {
-        $this->spouseRegistrationStreet = $spouseRegistrationStreet;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationHouse(): ?string
-    {
-        return $this->spouseRegistrationHouse;
-    }
-
-    public function setSpouseRegistrationHouse(?string $spouseRegistrationHouse): self
-    {
-        $this->spouseRegistrationHouse = $spouseRegistrationHouse;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationBuilding(): ?string
-    {
-        return $this->spouseRegistrationBuilding;
-    }
-
-    public function setSpouseRegistrationBuilding(?string $spouseRegistrationBuilding): self
-    {
-        $this->spouseRegistrationBuilding = $spouseRegistrationBuilding;
-
-        return $this;
-    }
-
-    public function getSpouseRegistrationApartment(): ?string
-    {
-        return $this->spouseRegistrationApartment;
-    }
-
-    public function setSpouseRegistrationApartment(?string $spouseRegistrationApartment): self
-    {
-        $this->spouseRegistrationApartment = $spouseRegistrationApartment;
-
-        return $this;
-    }
-
-    /**
-     * Возвращает полный адрес регистрации супруга.
-     */
-    public function getSpouseFullRegistrationAddress(): ?string
-    {
-        $parts = [];
-
-        if ($this->spouseRegistrationRegion) {
-            $parts[] = $this->spouseRegistrationRegion;
-        }
-        if ($this->spouseRegistrationDistrict) {
-            $parts[] = $this->spouseRegistrationDistrict . ' район';
-        }
-        if ($this->spouseRegistrationCity) {
-            $parts[] = 'г. ' . $this->spouseRegistrationCity;
-        }
-        if ($this->spouseRegistrationSettlement) {
-            $parts[] = $this->spouseRegistrationSettlement;
-        }
-        if ($this->spouseRegistrationStreet) {
-            $parts[] = 'ул. ' . $this->spouseRegistrationStreet;
-        }
-        if ($this->spouseRegistrationHouse) {
-            $parts[] = 'д. ' . $this->spouseRegistrationHouse;
-        }
-        if ($this->spouseRegistrationBuilding) {
-            $parts[] = 'корп. ' . $this->spouseRegistrationBuilding;
-        }
-        if ($this->spouseRegistrationApartment) {
-            $parts[] = 'кв. ' . $this->spouseRegistrationApartment;
-        }
-
-        return $parts ? implode(', ', $parts) : null;
-    }
-
-    // Паспорт супруга
-    public function getSpousePassportSeries(): ?string
-    {
-        return $this->spousePassportSeries;
-    }
-
-    public function setSpousePassportSeries(?string $spousePassportSeries): self
-    {
-        $this->spousePassportSeries = $spousePassportSeries;
-
-        return $this;
-    }
-
-    public function getSpousePassportNumber(): ?string
-    {
-        return $this->spousePassportNumber;
-    }
-
-    public function setSpousePassportNumber(?string $spousePassportNumber): self
-    {
-        $this->spousePassportNumber = $spousePassportNumber;
-
-        return $this;
-    }
-
-    public function getSpousePassportIssuedBy(): ?string
-    {
-        return $this->spousePassportIssuedBy;
-    }
-
-    public function setSpousePassportIssuedBy(?string $spousePassportIssuedBy): self
-    {
-        $this->spousePassportIssuedBy = $spousePassportIssuedBy;
-
-        return $this;
-    }
-
-    public function getSpousePassportIssuedDate(): ?\DateTimeInterface
-    {
-        return $this->spousePassportIssuedDate;
-    }
-
-    public function setSpousePassportIssuedDate(?\DateTimeInterface $spousePassportIssuedDate): self
-    {
-        $this->spousePassportIssuedDate = $spousePassportIssuedDate;
-
-        return $this;
-    }
-
-    public function getSpousePassportDepartmentCode(): ?string
-    {
-        return $this->spousePassportDepartmentCode;
-    }
-
-    public function setSpousePassportDepartmentCode(?string $spousePassportDepartmentCode): self
-    {
-        $this->spousePassportDepartmentCode = $spousePassportDepartmentCode;
-
-        return $this;
-    }
-
-    // Несовершеннолетние дети
     public function hasMinorChildren(): ?bool
     {
         return $this->hasMinorChildren;
@@ -989,8 +630,6 @@ class Contracts
     }
 
     /**
-     * Добавить ребенка в список.
-     *
      * @param array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string} $child
      */
     public function addChild(array $child): self
@@ -1004,7 +643,6 @@ class Contracts
         return $this;
     }
 
-    // Дополнительная информация
     public function isStudent(): ?bool
     {
         return $this->isStudent;
@@ -1121,6 +759,54 @@ class Contracts
     public function setHasEnforcementProceedings(?bool $hasEnforcementProceedings): self
     {
         $this->hasEnforcementProceedings = $hasEnforcementProceedings;
+
+        return $this;
+    }
+
+    public function getStatus(): ContractStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ContractStatus $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getManager(): ?User
+    {
+        return $this->manager;
+    }
+
+    public function setManager(?User $manager): self
+    {
+        $this->manager = $manager;
+
+        return $this;
+    }
+
+    public function getContractNumber(): ?string
+    {
+        return $this->contractNumber;
+    }
+
+    public function setContractNumber(?string $contractNumber): self
+    {
+        $this->contractNumber = $contractNumber;
+
+        return $this;
+    }
+
+    public function getContractDate(): ?\DateTimeInterface
+    {
+        return $this->contractDate;
+    }
+
+    public function setContractDate(?\DateTimeInterface $contractDate): self
+    {
+        $this->contractDate = $contractDate;
 
         return $this;
     }
