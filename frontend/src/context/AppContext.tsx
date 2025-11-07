@@ -1,7 +1,40 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { mockUsers, mockContracts, mockDatabases } from '../data/mockData'
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
-const AppContext = createContext()
+import { mockContracts, mockDatabases, mockUsers } from "../data/mockData"
+
+type Contract = (typeof mockContracts)[number]
+type DatabaseState = typeof mockDatabases
+type User = (typeof mockUsers)[number] | null
+
+interface Template {
+  id: number
+  name: string
+  description: string
+  size: number
+  category: string
+  variables: string[]
+  uploadedAt: string
+  uploadedBy: string
+  data?: string
+}
+
+interface AppContextValue {
+  currentUser: User
+  contracts: Contract[]
+  databases: DatabaseState
+  templates: Template[]
+  actionLog: any[]
+  login: (username: string, password: string) => boolean
+  logout: () => void
+  updateContract: (contractId: number, updates: Partial<Contract>) => void
+  createContract: (contractData: Partial<Contract>) => Contract
+  addToDatabase: (dbName: keyof DatabaseState, item: Record<string, unknown>) => void
+  logAction: (action: string, description: string) => void
+  addTemplate: (template: Template) => void
+  deleteTemplate: (templateId: number) => void
+}
+
+const AppContext = createContext<AppContextValue | null>(null)
 
 export const useApp = () => {
   const context = useContext(AppContext)
@@ -12,7 +45,7 @@ export const useApp = () => {
 }
 
 // Моковые ШАБЛОНЫ документов
-const mockTemplates = [
+const mockTemplates: Template[] = [
   {
     id: 1,
     name: 'Шаблон - Заявление о признании банкротом.docx',
@@ -65,12 +98,16 @@ const mockTemplates = [
   }
 ]
 
-export const AppProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [contracts, setContracts] = useState(mockContracts)
-  const [databases, setDatabases] = useState(mockDatabases)
-  const [templates, setTemplates] = useState(mockTemplates)
-  const [actionLog, setActionLog] = useState([])
+interface AppProviderProps {
+  children: ReactNode
+}
+
+export const AppProvider = ({ children }: AppProviderProps) => {
+  const [currentUser, setCurrentUser] = useState<User>(null)
+  const [contracts, setContracts] = useState<Contract[]>(mockContracts)
+  const [databases, setDatabases] = useState<DatabaseState>(mockDatabases)
+  const [templates, setTemplates] = useState<Template[]>(mockTemplates)
+  const [actionLog, setActionLog] = useState<any[]>([])
 
   // Автосохранение в localStorage
   useEffect(() => {
@@ -96,7 +133,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [templates])
 
-  const login = (username, password) => {
+  const login = (username: string, password: string) => {
     const user = mockUsers.find(
       u => u.username === username && u.password === password
     )
@@ -109,11 +146,13 @@ export const AppProvider = ({ children }) => {
   }
 
   const logout = () => {
-    logAction('logout', `Выход пользователя ${currentUser.fullName}`)
+    if (currentUser) {
+      logAction('logout', `Выход пользователя ${currentUser.fullName}`)
+    }
     setCurrentUser(null)
   }
 
-  const logAction = (action, description) => {
+  const logAction = (action: string, description: string) => {
     const log = {
       id: Date.now(),
       userId: currentUser?.id,
@@ -125,7 +164,7 @@ export const AppProvider = ({ children }) => {
     setActionLog(prev => [log, ...prev])
   }
 
-  const updateContract = (contractId, updates) => {
+  const updateContract = (contractId: number, updates: Partial<Contract>) => {
     setContracts(prev =>
       prev.map(contract =>
         contract.id === contractId
@@ -136,11 +175,11 @@ export const AppProvider = ({ children }) => {
     logAction('update_contract', `Обновление договора №${contractId}`)
   }
 
-  const createContract = (contractData) => {
+  const createContract = (contractData: Partial<Contract>) => {
     const newContract = {
       id: Date.now(),
       ...contractData,
-      createdBy: currentUser.fullName,
+      createdBy: currentUser?.fullName ?? 'Система',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'active'
@@ -150,7 +189,7 @@ export const AppProvider = ({ children }) => {
     return newContract
   }
 
-  const addToDatabase = (dbName, item) => {
+  const addToDatabase = (dbName: keyof DatabaseState, item: Record<string, unknown>) => {
     setDatabases(prev => ({
       ...prev,
       [dbName]: [...(prev[dbName] || []), { ...item, id: Date.now() }]
@@ -159,12 +198,12 @@ export const AppProvider = ({ children }) => {
   }
 
   // Templates functions
-  const addTemplate = (template) => {
+  const addTemplate = (template: Template) => {
     setTemplates(prev => [template, ...prev])
     logAction('add_template', `Загружен шаблон ${template.name}`)
   }
 
-  const deleteTemplate = (templateId) => {
+  const deleteTemplate = (templateId: number) => {
     setTemplates(prev => prev.filter(t => t.id !== templateId))
     logAction('delete_template', `Удалён шаблон`)
   }

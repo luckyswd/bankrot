@@ -14,7 +14,6 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
-
   // Принудительно устанавливаем светлую тему для Login
   useEffect(() => {
     document.documentElement.classList.remove('dark')
@@ -57,7 +56,7 @@ function Login() {
           <div className="rounded-full bg-primary/10 p-3">
             <FileText className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-center">Система управления документами</h1>
+          <h1 className="text-3xl font-bold text-center text-nowrap">Система управления документами</h1>
         </div>
 
         {/* Login Form */}

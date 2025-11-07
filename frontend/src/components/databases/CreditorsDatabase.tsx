@@ -5,6 +5,13 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
 import { Plus, Edit, Trash2, X } from 'lucide-react'
 
 export default function CreditorsDatabase() {
@@ -93,16 +100,19 @@ export default function CreditorsDatabase() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="type">Тип</Label>
-                  <select
-                    id="type"
+                  <Select
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    onValueChange={(value) => setFormData({ ...formData, type: value })}
                   >
-                    <option value="bank">Банк</option>
-                    <option value="tax">Налоговая</option>
-                    <option value="other">Другое</option>
-                  </select>
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bank">Банк</SelectItem>
+                      <SelectItem value="tax">Налоговая</SelectItem>
+                      <SelectItem value="other">Другое</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <Button type="submit">Сохранить</Button>
@@ -161,5 +171,4 @@ export default function CreditorsDatabase() {
     </div>
   )
 }
-
 
