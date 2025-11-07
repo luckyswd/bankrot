@@ -152,7 +152,7 @@ class ContractsController extends AbstractController
                 'contractDate' => $contract->getContractDate()?->format('Y-m-d'),
                 'manager' => $contract->getManager()?->getFio() ?? null,
                 'author' => $contract->getAuthor()->getFio(),
-                'status' => $contract->getStatus()->value,
+                'status' => $contract->getStatus()->getLabel(),
             ];
         }
 
