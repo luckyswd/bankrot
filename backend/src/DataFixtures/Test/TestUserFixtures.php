@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DataFixtures;
+namespace App\DataFixtures\Test;
 
 use App\Entity\Contracts;
 use App\Entity\Enum\ContractStatus;
@@ -16,21 +16,21 @@ class TestUserFixtures extends Fixture
     {
         $user1 = new User();
         $user1->setUsername('test_user1');
-        $user1->setPassword('\$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
+        $user1->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $user1->setFio('Test User 1');
         $manager->persist($user1);
         $this->addReference('user1', $user1);
 
         $user2 = new User();
         $user2->setUsername('test_user2');
-        $user2->setPassword('\$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
+        $user2->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $user2->setFio('Test User 2');
         $manager->persist($user2);
         $this->addReference('user2', $user2);
 
         $manager1 = new User();
         $manager1->setUsername('test_manager');
-        $manager1->setPassword('\$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
+        $manager1->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $manager1->setFio('Test Manager');
         $manager->persist($manager1);
         $this->addReference('manager', $manager1);

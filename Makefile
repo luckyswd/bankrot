@@ -68,3 +68,6 @@ lint:
 
 test:
 	 php bin/phpunit --no-coverage
+
+seed:
+	php bin/console doctrine:fixtures:load --group=seed
