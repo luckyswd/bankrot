@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import { useForm, useWatch } from "react-hook-form"
 import { ArrowLeft, Save } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
-import { Badge } from "@ui/badge"
-import { Button } from "@ui/button"
-import { Card } from "@ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { GeneralTab } from "./General"
 import { IntroductionTab } from "./Introduction"
 import { PretrialTab } from "./Pretrial"
 import { ProcedureTab } from "./Procedure"
 
-type FormData = Record<string, unknown>
+type FormValues = Record<string, unknown>
 
 function ClientCard() {
   const { id } = useParams<{ id: string }>()
@@ -21,20 +22,29 @@ function ClientCard() {
   const { contracts, updateContract, databases } = useApp()
 
   const contract = useMemo(() => contracts.find((c) => c.id === Number(id)), [contracts, id])
-  const [formData, setFormData] = useState<FormData>(contract ?? {})
+  const form = useForm<FormValues>({
+    mode: "onChange",
+    defaultValues: contract ?? {},
+  })
+  const watchedValues =
+    useWatch<FormValues>({
+      control: form.control,
+    }) ?? form.getValues()
   const [saveStatus, setSaveStatus] = useState<"" | "saving" | "saved">("")
 
   useEffect(() => {
-    setFormData(contract ?? {})
-  }, [contract])
+    if (contract) {
+      form.reset(contract)
+    }
+  }, [contract, form])
 
   useEffect(() => {
-    if (!contract) return
+    if (!contract || !watchedValues) return
 
     const timer = window.setTimeout(() => {
-      if (JSON.stringify(formData) !== JSON.stringify(contract)) {
+      if (JSON.stringify(watchedValues) !== JSON.stringify(contract)) {
         setSaveStatus("saving")
-        updateContract(contract.id, formData)
+        updateContract(contract.id, watchedValues)
         window.setTimeout(() => {
           setSaveStatus("saved")
           window.setTimeout(() => setSaveStatus(""), 2000)
@@ -43,7 +53,7 @@ function ClientCard() {
     }, 1000)
 
     return () => window.clearTimeout(timer)
-  }, [formData, contract, updateContract])
+  }, [watchedValues, contract, updateContract])
 
   if (!contract) {
     return (
@@ -60,36 +70,12 @@ function ClientCard() {
   }
 
   const handleChange = (path: string, value: unknown) => {
-    const keys = path.split(".")
-    setFormData((prev) => {
-      const newData: FormData = structuredClone(prev)
-      let current = newData
-
-      for (let i = 0; i < keys.length - 1; i += 1) {
-        const key = keys[i]
-        if (typeof current[key] !== "object" || current[key] === null) {
-          current[key] = {}
-        }
-        current = current[key] as FormData
-      }
-
-      current[keys[keys.length - 1]] = value
-      return newData
-    })
+    form.setValue(path as any, value, { shouldDirty: true, shouldTouch: true })
   }
 
-  const getValue = (path: string) => {
-    const keys = path.split(".")
-    let current: any = formData
-
-    for (const key of keys) {
-      if (typeof current !== "object" || current === null || !(key in current)) {
-        return ""
-      }
-      current = (current as Record<string, unknown>)[key]
-    }
-
-    return current
+  const getValue = (path: string): string => {
+    const currentValue = form.getValues(path as any) as string
+    return currentValue ?? ""
   }
 
   const openDocument = (docType: string) => {
