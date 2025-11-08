@@ -80,7 +80,7 @@ class ContractsControllerTest extends BaseTestCase
         $this->assertArrayHasKey('counts', $response);
         $this->assertGreaterThanOrEqual(13, $response['counts']['in_progress']);
         $this->assertGreaterThanOrEqual(1, count($response['data']));
-        $this->assertEquals(ContractStatus::IN_PROGRESS->value, $response['data'][0]['status']);
+        $this->assertEquals(ContractStatus::IN_PROGRESS->getLabel(), $response['data'][0]['status']);
     }
 
     /**
@@ -102,7 +102,7 @@ class ContractsControllerTest extends BaseTestCase
         $this->assertArrayHasKey('counts', $response);
         $this->assertGreaterThanOrEqual(12, $response['counts']['completed']);
         $this->assertGreaterThanOrEqual(1, count($response['data']));
-        $this->assertEquals(ContractStatus::COMPLETED->value, $response['data'][0]['status']);
+        $this->assertEquals(ContractStatus::COMPLETED->getLabel(), $response['data'][0]['status']);
     }
 
     /**
