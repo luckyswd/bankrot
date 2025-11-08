@@ -601,6 +601,55 @@ class ContractsController extends AbstractController
         return $this->json(data: $this->serializeContractByStages(contract: $contract));
     }
 
+    #[Route('/contracts/{id}', name: 'api_contracts_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Delete(
+        path: '/api/v1/contracts/{id}',
+        summary: 'Удалить контракт',
+        security: [['Bearer' => []]],
+        tags: ['Contracts'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID контракта',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: 'Контракт успешно удален'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Контракт не найден'
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Доступ запрещен (требуется роль ROLE_ADMIN)'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Неавторизован'
+            ),
+        ]
+    )]
+    public function delete(int $id): JsonResponse
+    {
+        $contract = $this->contractsRepository->find($id);
+
+        if (!$contract instanceof Contracts) {
+            return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
+        }
+
+        $this->entityManager->remove($contract);
+        $this->entityManager->flush();
+
+        return $this->json(data: [], status: 204);
+    }
+
     /**
      * Сериализует контракт, группируя данные по стадиям банкротства.
      *
