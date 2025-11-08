@@ -185,10 +185,6 @@ class DocumentTemplateController extends AbstractController
 
         $existingTemplate = $this->documentTemplateRepository->findByNameAndCategory(name: $name, category: $category);
 
-        if ($existingTemplate instanceof DocumentTemplate) {
-            return $this->json(data: ['error' => 'Шаблон с таким именем и категорией уже существует'], status: 400);
-        }
-
         $uploadDir = $this->getUploadDir();
 
         if (!is_dir($uploadDir)) {
@@ -201,15 +197,26 @@ class DocumentTemplateController extends AbstractController
         try {
             $file->move($uploadDir, $fileName);
         } catch (FileException $e) {
-            return $this->json(data: ['error' => 'Ошибка при сохранении файла'], status: 500);
+            return $this->json(data: ['error' => 'Ошибка при сохранении файла ' . $e->getMessage() ], status: 500);
         }
 
-        $template = new DocumentTemplate();
-        $template->setName($name);
-        $template->setCategory($category);
-        $template->setPath($filePath);
+        if ($existingTemplate instanceof DocumentTemplate) {
+            $oldFilePath = $existingTemplate->getPath();
 
-        $this->entityManager->persist($template);
+            if (file_exists($oldFilePath)) {
+                unlink($oldFilePath);
+            }
+
+            $existingTemplate->setPath($filePath);
+            $template = $existingTemplate;
+        } else {
+            $template = new DocumentTemplate();
+            $template->setName($name);
+            $template->setCategory($category);
+            $template->setPath($filePath);
+            $this->entityManager->persist($template);
+        }
+
         $this->entityManager->flush();
 
         return $this->json(

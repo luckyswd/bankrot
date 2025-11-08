@@ -13,12 +13,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class DocumentTemplateControllerTest extends BaseTestCase
 {
+    /** @var array<string> */
+    private array $testFilePaths = [];
+
     public function setUp(): void
     {
         parent::setUp();
 
         $this->addFixtures(classes: [TestUserFixtures::class]);
         $this->executeFixtures();
+        $this->testFilePaths = [];
     }
 
     /**
@@ -112,6 +116,7 @@ class DocumentTemplateControllerTest extends BaseTestCase
 
         $this->assertNotNull($template);
         $this->assertFileExists($template->getPath());
+        $this->testFilePaths[] = $template->getPath();
     }
 
     /**
@@ -233,6 +238,8 @@ class DocumentTemplateControllerTest extends BaseTestCase
 
         $template = $this->createTestTemplate();
         $oldPath = $template->getPath();
+        // Отслеживаем старый файл для очистки
+        $this->testFilePaths[] = $oldPath;
 
         $file = $this->createTestDocxFile();
 
@@ -255,6 +262,7 @@ class DocumentTemplateControllerTest extends BaseTestCase
         self::$em->refresh($template);
         $this->assertFileDoesNotExist($oldPath);
         $this->assertFileExists($template->getPath());
+        $this->testFilePaths[] = $template->getPath();
     }
 
     /**
@@ -405,6 +413,7 @@ class DocumentTemplateControllerTest extends BaseTestCase
 
         $filePath = $uploadDir . '/' . uniqid('', true) . '_test.docx';
         file_put_contents($filePath, 'test docx content');
+        $this->testFilePaths[] = $filePath;
 
         $template = new DocumentTemplate();
         $template->setName('Тестовый шаблон');
@@ -415,5 +424,17 @@ class DocumentTemplateControllerTest extends BaseTestCase
         self::$em->flush();
 
         return $template;
+    }
+
+    protected function tearDown(): void
+    {
+        // Очистка только тестовых файлов, созданных в этом тесте
+        foreach ($this->testFilePaths as $filePath) {
+            if (file_exists($filePath) && is_file($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        parent::tearDown();
     }
 }
