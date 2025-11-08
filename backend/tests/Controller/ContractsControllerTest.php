@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\DataFixtures\Test\TestUserFixtures;
+use App\Entity\Contracts;
 use App\Entity\Enum\ContractStatus;
+use App\Repository\ContractsRepository;
 use App\Tests\BaseTestCase;
 
 class ContractsControllerTest extends BaseTestCase
@@ -467,5 +469,154 @@ class ContractsControllerTest extends BaseTestCase
         $this->assertArrayHasKey('firstName', $response['details']);
         $this->assertArrayHasKey('lastName', $response['details']);
         $this->assertArrayHasKey('middleName', $response['details']);
+    }
+
+    /**
+     * Тест получения контракта по ID.
+     * Проверяет, что API возвращает контракт сгруппированный по группам сериализации.
+     */
+    public function testShowContract(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $this->client->request(method: 'GET', uri: '/api/v1/contracts/' . $contract1->getId());
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('basic_info', $response);
+        $this->assertArrayHasKey('pre_court', $response);
+        $this->assertArrayHasKey('judicial', $response);
+        $this->assertArrayHasKey('realization', $response);
+        $this->assertArrayHasKey('procedure_initiation', $response);
+        $this->assertArrayHasKey('procedure', $response);
+        $this->assertArrayHasKey('report', $response);
+
+        $this->assertIsArray($response['basic_info']);
+        $this->assertIsArray($response['pre_court']);
+        $this->assertIsArray($response['judicial']);
+        $this->assertIsArray($response['realization']);
+        $this->assertIsArray($response['procedure_initiation']);
+        $this->assertIsArray($response['procedure']);
+        $this->assertIsArray($response['report']);
+
+        if (!empty($response['basic_info'])) {
+            $this->assertArrayHasKey('id', $response['basic_info']);
+            $this->assertEquals($contract1->getId(), $response['basic_info']['id']);
+
+            if ($contract1->getContractNumber() !== null) {
+                $this->assertArrayHasKey('contractNumber', $response['basic_info']);
+            }
+
+            if ($contract1->getFirstName() !== null) {
+                $this->assertArrayHasKey('firstName', $response['basic_info']);
+            }
+
+            if ($contract1->getLastName() !== null) {
+                $this->assertArrayHasKey('lastName', $response['basic_info']);
+            }
+
+            if ($contract1->getMiddleName() !== null) {
+                $this->assertArrayHasKey('middleName', $response['basic_info']);
+            }
+
+            $this->assertArrayHasKey('status', $response['basic_info']);
+        }
+    }
+
+    /**
+     * Тест получения несуществующего контракта.
+     * Проверяет, что API возвращает ошибку 404.
+     */
+    public function testShowNonExistentContract(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $this->client->request(method: 'GET', uri: '/api/v1/contracts/99999');
+
+        $this->assertResponseStatusCodeSame(expectedCode: 404);
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('error', $response);
+        $this->assertEquals('Контракт не найден', $response['error']);
+    }
+
+    /**
+     * Тест получения контракта без авторизации.
+     * Проверяет, что API возвращает ошибку 401.
+     */
+    public function testShowContractWithoutAuth(): void
+    {
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $this->client->request(method: 'GET', uri: '/api/v1/contracts/' . $contract1->getId());
+
+        $this->assertResponseStatusCodeSame(expectedCode: 401);
+    }
+
+    /**
+     * Тест получения контракта с фильтрацией null значений.
+     * Проверяет, что в ответе нет null полей.
+     */
+    public function testShowContractFiltersNullValues(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $this->client->request(method: 'GET', uri: '/api/v1/contracts/' . $contract1->getId());
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('basic_info', $response);
+        $this->assertArrayHasKey('pre_court', $response);
+        $this->assertArrayHasKey('judicial', $response);
+        $this->assertArrayHasKey('realization', $response);
+        $this->assertArrayHasKey('procedure_initiation', $response);
+        $this->assertArrayHasKey('procedure', $response);
+        $this->assertArrayHasKey('report', $response);
+
+        foreach ($response as $groupData) {
+            if (!empty($groupData)) {
+                $this->assertNullNotInArray($groupData);
+            }
+        }
+    }
+
+    /**
+     * Рекурсивно проверяет, что в массиве нет null значений.
+     *
+     * @param array<string, mixed> $array
+     */
+    private function assertNullNotInArray(array $array): void
+    {
+        foreach ($array as $key => $value) {
+            $this->assertNotNull($value, "Значение для ключа '{$key}' не должно быть null");
+
+            if (is_array($value)) {
+                $this->assertNullNotInArray($value);
+            }
+        }
     }
 }

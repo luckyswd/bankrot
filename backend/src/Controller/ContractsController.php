@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Contracts;
+use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
 use App\Repository\ContractsRepository;
+use App\Service\Serializer;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -316,5 +318,152 @@ class ContractsController extends AbstractController
             'middleName' => $contract->getMiddleName(),
             'status' => $contract->getStatus()->getLabel(),
         ], status: 201);
+    }
+
+    #[Route('/contracts/{id}', name: 'api_contracts_show', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/v1/contracts/{id}',
+        summary: 'Получить контракт по ID',
+        security: [['Bearer' => []]],
+        tags: ['Contracts'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID контракта',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Данные контракта, сгруппированные по группам сериализации',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'basic_info',
+                            description: 'Основная информация о контракте',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'pre_court',
+                            description: 'Досудебка',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'judicial',
+                            description: 'Судебка',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'realization',
+                            description: 'Реализация',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure_initiation',
+                            description: 'Введение процедуры',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure',
+                            description: 'Процедура',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'report',
+                            description: 'Отчет',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                    ],
+                    type: 'object',
+                    example: [
+                        'basic_info' => [
+                            'id' => 1,
+                            'contractNumber' => 'ДГ-2024-001',
+                            'firstName' => 'Иван',
+                            'lastName' => 'Иванов',
+                            'middleName' => 'Иванович',
+                            'status' => 'in_progress',
+                        ],
+                        'pre_court' => [],
+                        'judicial' => [],
+                        'realization' => [],
+                        'procedure_initiation' => [],
+                        'procedure' => [],
+                        'report' => [],
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Контракт не найден'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Неавторизован'
+            ),
+        ]
+    )]
+    public function show(int $id): JsonResponse
+    {
+        $contract = $this->contractsRepository->find($id);
+
+        if (!$contract instanceof Contracts) {
+            return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
+        }
+
+        $result = [];
+
+        foreach (BankruptcyStage::cases() as $stage) {
+            $normalized = Serializer::normalize(data: $contract, context: ['groups' => $stage->value]);
+
+            if (is_array($normalized)) {
+                $filtered = $this->filterNullValues($normalized);
+                $result[$stage->value] = $filtered;
+            } else {
+                $result[$stage->value] = [];
+            }
+        }
+
+        return $this->json(data: $result);
+    }
+
+    /**
+     * Фильтрует null значения из массива рекурсивно.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
+    private function filterNullValues(array $data): array
+    {
+        $filtered = [];
+
+        foreach ($data as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $nested = $this->filterNullValues($value);
+
+                if (!empty($nested)) {
+                    $filtered[$key] = $nested;
+                }
+            } else {
+                $filtered[$key] = $value;
+            }
+        }
+
+        return $filtered;
     }
 }
