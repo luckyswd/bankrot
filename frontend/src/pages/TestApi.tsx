@@ -37,6 +37,27 @@ const TestApi = () => {
   const apiResponse = testQuery.data
   const healthResponse = healthQuery.data
 
+  const resolveErrorMessage = (err: unknown) => {
+    if (!err) return ''
+    if (err instanceof Error) {
+      return err.message
+    }
+    if (typeof err === 'object' && err !== null) {
+      if ('message' in (err as Record<string, unknown>) && typeof (err as { message?: string }).message === 'string') {
+        return (err as { message: string }).message
+      }
+      if ('body' in (err as Record<string, unknown>)) {
+        const body = (err as { body?: { message?: string } }).body
+        if (body?.message) {
+          return body.message
+        }
+      }
+    }
+    return typeof err === 'string' ? err : 'Неизвестная ошибка'
+  }
+
+  const errorMessage = resolveErrorMessage(error)
+
   const statusIcon = loading ? '⏳' : error ? '❌' : '✅'
   const statusText = loading
     ? 'Загрузка...'
@@ -125,8 +146,7 @@ const TestApi = () => {
               border: '1px solid #ff6b6b33',
             }}
           >
-            <strong>❌ Ошибка:</strong>{' '}
-            {error?.body?.message || error?.message || 'Неизвестная ошибка'}
+            <strong>❌ Ошибка:</strong> {errorMessage}
           </div>
         )}
 

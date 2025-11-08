@@ -1,23 +1,21 @@
+import { useFormContext } from "react-hook-form"
 import { FileText } from "lucide-react"
 
-import { Button } from "@ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card"
-import { Input } from "@ui/input"
-import { Label } from "@ui/label"
-import { Separator } from "@ui/separator"
-import { TabsContent } from "@ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { TabsContent } from "@/components/ui/tabs"
 
-type FieldAccessor = (path: string) => unknown
-type FieldUpdater = (path: string, value: unknown) => void
+import type { FormValues } from "./index"
 
 interface ProcedureTabProps {
-  handleChange: FieldUpdater
-  getValue: FieldAccessor
   openDocument: (docType: string) => void
 }
 
-export const ProcedureTab = ({ handleChange, getValue, openDocument }: ProcedureTabProps) => {
-  const getStringValue = (path: string) => (getValue(path) as string) || ""
+export const ProcedureTab = ({ openDocument }: ProcedureTabProps) => {
+  const { register } = useFormContext<FormValues>()
 
   return (
     <TabsContent value="procedure" className="space-y-6">
@@ -29,31 +27,19 @@ export const ProcedureTab = ({ handleChange, getValue, openDocument }: Procedure
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>1. Требование кредитора</Label>
-              <Input
-                placeholder="Выбор из списка"
-                value={getStringValue("procedure.creditorRequirement")}
-                onChange={(e) => handleChange("procedure.creditorRequirement", e.target.value)}
-              />
+              <Label htmlFor="procedure.creditorRequirement">1. Требование кредитора</Label>
+              <Input id="procedure.creditorRequirement" placeholder="Выбор из списка" {...register("procedure.creditorRequirement")} />
               <p className="text-xs text-muted-foreground">Наименование кредитора, ОГРН, ИНН, адрес</p>
             </div>
 
             <div className="space-y-2">
-              <Label>2. Полученные требования кредитора</Label>
-              <Input
-                placeholder="Выбор из списка"
-                value={getStringValue("procedure.receivedRequirements")}
-                onChange={(e) => handleChange("procedure.receivedRequirements", e.target.value)}
-              />
+              <Label htmlFor="procedure.receivedRequirements">2. Полученные требования кредитора</Label>
+              <Input id="procedure.receivedRequirements" placeholder="Выбор из списка" {...register("procedure.receivedRequirements")} />
             </div>
 
             <div className="space-y-2">
-              <Label>3. Основная сумма</Label>
-              <Input
-                type="number"
-                value={getStringValue("procedure.principalAmount")}
-                onChange={(e) => handleChange("procedure.principalAmount", e.target.value)}
-              />
+              <Label htmlFor="procedure.principalAmount">3. Основная сумма</Label>
+              <Input id="procedure.principalAmount" type="number" {...register("procedure.principalAmount")} />
             </div>
           </div>
 

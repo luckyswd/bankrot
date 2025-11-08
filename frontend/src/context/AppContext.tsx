@@ -2,9 +2,63 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 import { mockContracts, mockDatabases, mockUsers } from "../data/mockData"
 
-type Contract = (typeof mockContracts)[number]
 type DatabaseState = typeof mockDatabases
 type User = (typeof mockUsers)[number] | null
+
+interface ClientData {
+  lastName?: string
+  firstName?: string
+  middleName?: string
+  gender?: string
+  birthDate?: string
+  passportSeries?: string
+  passportNumber?: string
+  inn?: string
+  snils?: string
+  address?: string
+  phone?: string
+  email?: string
+  maritalStatus?: string
+  spouseData?: Record<string, unknown>
+  children?: Record<string, unknown>[]
+  divorceDate?: string
+}
+
+export interface Contract {
+  id: number
+  contractNumber: string
+  clientData: ClientData
+  contractDate?: string
+  caseManager?: string
+  createdBy?: string
+  status: "active" | "completed" | string
+  stage?: string
+  createdAt?: string
+  updatedAt?: string
+  primaryInfo?: Record<string, unknown>
+  pretrial?: Record<string, unknown>
+  introduction?: Record<string, unknown>
+  procedure?: Record<string, unknown>
+  preTrialData?: Record<string, unknown>
+  trialData?: Record<string, unknown>
+  creditors?: Record<string, unknown>[]
+  executionProceedings?: Record<string, unknown>[]
+  bankAccount?: string
+  specialAccount?: string
+  assets?: Record<string, unknown>
+  reports?: Record<string, unknown>[]
+  [key: string]: unknown
+}
+
+export interface Report {
+  id: number
+  name: string
+  size: number
+  type: string
+  uploadedAt: string
+  uploadedBy: string
+  data: string | ArrayBuffer
+}
 
 interface Template {
   id: number
@@ -15,7 +69,7 @@ interface Template {
   variables: string[]
   uploadedAt: string
   uploadedBy: string
-  data?: string
+  data?: string | ArrayBuffer
 }
 
 interface AppContextValue {
@@ -24,6 +78,7 @@ interface AppContextValue {
   databases: DatabaseState
   templates: Template[]
   actionLog: any[]
+  reports: Report[]
   login: (username: string, password: string) => boolean
   logout: () => void
   updateContract: (contractId: number, updates: Partial<Contract>) => void
@@ -32,6 +87,8 @@ interface AppContextValue {
   logAction: (action: string, description: string) => void
   addTemplate: (template: Template) => void
   deleteTemplate: (templateId: number) => void
+  addReport: (report: Report) => void
+  deleteReport: (reportId: number) => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -102,22 +159,36 @@ interface AppProviderProps {
   children: ReactNode
 }
 
+const initialContracts = mockContracts as Contract[]
+const defaultClientData: ClientData = {
+  lastName: "",
+  firstName: "",
+  middleName: "",
+  gender: "",
+  maritalStatus: "",
+}
+
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User>(null)
-  const [contracts, setContracts] = useState<Contract[]>(mockContracts)
+  const [contracts, setContracts] = useState<Contract[]>(initialContracts)
   const [databases, setDatabases] = useState<DatabaseState>(mockDatabases)
   const [templates, setTemplates] = useState<Template[]>(mockTemplates)
   const [actionLog, setActionLog] = useState<any[]>([])
+  const [reports, setReports] = useState<Report[]>([])
 
   // Автосохранение в localStorage
   useEffect(() => {
     const savedContracts = localStorage.getItem('contracts')
     const savedTemplates = localStorage.getItem('templates')
+    const savedReports = localStorage.getItem('reports')
     if (savedContracts) {
-      setContracts(JSON.parse(savedContracts))
+      setContracts(JSON.parse(savedContracts) as Contract[])
     }
     if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates))
+      setTemplates(JSON.parse(savedTemplates) as Template[])
+    }
+    if (savedReports) {
+      setReports(JSON.parse(savedReports) as Report[])
     }
   }, [])
 
@@ -132,6 +203,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       localStorage.setItem('templates', JSON.stringify(templates))
     }
   }, [templates])
+
+  useEffect(() => {
+    localStorage.setItem('reports', JSON.stringify(reports))
+  }, [reports])
 
   const login = (username: string, password: string) => {
     const user = mockUsers.find(
@@ -176,13 +251,31 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   }
 
   const createContract = (contractData: Partial<Contract>) => {
-    const newContract = {
-      id: Date.now(),
+    const now = new Date().toISOString()
+    const newContract: Contract = {
       ...contractData,
-      createdBy: currentUser?.fullName ?? 'Система',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'active'
+      id: contractData.id ?? Date.now(),
+      contractNumber: contractData.contractNumber ?? `TEMP-${Date.now()}`,
+      status: contractData.status ?? 'active',
+      createdBy: contractData.createdBy ?? currentUser?.fullName ?? 'Система',
+      createdAt: contractData.createdAt ?? now,
+      updatedAt: contractData.updatedAt ?? now,
+      clientData: {
+        ...defaultClientData,
+        ...(contractData.clientData ?? {}),
+      },
+      primaryInfo: contractData.primaryInfo ?? {},
+      pretrial: contractData.pretrial ?? {},
+      introduction: contractData.introduction ?? {},
+      procedure: contractData.procedure ?? {},
+      preTrialData: contractData.preTrialData ?? {},
+      trialData: contractData.trialData ?? {},
+      creditors: contractData.creditors ?? [],
+      executionProceedings: contractData.executionProceedings ?? [],
+      bankAccount: contractData.bankAccount ?? '',
+      specialAccount: contractData.specialAccount ?? '',
+      assets: contractData.assets ?? {},
+      reports: contractData.reports ?? [],
     }
     setContracts(prev => [newContract, ...prev])
     logAction('create_contract', `Создание нового договора №${newContract.contractNumber}`)
@@ -208,10 +301,22 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     logAction('delete_template', `Удалён шаблон`)
   }
 
+  // Reports functions
+  const addReport = (report: Report) => {
+    setReports(prev => [report, ...prev])
+    logAction('add_report', `Загружен отчёт ${report.name}`)
+  }
+
+  const deleteReport = (reportId: number) => {
+    setReports(prev => prev.filter(report => report.id !== reportId))
+    logAction('delete_report', `Удалён отчёт ${reportId}`)
+  }
+
   const value = {
     currentUser,
     contracts,
     databases,
+    reports,
     templates,
     actionLog,
     login,
@@ -221,7 +326,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     addToDatabase,
     logAction,
     addTemplate,
-    deleteTemplate
+    deleteTemplate,
+    addReport,
+    deleteReport
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
