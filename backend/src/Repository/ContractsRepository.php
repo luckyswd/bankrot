@@ -122,11 +122,11 @@ class ContractsRepository extends ServiceEntityRepository
             ->addSelect('author')
             ->addSelect('manager');
 
-        $this->applyFilterConditions($qb, $filter, $user);
-        $this->applySorting($qb, $sortBy, $sortOrder);
+        $this->applyFilterConditions(qb: $qb, filter: $filter, user: $user);
+        $this->applySorting(qb: $qb, sortBy: $sortBy, sortOrder: $sortOrder);
 
-        return $qb->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit)
+        return $qb->setFirstResult(firstResult: ($page - 1) * $limit)
+            ->setMaxResults(maxResults: $limit)
             ->getQuery()
             ->getResult();
     }
@@ -142,7 +142,7 @@ class ContractsRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder(alias: 'c')
             ->select('COUNT(c.id)');
 
-        $this->applyFilterConditions($qb, $filter, $user);
+        $this->applyFilterConditions(qb: $qb, filter: $filter, user: $user);
 
         return (int)$qb->getQuery()->getSingleScalarResult();
     }
