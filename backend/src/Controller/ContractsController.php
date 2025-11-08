@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Contracts;
+use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
 use App\Repository\ContractsRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +22,7 @@ class ContractsController extends AbstractController
 {
     public function __construct(
         private readonly ContractsRepository $contractsRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -173,5 +177,144 @@ class ContractsController extends AbstractController
             ],
             'counts' => $counts,
         ]);
+    }
+
+    #[Route('/contracts', name: 'api_contracts_create', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/v1/contracts',
+        summary: 'Создать новый контракт',
+        security: [['Bearer' => []]],
+        requestBody: new OA\RequestBody(
+            description: 'Данные для создания контракта',
+            required: true,
+            content: new OA\JsonContent(
+                required: ['contractNumber', 'firstName', 'lastName', 'middleName'],
+                properties: [
+                    new OA\Property(
+                        property: 'contractNumber',
+                        description: 'Номер договора',
+                        type: 'string',
+                        example: 'ДГ-2024-001'
+                    ),
+                    new OA\Property(
+                        property: 'firstName',
+                        description: 'Имя клиента',
+                        type: 'string',
+                        example: 'Иван'
+                    ),
+                    new OA\Property(
+                        property: 'lastName',
+                        description: 'Фамилия клиента',
+                        type: 'string',
+                        example: 'Иванов'
+                    ),
+                    new OA\Property(
+                        property: 'middleName',
+                        description: 'Отчество клиента',
+                        type: 'string',
+                        example: 'Иванович'
+                    ),
+                ],
+                type: 'object'
+            )
+        ),
+        tags: ['Contracts'],
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Контракт успешно создан',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'contractNumber', type: 'string', example: 'ДГ-2024-001'),
+                        new OA\Property(property: 'firstName', type: 'string', example: 'Иван'),
+                        new OA\Property(property: 'lastName', type: 'string', example: 'Иванов'),
+                        new OA\Property(property: 'middleName', type: 'string', example: 'Иванович'),
+                        new OA\Property(property: 'status', type: 'string', example: 'В работе'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Ошибка валидации',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'error', type: 'string', example: 'Не указаны обязательные поля'),
+                        new OA\Property(property: 'details', type: 'object'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Неавторизован'
+            ),
+        ]
+    )]
+    public function create(Request $request): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->json(data: ['error' => 'Пользователь не найден'], status: 401);
+        }
+
+        $data = json_decode(json: $request->getContent(), associative: true);
+
+        if (!is_array($data)) {
+            return $this->json(data: ['error' => 'Неверный формат данных'], status: 400);
+        }
+
+        $contractNumber = $data['contractNumber'] ?? null;
+        $firstName = $data['firstName'] ?? null;
+        $lastName = $data['lastName'] ?? null;
+        $middleName = $data['middleName'] ?? null;
+
+        $errors = [];
+
+        if (empty($contractNumber)) {
+            $errors['contractNumber'] = 'Номер договора обязателен';
+        }
+
+        if (empty($firstName)) {
+            $errors['firstName'] = 'Имя клиента обязательно';
+        }
+
+        if (empty($lastName)) {
+            $errors['lastName'] = 'Фамилия клиента обязательна';
+        }
+
+        if (empty($middleName)) {
+            $errors['middleName'] = 'Отчество клиента обязательно';
+        }
+
+        if (!empty($errors)) {
+            return $this->json(data: [
+                'error' => 'Не указаны обязательные поля',
+                'details' => $errors,
+            ], status: 400);
+        }
+
+        $contract = new Contracts();
+        $contract->setContractNumber($contractNumber);
+        $contract->setFirstName($firstName);
+        $contract->setLastName($lastName);
+        $contract->setMiddleName($middleName);
+        $contract->setAuthor($user);
+        $contract->setStatus(ContractStatus::IN_PROGRESS);
+
+        $this->entityManager->persist($contract);
+        $this->entityManager->flush();
+
+        return $this->json(data: [
+            'id' => $contract->getId(),
+            'contractNumber' => $contract->getContractNumber(),
+            'firstName' => $contract->getFirstName(),
+            'lastName' => $contract->getLastName(),
+            'middleName' => $contract->getMiddleName(),
+            'status' => $contract->getStatus()->getLabel(),
+        ], status: 201);
     }
 }

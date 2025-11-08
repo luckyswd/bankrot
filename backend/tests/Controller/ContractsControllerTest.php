@@ -338,4 +338,134 @@ class ContractsControllerTest extends BaseTestCase
         $this->assertGreaterThanOrEqual(13, $response['counts']['in_progress']);
         $this->assertGreaterThanOrEqual(12, $response['counts']['completed']);
     }
+
+    /**
+     * Тест создания нового контракта
+     * Проверяет, что API создает контракт с обязательными полями.
+     */
+    public function testCreateContract(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $contractData = [
+            'contractNumber' => 'ДГ-2024-TEST-001',
+            'firstName' => 'Тест',
+            'lastName' => 'Тестов',
+            'middleName' => 'Тестович',
+        ];
+
+        $this->client->request(
+            method: 'POST',
+            uri: '/api/v1/contracts',
+            content: json_encode($contractData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 201);
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('contractNumber', $response);
+        $this->assertArrayHasKey('firstName', $response);
+        $this->assertArrayHasKey('lastName', $response);
+        $this->assertArrayHasKey('middleName', $response);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('ДГ-2024-TEST-001', $response['contractNumber']);
+        $this->assertEquals('Тест', $response['firstName']);
+        $this->assertEquals('Тестов', $response['lastName']);
+        $this->assertEquals('Тестович', $response['middleName']);
+        $this->assertEquals('В работе', $response['status']);
+        $this->assertIsInt($response['id']);
+    }
+
+    /**
+     * Тест создания контракта без обязательных полей
+     * Проверяет, что API возвращает ошибку валидации.
+     */
+    public function testCreateContractWithoutRequiredFields(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $contractData = [
+            'contractNumber' => 'ДГ-2024-TEST-002',
+        ];
+
+        $this->client->request(
+            method: 'POST',
+            uri: '/api/v1/contracts',
+            content: json_encode($contractData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 400);
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('error', $response);
+        $this->assertArrayHasKey('details', $response);
+        $this->assertEquals('Не указаны обязательные поля', $response['error']);
+        $this->assertArrayHasKey('firstName', $response['details']);
+        $this->assertArrayHasKey('lastName', $response['details']);
+        $this->assertArrayHasKey('middleName', $response['details']);
+    }
+
+    /**
+     * Тест создания контракта без авторизации
+     * Проверяет, что API возвращает ошибку 401.
+     */
+    public function testCreateContractWithoutAuth(): void
+    {
+        $contractData = [
+            'contractNumber' => 'ДГ-2024-TEST-003',
+            'firstName' => 'Тест',
+            'lastName' => 'Тестов',
+            'middleName' => 'Тестович',
+        ];
+
+        $this->client->request(
+            method: 'POST',
+            uri: '/api/v1/contracts',
+            content: json_encode($contractData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 401);
+    }
+
+    /**
+     * Тест создания контракта с пустыми обязательными полями
+     * Проверяет, что API возвращает ошибку валидации.
+     */
+    public function testCreateContractWithEmptyRequiredFields(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $contractData = [
+            'contractNumber' => '',
+            'firstName' => '',
+            'lastName' => '',
+            'middleName' => '',
+        ];
+
+        $this->client->request(
+            method: 'POST',
+            uri: '/api/v1/contracts',
+            content: json_encode($contractData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 400);
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('error', $response);
+        $this->assertArrayHasKey('details', $response);
+        $this->assertArrayHasKey('contractNumber', $response['details']);
+        $this->assertArrayHasKey('firstName', $response['details']);
+        $this->assertArrayHasKey('lastName', $response['details']);
+        $this->assertArrayHasKey('middleName', $response['details']);
+    }
 }
