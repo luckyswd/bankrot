@@ -605,6 +605,202 @@ class ContractsControllerTest extends BaseTestCase
     }
 
     /**
+     * Тест обновления контракта.
+     * Проверяет, что API обновляет только переданные поля.
+     */
+    public function testUpdateContract(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $originalFirstName = $contract1->getFirstName();
+        $originalLastName = $contract1->getLastName();
+        $originalMiddleName = $contract1->getMiddleName();
+
+        $updateData = [
+            'basic_info' => [
+                'firstName' => 'ОбновленноеИмя',
+                'lastName' => 'ОбновленнаяФамилия',
+            ],
+        ];
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract1->getId(),
+            content: json_encode($updateData)
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('basic_info', $response);
+        $this->assertArrayHasKey('pre_court', $response);
+        $this->assertArrayHasKey('judicial', $response);
+        $this->assertArrayHasKey('realization', $response);
+        $this->assertArrayHasKey('procedure_initiation', $response);
+        $this->assertArrayHasKey('procedure', $response);
+        $this->assertArrayHasKey('report', $response);
+
+        $this->assertArrayHasKey('id', $response['basic_info']);
+        $this->assertEquals($contract1->getId(), $response['basic_info']['id']);
+        $this->assertEquals('ОбновленноеИмя', $response['basic_info']['firstName']);
+        $this->assertEquals('ОбновленнаяФамилия', $response['basic_info']['lastName']);
+
+        self::$em->refresh($contract1);
+        $this->assertEquals('ОбновленноеИмя', $contract1->getFirstName());
+        $this->assertEquals('ОбновленнаяФамилия', $contract1->getLastName());
+        $this->assertEquals($originalMiddleName, $contract1->getMiddleName());
+    }
+
+    /**
+     * Тест обновления контракта с частичными данными.
+     * Проверяет, что обновляется только одно поле, остальные остаются без изменений.
+     */
+    public function testUpdateContractPartial(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $originalContractNumber = $contract1->getContractNumber();
+        $originalFirstName = $contract1->getFirstName();
+        $originalStatus = $contract1->getStatus();
+
+        $updateData = [
+            'basic_info' => [
+                'contractNumber' => 'UPDATED-001',
+            ],
+        ];
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract1->getId(),
+            content: json_encode($updateData)
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('basic_info', $response);
+        $this->assertEquals('UPDATED-001', $response['basic_info']['contractNumber']);
+
+        self::$em->refresh($contract1);
+        $this->assertEquals('UPDATED-001', $contract1->getContractNumber());
+        $this->assertEquals($originalFirstName, $contract1->getFirstName());
+        $this->assertEquals($originalStatus, $contract1->getStatus());
+    }
+
+    /**
+     * Тест обновления несуществующего контракта.
+     * Проверяет, что API возвращает ошибку 404.
+     */
+    public function testUpdateNonExistentContract(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $updateData = [
+            'basic_info' => [
+                'firstName' => 'Тест',
+            ],
+        ];
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/99999',
+            content: json_encode($updateData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 404);
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('error', $response);
+        $this->assertEquals('Контракт не найден', $response['error']);
+    }
+
+    /**
+     * Тест обновления контракта без авторизации.
+     * Проверяет, что API возвращает ошибку 401.
+     */
+    public function testUpdateContractWithoutAuth(): void
+    {
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+
+        $updateData = [
+            'basic_info' => [
+                'firstName' => 'Тест',
+            ],
+        ];
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract1->getId(),
+            content: json_encode($updateData)
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 401);
+    }
+
+    /**
+     * Тест обновления статуса контракта.
+     * Проверяет, что статус корректно обновляется через enum.
+     */
+    public function testUpdateContractStatus(): void
+    {
+        $user1 = $this->getUser(reference: 'user1');
+
+        $token = $this->getAuthToken(user: $user1);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        /** @var ContractsRepository $contractsRepository */
+        $contractsRepository = self::$em->getRepository(Contracts::class);
+        $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
+
+        $this->assertNotNull($contract1);
+        $originalStatus = $contract1->getStatus();
+
+        $updateData = [
+            'basic_info' => [
+                'status' => 'completed',
+            ],
+        ];
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract1->getId(),
+            content: json_encode($updateData)
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertArrayHasKey('basic_info', $response);
+        $this->assertEquals('completed', $response['basic_info']['status']);
+
+        self::$em->refresh($contract1);
+        $this->assertEquals(ContractStatus::COMPLETED, $contract1->getStatus());
+    }
+
+    /**
      * Рекурсивно проверяет, что в массиве нет null значений.
      *
      * @param array<string, mixed> $array

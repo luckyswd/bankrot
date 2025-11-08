@@ -421,20 +421,268 @@ class ContractsController extends AbstractController
             return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
         }
 
+        return $this->json(data: $this->serializeContractByStages(contract: $contract));
+    }
+
+    #[Route('/contracts/{id}', name: 'api_contracts_update', methods: ['PUT'])]
+    #[OA\Put(
+        path: '/api/v1/contracts/{id}',
+        summary: 'Обновить контракт',
+        security: [['Bearer' => []]],
+        requestBody: new OA\RequestBody(
+            description: 'Данные для обновления контракта, сгруппированные по группам сериализации (обновляются только переданные поля)',
+            required: false,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: 'basic_info',
+                        description: 'Основная информация о контракте',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'pre_court',
+                        description: 'Досудебка',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'judicial',
+                        description: 'Судебка',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'realization',
+                        description: 'Реализация',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'procedure_initiation',
+                        description: 'Введение процедуры',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'procedure',
+                        description: 'Процедура',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                    new OA\Property(
+                        property: 'report',
+                        description: 'Отчет',
+                        type: 'object',
+                        additionalProperties: true
+                    ),
+                ],
+                type: 'object',
+                example: [
+                    'basic_info' => [
+                        'firstName' => 'Иван',
+                        'lastName' => 'Иванов',
+                        'middleName' => 'Иванович',
+                    ],
+                ]
+            )
+        ),
+        tags: ['Contracts'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID контракта',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Контракт успешно обновлен',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'basic_info',
+                            description: 'Основная информация о контракте',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'pre_court',
+                            description: 'Досудебка',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'judicial',
+                            description: 'Судебка',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'realization',
+                            description: 'Реализация',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure_initiation',
+                            description: 'Введение процедуры',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'procedure',
+                            description: 'Процедура',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                        new OA\Property(
+                            property: 'report',
+                            description: 'Отчет',
+                            type: 'object',
+                            additionalProperties: true
+                        ),
+                    ],
+                    type: 'object',
+                    example: [
+                        'basic_info' => [
+                            'id' => 1,
+                            'contractNumber' => 'ДГ-2024-001',
+                            'firstName' => 'Иван',
+                            'lastName' => 'Иванов',
+                            'middleName' => 'Иванович',
+                            'status' => 'in_progress',
+                        ],
+                        'pre_court' => [],
+                        'judicial' => [],
+                        'realization' => [],
+                        'procedure_initiation' => [],
+                        'procedure' => [],
+                        'report' => [],
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Ошибка валидации'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Контракт не найден'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Неавторизован'
+            ),
+        ]
+    )]
+    public function update(int $id, Request $request): JsonResponse
+    {
+        $contract = $this->contractsRepository->find($id);
+
+        if (!$contract instanceof Contracts) {
+            return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
+        }
+
+        $data = json_decode(json: $request->getContent(), associative: true);
+
+        if (!is_array($data)) {
+            return $this->json(data: ['error' => 'Неверный формат данных'], status: 400);
+        }
+
+        $flatData = $this->flattenGroupedData(groupedData: $data);
+        $this->updateContractFields(contract: $contract, data: $flatData);
+
+        $this->entityManager->flush();
+
+        return $this->json(data: $this->serializeContractByStages(contract: $contract));
+    }
+
+    /**
+     * Сериализует контракт, группируя данные по стадиям банкротства.
+     *
+     * @return array<string, mixed>
+     */
+    private function serializeContractByStages(Contracts $contract): array
+    {
         $result = [];
 
         foreach (BankruptcyStage::cases() as $stage) {
             $normalized = Serializer::normalize(data: $contract, context: ['groups' => $stage->value]);
 
             if (is_array($normalized)) {
-                $filtered = $this->filterNullValues($normalized);
+                $filtered = $this->filterNullValues(data: $normalized);
                 $result[$stage->value] = $filtered;
             } else {
                 $result[$stage->value] = [];
             }
         }
 
-        return $this->json(data: $result);
+        return $result;
+    }
+
+    /**
+     * Преобразует сгруппированные данные в плоский массив.
+     *
+     * @param array<string, mixed> $groupedData
+     *
+     * @return array<string, mixed>
+     */
+    private function flattenGroupedData(array $groupedData): array
+    {
+        $flatData = [];
+
+        foreach ($groupedData as $group => $fields) {
+            if (is_array($fields)) {
+                foreach ($fields as $key => $value) {
+                    $flatData[$key] = $value;
+                }
+            }
+        }
+
+        return $flatData;
+    }
+
+    /**
+     * Обновляет поля контракта только для переданных ключей динамически.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function updateContractFields(Contracts $contract, array $data): void
+    {
+        $reflection = new \ReflectionClass($contract);
+        $dateFields = ['birthDate', 'passportIssuedDate', 'spouseBirthDate', 'contractDate'];
+
+        foreach ($data as $key => $value) {
+            $setterName = 'set' . ucfirst($key);
+
+            if (!$reflection->hasMethod($setterName)) {
+                continue;
+            }
+
+            $method = $reflection->getMethod($setterName);
+
+            if (!$method->isPublic()) {
+                continue;
+            }
+
+            if (in_array($key, $dateFields, true) && is_string($value)) {
+                $method->invoke($contract, new \DateTime($value));
+
+                continue;
+            }
+
+            if ($key === 'status' && $value !== null) {
+                $method->invoke($contract, ContractStatus::from($value));
+
+                continue;
+            }
+
+            $method->invoke($contract, $value);
+        }
     }
 
     /**
