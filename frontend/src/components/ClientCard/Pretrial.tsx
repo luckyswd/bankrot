@@ -1,43 +1,30 @@
-import { FileText } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form"
+import { FileText } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { TabsContent } from "@/components/ui/tabs";
-import { DatePickerInput } from "@/components/ui/DatePickerInput";
+import { DatePickerInput } from "@/components/ui/DatePickerInput"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { TabsContent } from "@/components/ui/tabs"
 
-type FieldAccessor = (path: string) => unknown;
-type FieldUpdater = (path: string, value: unknown) => void;
+import type { FormValues } from "./index"
 
 interface ReferenceItem {
-  id: number | string;
-  name: string;
+  id: number | string
+  name: string
 }
 
 interface PretrialTabProps {
-  handleChange: FieldUpdater;
-  getValue: FieldAccessor;
-  openDocument: (docType: string) => void;
+  openDocument: (docType: string) => void
   databases?: {
-    courts?: ReferenceItem[];
-  };
+    courts?: ReferenceItem[]
+  }
 }
 
-export const PretrialTab = ({
-  handleChange,
-  getValue,
-  openDocument,
-  databases,
-}: PretrialTabProps) => {
-  const getStringValue = (path: string) => (getValue(path) as string) || "";
+export const PretrialTab = ({ openDocument, databases }: PretrialTabProps) => {
+  const { register, control } = useFormContext<FormValues>()
 
   return (
     <TabsContent value="pretrial" className="space-y-6">
@@ -49,12 +36,12 @@ export const PretrialTab = ({
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>1. Арбитражный суд</Label>
+              <Label htmlFor="pretrial.court">1. Арбитражный суд</Label>
               <Input
+                id="pretrial.court"
                 placeholder="Выбор из списка"
-                value={getStringValue("pretrial.court")}
-                onChange={(e) => handleChange("pretrial.court", e.target.value)}
                 list="courts-list"
+                {...register("pretrial.court")}
               />
               <datalist id="courts-list">
                 {databases?.courts?.map((court) => (
@@ -64,14 +51,8 @@ export const PretrialTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label>2. Кредиторы</Label>
-              <Input
-                placeholder="Выбор из списка"
-                value={getStringValue("pretrial.creditors")}
-                onChange={(e) =>
-                  handleChange("pretrial.creditors", e.target.value)
-                }
-              />
+              <Label htmlFor="pretrial.creditors">2. Кредиторы</Label>
+              <Input id="pretrial.creditors" placeholder="Выбор из списка" {...register("pretrial.creditors")} />
             </div>
 
             <div className="space-y-2">
@@ -80,63 +61,44 @@ export const PretrialTab = ({
                 <Input
                   type="text"
                   placeholder="Номер"
-                  value={getStringValue("pretrial.powerOfAttorneyNumber")}
-                  onChange={(e) =>
-                    handleChange(
-                      "pretrial.powerOfAttorneyNumber",
-                      e.target.value
-                    )
-                  }
+                  {...register("pretrial.powerOfAttorneyNumber")}
                 />
-                             <DatePickerInput
-                value={getStringValue("pretrial.powerOfAttorneyDate")}
-                onChange={(next) =>
-                  handleChange("pretrial.powerOfAttorneyDate", next)
-                }
-                className="space-y-1"
-              />
+                <Controller
+                  name="pretrial.powerOfAttorneyDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePickerInput
+                      value={(field.value as string) ?? ""}
+                      onChange={field.onChange}
+                      className="space-y-1"
+                    />
+                  )}
+                />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>4. Кредитор</Label>
-              <Input
-                placeholder="Выбор из списка"
-                value={getStringValue("pretrial.creditor")}
-                onChange={(e) =>
-                  handleChange("pretrial.creditor", e.target.value)
-                }
-              />
+              <Label htmlFor="pretrial.creditor">4. Кредитор</Label>
+              <Input id="pretrial.creditor" placeholder="Выбор из списка" {...register("pretrial.creditor")} />
             </div>
 
             <div className="space-y-2">
-              <Label>5. № Дела</Label>
-              <Input
-                value={getStringValue("pretrial.caseNumber")}
-                onChange={(e) =>
-                  handleChange("pretrial.caseNumber", e.target.value)
-                }
-              />
+              <Label htmlFor="pretrial.caseNumber">5. № Дела</Label>
+              <Input id="pretrial.caseNumber" {...register("pretrial.caseNumber")} />
             </div>
 
             <div className="space-y-2">
               <Label>6. Дата и время заседания</Label>
               <div className="grid grid-cols-2 gap-2">
-                <DatePickerInput
-                  value={getStringValue("pretrial.hearingDate")}
-                  onChange={(next) =>
-                    handleChange("pretrial.hearingDate", next)
-                  }
-                  className="space-y-1"
+                <Controller
+                  name="pretrial.hearingDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePickerInput value={(field.value as string) ?? ""} onChange={field.onChange} className="space-y-1" />
+                  )}
                 />
                 <div className="space-y-1">
-                  <Input
-                    type="time"
-                    value={getStringValue("pretrial.hearingTime")}
-                    onChange={(e) =>
-                      handleChange("pretrial.hearingTime", e.target.value)
-                    }
-                  />
+                  <Input type="time" {...register("pretrial.hearingTime")} />
                 </div>
               </div>
             </div>
@@ -146,11 +108,7 @@ export const PretrialTab = ({
 
           <div className="space-y-3">
             <h4 className="font-semibold">Документы досудебного этапа:</h4>
-            <Button
-              onClick={() => openDocument("bankruptcyApplication")}
-              variant="outline"
-              className="w-full justify-start"
-            >
+            <Button onClick={() => openDocument("bankruptcyApplication")} variant="outline" className="w-full justify-start">
               <FileText className="mr-2 h-4 w-4" />
               Заявление о признании банкротом
             </Button>
@@ -158,5 +116,5 @@ export const PretrialTab = ({
         </CardContent>
       </Card>
     </TabsContent>
-  );
-};
+  )
+}
