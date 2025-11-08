@@ -24,7 +24,6 @@ abstract class BaseTestCase extends WebTestCase
     {
         self::ensureKernelShutdown();
         $this->client = static::createClient();
-        $this->client->setServerParameter('CONTENT_TYPE', 'application/json;charset=utf-8');
 
         $container = $this->client->getContainer();
         /** @var EntityManagerInterface $em */
@@ -49,6 +48,7 @@ abstract class BaseTestCase extends WebTestCase
                 'user1' => 'test_user1',
                 'user2' => 'test_user2',
                 'manager' => 'test_manager',
+                'admin' => 'admin',
                 default => throw new \InvalidArgumentException("Unknown user reference: {$reference}"),
             },
         ]);

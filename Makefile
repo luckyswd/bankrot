@@ -64,7 +64,7 @@ stan:
 	vendor/bin/phpstan analyse --memory-limit=1G --configuration=phpstan.neon
 
 lint:
-	vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.dist.php
+	vendor/bin/php-cs-fixer fix --dry-run --config=.php-cs-fixer.dist.php -v --diff --ansi
 
 test:
 	 php bin/phpunit --no-coverage

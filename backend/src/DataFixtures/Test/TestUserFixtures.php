@@ -18,6 +18,7 @@ class TestUserFixtures extends Fixture
         $user1->setUsername('test_user1');
         $user1->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $user1->setFio('Test User 1');
+        $user1->setRoles(['ROLE_USER']);
         $manager->persist($user1);
         $this->addReference('user1', $user1);
 
@@ -25,6 +26,7 @@ class TestUserFixtures extends Fixture
         $user2->setUsername('test_user2');
         $user2->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $user2->setFio('Test User 2');
+        $user2->setRoles(['ROLE_USER']);
         $manager->persist($user2);
         $this->addReference('user2', $user2);
 
@@ -32,8 +34,23 @@ class TestUserFixtures extends Fixture
         $manager1->setUsername('test_manager');
         $manager1->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
         $manager1->setFio('Test Manager');
+        $manager1->setRoles(['ROLE_MANAGER']);
         $manager->persist($manager1);
         $this->addReference('manager', $manager1);
+
+        $adminRepository = $manager->getRepository(User::class);
+        $admin = $adminRepository->findOneBy(['username' => 'admin']);
+
+        if (!$admin instanceof User) {
+            $admin = new User();
+            $admin->setUsername('admin');
+            $admin->setPassword('$2y\$12\$qgA2wXqpcKOyk7qErTnDWuAPtmu.u2/kXWWWgwdW4XYZYNFKiPH2K');
+            $admin->setFio('Admin');
+            $admin->setRoles(['ROLE_ADMIN']);
+            $manager->persist($admin);
+        }
+
+        $this->addReference('admin', $admin);
 
         $contract1 = new Contracts();
         $contract1->setAuthor($user1);
