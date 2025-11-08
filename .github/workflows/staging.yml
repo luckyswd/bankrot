@@ -1,0 +1,114 @@
+name: Деплой на Staging
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Запуск тестов
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Настройка PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_mysql, mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Установка зависимостей Composer
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Создание .env файла для тестов
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
+          echo "DATABASE_URL=sqlite:///:memory:" >> .env
+
+      - name: Запуск PHPUnit тестов
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: php bin/phpunit
+
+  deploy-backend:
+    name: Деплой бэкенда
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Деплой бэкенда на FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
+          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env*
+            **/tests/**
+            **/var/cache/**
+            **/var/log/**
+            **/.phpunit.cache/**
+            **/phpunit.dist.xml
+            **/docker-compose.yml
+            **/Dockerfile
+            **/www.conf
+
+      - name: Запуск миграций
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            php bin/console doctrine:migrations:migrate --no-interaction
+
+  deploy-frontend:
+    name: Деплой фронтенда
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Настройка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+
+      - name: Установка зависимостей npm
+        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        run: npm i
+
+      - name: Сборка фронтенда для staging
+        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        run: npm run build
+
+      - name: Деплой фронтенда на FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
+          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+
