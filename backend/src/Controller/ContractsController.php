@@ -48,7 +48,7 @@ class ContractsController extends AbstractController
                 description: 'Направление сортировки: ASC или DESC',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', enum: ['ASC', 'DESC'], default: 'ASC')
+                schema: new OA\Schema(type: 'string', default: 'ASC', enum: ['ASC', 'DESC'])
             ),
             new OA\Parameter(
                 name: 'page',
