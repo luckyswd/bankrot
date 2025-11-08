@@ -25,8 +25,5 @@ export default defineConfig({
     watch: {
       usePolling: true, // Для работы в Docker
     },
-    // hmr: {
-    //   clientPort: 80,
-    // },
   }
 })

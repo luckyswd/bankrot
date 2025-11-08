@@ -1,17 +1,12 @@
+import { Controller, useFormContext, useWatch } from "react-hook-form"
+
+import type { FormValues } from "./index"
+import { DatePickerInput } from "@/components/ui/DatePickerInput"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TabsContent } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePickerInput } from "@/components/ui/DatePickerInput"
-
-type FieldAccessor = (path: string) => unknown
-type FieldUpdater = (path: string, value: unknown) => void
-
-interface GeneralTabProps {
-  getValue: FieldAccessor
-  handleChange: FieldUpdater
-}
+import { TabsContent } from "@/components/ui/tabs"
 
 interface SelectFieldProps {
   value: string
@@ -26,8 +21,9 @@ const yesNoOptions = [
 ]
 
 const marriageOptions = [
-  { value: "yes", label: "Да (нет, но состоял в течение 3 лет)" },
-  { value: "no", label: "Нет (состоял в течении 3 лет)" },
+  { value: "yes", label: "Да" },
+  { value: "no", label: "Нет" },
+  { value: "no_3", label: "Нет (но состоял в течении 3 лет)" },
 ]
 
 const CLEAR_VALUE = "__clear__"
@@ -57,8 +53,12 @@ const SelectField = ({ value, onChange, options, placeholder = "Выбрать" 
   </Select>
 )
 
-export const GeneralTab = ({ handleChange, getValue }: GeneralTabProps) => {
-  const getStringValue = (path: string) => (getValue(path) as string) || ""
+export const GeneralTab = () => {
+  const { register, control } = useFormContext<FormValues>()
+  const marriedValue = useWatch({
+    control,
+    name: "primaryInfo.married",
+  }) as string | undefined
 
   return (
     <TabsContent value="primary" className="space-y-6">
@@ -70,173 +70,171 @@ export const GeneralTab = ({ handleChange, getValue }: GeneralTabProps) => {
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label>1. ФИО *</Label>
-              <Input
-                placeholder="Фамилия Имя Отчество"
-                value={getStringValue("primaryInfo.fullName")}
-                onChange={(e) => handleChange("primaryInfo.fullName", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.fullName">1. ФИО *</Label>
+              <Input id="primaryInfo.fullName" placeholder="Фамилия Имя Отчество" {...register("primaryInfo.fullName")} />
             </div>
 
             <div className="space-y-2">
               <Label>2. Изменялось ли ФИО</Label>
-              <SelectField
-                value={getStringValue("primaryInfo.nameChanged")}
-                onChange={(value) => handleChange("primaryInfo.nameChanged", value)}
-                options={yesNoOptions}
+              <Controller
+                control={control}
+                name="primaryInfo.nameChanged"
+                render={({ field }) => (
+                  <SelectField
+                    value={(field.value as string) ?? ""}
+                    onChange={(value) => field.onChange(value)}
+                    options={yesNoOptions}
+                  />
+                )}
               />
             </div>
 
-            <DatePickerInput
-              label="3. Дата рождения *"
-              value={getStringValue("primaryInfo.birthDate")}
-              onChange={(next) => handleChange("primaryInfo.birthDate", next)}
+            <Controller
+              control={control}
+              name="primaryInfo.birthDate"
+              render={({ field }) => (
+                <DatePickerInput label="3. Дата рождения *" value={(field.value as string) ?? ""} onChange={field.onChange} />
+              )}
             />
 
             <div className="space-y-2">
-              <Label>4. Место рождения</Label>
-              <Input
-                placeholder="Город, страна"
-                value={getStringValue("primaryInfo.birthPlace")}
-                onChange={(e) => handleChange("primaryInfo.birthPlace", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.birthPlace">4. Место рождения</Label>
+              <Input id="primaryInfo.birthPlace" placeholder="Город, страна" {...register("primaryInfo.birthPlace")} />
             </div>
 
             <div className="space-y-2">
-              <Label>5. СНИЛС</Label>
-              <Input
-                placeholder="123-456-789 00"
-                value={getStringValue("primaryInfo.snils")}
-                onChange={(e) => handleChange("primaryInfo.snils", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.snils">5. СНИЛС</Label>
+              <Input id="primaryInfo.snils" placeholder="123-456-789 00" {...register("primaryInfo.snils")} />
             </div>
 
             <div className="space-y-2 lg:col-span-3">
-              <Label>6. Адрес регистрации</Label>
+              <Label htmlFor="primaryInfo.registrationAddress">6. Адрес регистрации</Label>
               <Input
+                id="primaryInfo.registrationAddress"
                 placeholder="Субъект РФ, район, город, населенный пункт, улица, дом, корпус, квартира"
-                value={getStringValue("primaryInfo.registrationAddress")}
-                onChange={(e) => handleChange("primaryInfo.registrationAddress", e.target.value)}
+                {...register("primaryInfo.registrationAddress")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>7. Паспорт (серия и номер)</Label>
-              <Input
-                placeholder="1234 567890"
-                value={getStringValue("primaryInfo.passport")}
-                onChange={(e) => handleChange("primaryInfo.passport", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.passport">7. Паспорт (серия и номер)</Label>
+              <Input id="primaryInfo.passport" placeholder="1234 567890" {...register("primaryInfo.passport")} />
             </div>
 
             <div className="space-y-2">
               <Label>8. Состоит в браке</Label>
-              <SelectField
-                value={getStringValue("primaryInfo.married")}
-                onChange={(value) => handleChange("primaryInfo.married", value)}
-                options={marriageOptions}
+              <Controller
+                control={control}
+                name="primaryInfo.married"
+                render={({ field }) => (
+                  <SelectField
+                    value={(field.value as string) ?? ""}
+                    onChange={(value) => field.onChange(value)}
+                    options={marriageOptions}
+                  />
+                )}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>9. Супруг(а) (опционально)</Label>
+              <Label htmlFor="primaryInfo.spouseName">9. Супруг(а) (опционально)</Label>
               <Input
+                id="primaryInfo.spouseName"
                 placeholder="ФИО супруга/супруги"
-                value={getStringValue("primaryInfo.spouseName")}
-                onChange={(e) => handleChange("primaryInfo.spouseName", e.target.value)}
+                disabled={!marriedValue || marriedValue === "no" || marriedValue === "no_3"}
+                {...register("primaryInfo.spouseName")}
               />
             </div>
 
             <div className="space-y-2">
               <Label>10. Несовершеннолетние дети</Label>
-              <SelectField
-                value={getStringValue("primaryInfo.hasMinorChildren")}
-                onChange={(value) => handleChange("primaryInfo.hasMinorChildren", value)}
-                options={yesNoOptions}
+              <Controller
+                control={control}
+                name="primaryInfo.hasMinorChildren"
+                render={({ field }) => (
+                  <SelectField
+                    value={(field.value as string) ?? ""}
+                    onChange={(value) => field.onChange(value)}
+                    options={yesNoOptions}
+                  />
+                )}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>11. ФИО (ребёнка)</Label>
-              <Input
-                placeholder="ФИО ребенка"
-                value={getStringValue("primaryInfo.childName")}
-                onChange={(e) => handleChange("primaryInfo.childName", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.childName">11. ФИО (ребёнка)</Label>
+              <Input id="primaryInfo.childName" placeholder="ФИО ребенка" {...register("primaryInfo.childName")} />
             </div>
 
             <div className="space-y-2">
               <Label>12. Студент</Label>
-              <SelectField
-                value={getStringValue("primaryInfo.isStudent")}
-                onChange={(value) => handleChange("primaryInfo.isStudent", value)}
-                options={yesNoOptions}
+              <Controller
+                control={control}
+                name="primaryInfo.isStudent"
+                render={({ field }) => (
+                  <SelectField
+                    value={(field.value as string) ?? ""}
+                    onChange={(value) => field.onChange(value)}
+                    options={yesNoOptions}
+                  />
+                )}
               />
             </div>
 
             <div className="space-y-2 lg:col-span-3">
-              <Label>13. Работа</Label>
+              <Label htmlFor="primaryInfo.work">13. Работа</Label>
               <Input
+                id="primaryInfo.work"
                 placeholder="Наименование, адрес, ИНН..."
-                value={getStringValue("primaryInfo.work")}
-                onChange={(e) => handleChange("primaryInfo.work", e.target.value)}
+                {...register("primaryInfo.work")}
               />
             </div>
 
             <div className="space-y-2 lg:col-span-3">
-              <Label>14. Пенсии и соц.выплаты</Label>
+              <Label htmlFor="primaryInfo.socialPayments">14. Пенсии и соц.выплаты</Label>
               <Input
+                id="primaryInfo.socialPayments"
                 placeholder="Алименты, пособие, ЕДВ, прочее"
-                value={getStringValue("primaryInfo.socialPayments")}
-                onChange={(e) => handleChange("primaryInfo.socialPayments", e.target.value)}
+                {...register("primaryInfo.socialPayments")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>15. Телефон</Label>
-              <Input
-                type="tel"
-                placeholder="+7 (999) 123-45-67"
-                value={getStringValue("primaryInfo.phone")}
-                onChange={(e) => handleChange("primaryInfo.phone", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.phone">15. Телефон</Label>
+              <Input id="primaryInfo.phone" type="tel" placeholder="+7 (999) 123-45-67" {...register("primaryInfo.phone")} />
             </div>
 
             <div className="space-y-2">
-              <Label>16. Электронная почта</Label>
-              <Input
-                type="email"
-                placeholder="email@example.com"
-                value={getStringValue("primaryInfo.email")}
-                onChange={(e) => handleChange("primaryInfo.email", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.email">16. Электронная почта</Label>
+              <Input id="primaryInfo.email" type="email" placeholder="email@example.com" {...register("primaryInfo.email")} />
             </div>
 
             <div className="space-y-2 lg:col-span-3">
-              <Label>17. Адрес для направления корреспонденции</Label>
+              <Label htmlFor="primaryInfo.correspondenceAddress">17. Адрес для направления корреспонденции</Label>
               <Input
+                id="primaryInfo.correspondenceAddress"
                 placeholder="196084, г. Санкт-Петербург, ул. Смоленская, 9-418"
-                value={getStringValue("primaryInfo.correspondenceAddress")}
-                onChange={(e) => handleChange("primaryInfo.correspondenceAddress", e.target.value)}
+                {...register("primaryInfo.correspondenceAddress")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>18. Сумма долга</Label>
-              <Input
-                type="number"
-                placeholder="в руб"
-                value={getStringValue("primaryInfo.debtAmount")}
-                onChange={(e) => handleChange("primaryInfo.debtAmount", e.target.value)}
-              />
+              <Label htmlFor="primaryInfo.debtAmount">18. Сумма долга</Label>
+              <Input id="primaryInfo.debtAmount" type="number" placeholder="в руб" {...register("primaryInfo.debtAmount")} />
             </div>
 
             <div className="space-y-2">
               <Label>19. Исполнительные производства</Label>
-              <SelectField
-                value={getStringValue("primaryInfo.hasExecutions")}
-                onChange={(value) => handleChange("primaryInfo.hasExecutions", value)}
-                options={yesNoOptions}
+              <Controller
+                control={control}
+                name="primaryInfo.hasExecutions"
+                render={({ field }) => (
+                  <SelectField
+                    value={(field.value as string) ?? ""}
+                    onChange={(value) => field.onChange(value)}
+                    options={yesNoOptions}
+                  />
+                )}
               />
             </div>
           </div>
