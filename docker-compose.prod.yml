@@ -44,10 +44,10 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: bankruptcy
       MYSQL_USER: bankruptcy
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: bankruptcy
     networks:
       - bankruptcy-network
 
