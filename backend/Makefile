@@ -1,15 +1,15 @@
 composer-install:
-	@if command -v composer &> /dev/null; then \
+	@bash -c 'if command -v composer &> /dev/null; then \
 		composer install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
 	elif [ -f composer.phar ]; then \
 		php composer.phar install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
 	else \
 		echo "Composer not found. Installing..."; \
-		php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"; \
+		php -r "copy(\"https://getcomposer.org/installer\", \"composer-setup.php\");"; \
 		php composer-setup.php --quiet; \
 		php composer.phar install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
 		rm -f composer-setup.php composer.phar; \
-	fi
+	fi'
 
 db-migrate:
 	php bin/console doctrine:migrations:migrate --no-interaction
@@ -20,7 +20,6 @@ cc:
 	php bin/console doctrine:cache:clear-query
 	php bin/console doctrine:cache:clear-metadata
 
-deploy: composer-install cc db-migrate
 
 check-code: stan lint
 

@@ -109,7 +109,9 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            make deploy
+            make composer-install
+            make cc
+            make db-migrate
 
   deploy-frontend:
     name: Деплой фронтенда
