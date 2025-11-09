@@ -124,19 +124,14 @@ export default function DocumentsPage() {
     }
 
     setSelectedFile(file)
-    if (!templateName) {
-      setTemplateName(file.name.replace('.docx', ''))
-    }
+    // Автоматически устанавливаем название из имени файла
+    const fileNameWithoutExtension = file.name.replace(/\.docx$/i, '')
+    setTemplateName(fileNameWithoutExtension)
   }
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
       setToast({ message: 'Выберите файл', type: 'error' })
-      return
-    }
-
-    if (!templateName.trim()) {
-      setToast({ message: 'Введите название шаблона', type: 'error' })
       return
     }
 
@@ -352,10 +347,13 @@ export default function DocumentsPage() {
                   <Input
                     id="template-name"
                     value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
                     placeholder="Введите название"
-                    disabled={uploading}
+                    disabled={true}
+                    className="bg-muted"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Название берётся из названия файла
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="template-category">Категория</Label>
