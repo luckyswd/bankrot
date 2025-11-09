@@ -38,7 +38,7 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
-      
+
       - name: Вывод результатов проверки изменений
         run: |
           echo "Backend changes: ${{ steps.filter.outputs.backend }}"
@@ -176,33 +176,71 @@ jobs:
     needs: [changes, phpstan, lint, test]
     if: needs.changes.outputs.backend == 'true' && needs.phpstan.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
 
-      - name: Деплой бэкенда через SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Проверка структуры бэкенда
+        run: |
+          echo "=== Структура бэкенд директории ==="
+          ls -la ${{ secrets.LOCAL_BACKEND_DIR }}
+          echo "=== Содержимое backend-deploy до копирования ==="
+          ls -la backend-deploy/ || echo "Директория не существует"
+
+      - name: Подготовка файлов для деплоя
+        run: |
+          cd ${{ secrets.LOCAL_BACKEND_DIR }}
+          
+          # Создаем временную директорию для деплоя
+          mkdir -p ../../backend-deploy
+          
+          # Копируем все файлы, кроме исключенных
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='var/cache/*' \
+            --exclude='var/log/*' \
+            --exclude='.env*' \
+            --exclude='.phpunit.cache' \
+            --exclude='phpunit.dist.xml' \
+            --exclude='docker-compose.yml' \
+            --exclude='Dockerfile' \
+            --exclude='www.conf' \
+            --exclude='*.log' \
+            --exclude='*.tmp' \
+            . ../../backend-deploy/
+          
+          echo "=== Содержимое backend-deploy после копирования ==="
+          ls -la ../../backend-deploy/
+
+      - name: Деплой бэкенда через SCP
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
           port: 22
-          source: "${{ secrets.LOCAL_BACKEND_DIR }}/*"
+          source: "backend-deploy/*"
           target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
-          strip_components: 1
-          exclude: |
-            .git*
-            node_modules
-            .env*
-            tests
-            var/cache
-            var/log
-            .phpunit.cache
-            phpunit.dist.xml
-            docker-compose.yml
-            Dockerfile
-            www.conf
+          strip_components: 0  # Убрали strip_components чтобы сохранить структуру
+          overwrite: true
+
+      - name: Проверка деплоя на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            echo "=== Текущая директория ==="
+            pwd
+            echo "=== Содержимое целевой директории ==="
+            ls -la ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            echo "=== Проверка последних измененных файлов ==="
+            find ${{ secrets.STG_SERVER_BACKEND_DIR }} -type f -name "*.php" | head -5 | xargs ls -la
 
       - name: Установка зависимостей и запуск миграций
         uses: appleboy/ssh-action@v1.0.0
@@ -212,6 +250,8 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            echo "=== Текущая версия коммита ==="
+            git log -1 --oneline || echo "Git не инициализирован"
             cp .env.stage .env
             make composer-install
             make cc
@@ -222,7 +262,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
@@ -240,18 +280,14 @@ jobs:
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
         run: npm run build
 
-      - name: Очистка старых файлов на сервере
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-            rm -rf * || true
+      - name: Проверка собранного фронтенда
+        run: |
+          echo "=== Содержимое dist директории ==="
+          pwd
+          ls -la ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
 
-      - name: Деплой фронтенда через SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Деплой фронтенда через SCP
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
@@ -259,7 +295,16 @@ jobs:
           port: 22
           source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
           target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-          strip_components: 1
+          strip_components: 0  # Убрали strip_components
           overwrite: true
-          rm: true
 
+      - name: Проверка деплоя фронтенда на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            echo "=== Содержимое фронтенд директории на сервере ==="
+            ls -la ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+            pwd
