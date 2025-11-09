@@ -274,4 +274,3 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
         return '+7 (' . rand(495, 999) . ') ' . rand(100, 999) . '-' . rand(10, 99) . '-' . rand(10, 99);
     }
 }
-
