@@ -44,8 +44,6 @@ class DocumentTemplateController extends AbstractController
 
         $projectDir = $this->getParameter('kernel.project_dir');
         $varDir = $projectDir . '/var';
-        $oldVarPerms = null;
-        $varChmodSuccess = false;
 
         if (!is_dir($varDir)) {
             $oldUmask = umask(0000);
@@ -56,17 +54,18 @@ class DocumentTemplateController extends AbstractController
             }
         }
 
-        if (is_dir($varDir) && !is_writable($varDir)) {
-            $oldVarPerms = @fileperms($varDir);
-            $varChmodSuccess = @chmod($varDir, 0777);
+        if (!is_writable($varDir)) {
+            @chmod($varDir, 0777);
+            if (!is_writable($varDir)) {
+                $oldUmask = umask(0000);
+                $created = @exec('mkdir -p ' . escapeshellarg($uploadDir) . ' && chmod -R 777 ' . escapeshellarg($uploadDir) . ' 2>&1', $output, $returnCode);
+                umask(022);
 
-            if (!$varChmodSuccess) {
-                $varOwner = @fileowner($varDir);
-                $currentUid = function_exists('posix_geteuid') ? @posix_geteuid() : null;
-
-                if ($varOwner !== false && $currentUid !== null && $varOwner !== $currentUid) {
-                    throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. The \"{$varDir}\" directory is not writable by the current process. " . 'Please ensure the directory has write permissions (777) or change the owner.');
+                if ($returnCode === 0 && is_dir($uploadDir)) {
+                    return;
                 }
+
+                throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. The \"{$varDir}\" directory is not writable. Please ensure the directory has write permissions (777).");
             }
         }
 
@@ -74,18 +73,18 @@ class DocumentTemplateController extends AbstractController
         $created = @mkdir($uploadDir, 0777, true);
         umask(022);
 
-        if ($oldVarPerms !== null && $varChmodSuccess) {
-            @chmod($varDir, $oldVarPerms);
-        }
-
         if (!$created && !is_dir($uploadDir)) {
-            $error = error_get_last();
-            $errorMsg = $error ? $error['message'] : 'Unknown error';
-            throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. Error: {$errorMsg}. Please ensure the parent directory \"{$varDir}\" has write permissions (777).");
+            $created = @exec('mkdir -p ' . escapeshellarg($uploadDir) . ' && chmod -R 777 ' . escapeshellarg($uploadDir) . ' 2>&1', $output, $returnCode);
+
+            if ($returnCode !== 0 || !is_dir($uploadDir)) {
+                $error = error_get_last();
+                $errorMsg = $error ? $error['message'] : 'Unknown error';
+                throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. Error: {$errorMsg}. Please ensure the parent directory \"{$varDir}\" has write permissions (777).");
+            }
         }
 
         if (is_dir($uploadDir) && !is_writable($uploadDir)) {
-            @chmod($uploadDir, 0775);
+            @chmod($uploadDir, 0777);
         }
     }
 
