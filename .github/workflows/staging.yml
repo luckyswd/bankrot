@@ -181,11 +181,21 @@ jobs:
       - name: Получение кода
         uses: actions/checkout@v4
 
-      - name: Создание архива бэкенда
+      - name: Проверка структуры бэкенда
+        run: |
+          echo "=== Структура бэкенд директории ==="
+          ls -la ${{ secrets.LOCAL_BACKEND_DIR }}
+          echo "=== Содержимое backend-deploy до копирования ==="
+          ls -la backend-deploy/ || echo "Директория не существует"
+
+      - name: Подготовка файлов для деплоя
         run: |
           cd ${{ secrets.LOCAL_BACKEND_DIR }}
-          mkdir -p ../backend-deploy
-          # Копируем только нужные файлы, исключая ненужные
+          
+          # Создаем временную директорию для деплоя
+          mkdir -p ../../backend-deploy
+          
+          # Копируем все файлы, кроме исключенных
           rsync -av \
             --exclude='.git' \
             --exclude='.github' \
@@ -201,7 +211,10 @@ jobs:
             --exclude='www.conf' \
             --exclude='*.log' \
             --exclude='*.tmp' \
-            . ../backend-deploy/
+            . ../../backend-deploy/
+          
+          echo "=== Содержимое backend-deploy после копирования ==="
+          ls -la ../../backend-deploy/
 
       - name: Деплой бэкенда через SCP
         uses: appleboy/scp-action@v0.1.4
@@ -212,8 +225,22 @@ jobs:
           port: 22
           source: "backend-deploy/*"
           target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
-          strip_components: 1
+          strip_components: 0  # Убрали strip_components чтобы сохранить структуру
           overwrite: true
+
+      - name: Проверка деплоя на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            echo "=== Текущая директория ==="
+            pwd
+            echo "=== Содержимое целевой директории ==="
+            ls -la ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            echo "=== Проверка последних измененных файлов ==="
+            find ${{ secrets.STG_SERVER_BACKEND_DIR }} -type f -name "*.php" | head -5 | xargs ls -la
 
       - name: Установка зависимостей и запуск миграций
         uses: appleboy/ssh-action@v1.0.0
@@ -223,6 +250,8 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            echo "=== Текущая версия коммита ==="
+            git log -1 --oneline || echo "Git не инициализирован"
             cp .env.stage .env
             make composer-install
             make cc
@@ -251,6 +280,11 @@ jobs:
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
         run: npm run build
 
+      - name: Проверка собранного фронтенда
+        run: |
+          echo "=== Содержимое dist директории ==="
+          ls -la ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
+
       - name: Деплой фронтенда через SCP
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -260,6 +294,15 @@ jobs:
           port: 22
           source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
           target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-          strip_components: 1
+          strip_components: 0  # Убрали strip_components
           overwrite: true
-          rm: true
+
+      - name: Проверка деплоя фронтенда на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            echo "=== Содержимое фронтенд директории на сервере ==="
+            ls -la ${{ secrets.STG_SERVER_FRONTEND_DIR }}
