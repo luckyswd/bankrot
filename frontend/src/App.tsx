@@ -32,7 +32,7 @@ function AppRoutes() {
       <Route
         path="/*"
         element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <Layout>
               <Routes>
                 <Route path="/" element={<Navigate to="/contracts" />} />
@@ -48,7 +48,7 @@ function AppRoutes() {
                 <Route path="/databases/rosgvardia" element={<RosgvardiaDatabase />} />
               </Routes>
             </Layout>
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }
       />
     </Routes>
