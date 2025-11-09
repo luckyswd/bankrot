@@ -8,13 +8,12 @@ import { apiRequest } from "@/config/api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import Loading from "@/components/Loading"
 
 import { GeneralTab } from "./General"
-import { IntroductionTab } from "./Introduction"
 import { PretrialTab } from "./Pretrial"
-import { ProcedureTab } from "./Procedure"
+import { JudicialTab } from "./JudicialTab"
 
 type PrimaryInfoFields = {
   lastName: string
@@ -374,18 +373,22 @@ function ClientCard() {
         </div>
       </div>
 
-      <Tabs defaultValue="primary" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="primary">Основная информация</TabsTrigger>
-          <TabsTrigger value="pretrial">Досудебка</TabsTrigger>
-          <TabsTrigger value="introduction">Введение процедуры</TabsTrigger>
-          <TabsTrigger value="procedure">Процедура</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="primary">
+        <div className="flex flex-col">
+          <TabsList className="grid w-full grid-cols-3 h-11 rounded-b-none border-b-0">
+            <TabsTrigger value="primary" className="text-sm font-medium">Основная информация</TabsTrigger>
+            <TabsTrigger value="pretrial" className="text-sm font-medium">Досудебка</TabsTrigger>
+            <TabsTrigger value="judicial" className="text-sm font-medium">Судебка</TabsTrigger>
+          </TabsList>
+          <TabsContent value="judicial" className="mt-0 p-0 border-0">
+            <JudicialTab openDocument={openDocument} databases={databases} />
+          </TabsContent>
+        </div>
 
-        <GeneralTab />
-        <PretrialTab openDocument={openDocument} databases={databases} />
-        <IntroductionTab openDocument={openDocument} databases={databases} />
-        <ProcedureTab openDocument={openDocument} />
+        <div className="mt-6">
+          <GeneralTab />
+          <PretrialTab openDocument={openDocument} databases={databases} />
+        </div>
       </Tabs>
     </div>
     </FormProvider>
