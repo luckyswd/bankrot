@@ -28,9 +28,6 @@ const TestApi = () => {
   })
 
   useEffect(() => {
-
-
-
     if (testQuery.data) {
       console.log('✅ Данные от /api/v1/test:', testQuery.data)
     }
