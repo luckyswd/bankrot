@@ -29,7 +29,6 @@ services:
             - mysql
         volumes:
             - ./backend:/var/www/html
-            - ./Makefile:/var/www/html/Makefile:ro
             - ./docker/php/config/php.ini:/usr/local/etc/php/php.ini
         networks:
             - bankruptcy-network

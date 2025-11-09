@@ -61,6 +61,15 @@ export async function apiRequest(endpoint, options = {}) {
     }
 
     if (!response.ok) {
+      // При 401 ошибке (неавторизован) очищаем токен и редиректим на логин
+      if (response.status === 401 && auth) {
+        localStorage.removeItem('token');
+        // Редирект на логин только если мы не уже на странице логина
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+      
       const errorMessage =
         (responseBody && typeof responseBody === 'object' && responseBody.message) ||
         `HTTP error! status: ${response.status}`;
