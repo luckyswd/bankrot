@@ -26,31 +26,32 @@ jobs:
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
+      - name: Создание директории для базы данных
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: mkdir -p var
+
       - name: Создание .env файла для тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: |
           echo "APP_ENV=test" > .env
           echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
-          echo "DATABASE_URL=sqlite:///:memory:" >> .env
+          echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/test.db" >> .env
 
-      - name: Запуск миграций
+      - name: Создание схемы базы данных
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
-          DATABASE_URL: "sqlite:///:memory:"
           APP_ENV: "test"
-        run: make db-migrate
+        run: php bin/console doctrine:schema:create --no-interaction
 
       - name: Загрузка фикстур
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
-          DATABASE_URL: "sqlite:///:memory:"
           APP_ENV: "test"
         run: make seed
 
       - name: Запуск тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
-          DATABASE_URL: "sqlite:///:memory:"
           APP_ENV: "test"
         run: make test
 
