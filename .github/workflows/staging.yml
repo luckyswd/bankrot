@@ -33,9 +33,9 @@ jobs:
           echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
           echo "DATABASE_URL=sqlite:///:memory:" >> .env
 
-      - name: Запуск PHPUnit тестов
+      - name: Запуск тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
-        run: php bin/phpunit
+        run: make test
 
   deploy-backend:
     name: Деплой бэкенда
