@@ -15,6 +15,7 @@ class TestApiController extends AbstractController
             'status' => 'success',
             'message' => 'API работает! 🚀',
             'timestamp' => time(),
+            'test' => time(),
             'data' => [
                 'backend' => 'Symfony 6.4',
                 'php_version' => PHP_VERSION,
