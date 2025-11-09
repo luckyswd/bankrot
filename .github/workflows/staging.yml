@@ -190,7 +190,8 @@ jobs:
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
             if [ -d config/jwt ]; then
-              cp -r config/jwt config/jwt.backup || true
+              mkdir -p /tmp/jwt-backup
+              cp -r config/jwt/* /tmp/jwt-backup/ 2>/dev/null || true
             fi
 
       - name: Очистка старых файлов бэкенда на сервере
@@ -201,20 +202,32 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            # Удаляем старые файлы, но сохраняем vendor, var и .env файлы
-            find . -maxdepth 1 -type f -name "*.php" -delete
-            find . -maxdepth 1 -type f -name "*.json" -delete
-            find . -maxdepth 1 -type f -name "*.lock" -delete
-            find . -maxdepth 1 -type f -name "*.xml" -delete
-            find . -maxdepth 1 -type f -name "*.neon" -delete
+            # Удаляем старые файлы, но сохраняем vendor, var, .env файлы и .pem файлы
+            find . -maxdepth 1 -type f -name "*.php" ! -name "*.pem" -delete
+            find . -maxdepth 1 -type f -name "*.json" ! -name "*.pem" -delete
+            find . -maxdepth 1 -type f -name "*.lock" ! -name "*.pem" -delete
+            find . -maxdepth 1 -type f -name "*.xml" ! -name "*.pem" -delete
+            find . -maxdepth 1 -type f -name "*.neon" ! -name "*.pem" -delete
             find . -maxdepth 1 -type f -name "Makefile" -delete
             # Удаляем директории кроме vendor, var и config/jwt
             rm -rf bin/ public/ src/ migrations/ templates/ translations/ || true
-            # Удаляем config, но сохраняем jwt
+            # Удаляем config, но сохраняем jwt и .pem файлы
             if [ -d config ]; then
-              rm -rf config/* || true
-              if [ -d config/jwt.backup ]; then
-                mv config/jwt.backup config/jwt
+              # Сохраняем .pem файлы отдельно
+              mkdir -p /tmp/pem-backup
+              find config/jwt -name "*.pem" -exec cp {} /tmp/pem-backup/ \; 2>/dev/null || true
+              # Удаляем config, но не трогаем .pem файлы
+              find config -type f ! -name "*.pem" -delete 2>/dev/null || true
+              find config -type d -empty -delete 2>/dev/null || true
+              # Восстанавливаем jwt с .pem файлами
+              if [ -d /tmp/jwt-backup ] || [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
+                mkdir -p config/jwt
+                if [ -d /tmp/jwt-backup ]; then
+                  cp -r /tmp/jwt-backup/* config/jwt/ 2>/dev/null || true
+                fi
+                if [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
+                  cp /tmp/pem-backup/*.pem config/jwt/ 2>/dev/null || true
+                fi
               fi
             fi
 
@@ -263,10 +276,19 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           script: |
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            if [ -d config/jwt.backup ]; then
-              rm -rf config/jwt || true
-              mv config/jwt.backup config/jwt
+            # Восстанавливаем jwt папку если она была сохранена
+            if [ -d /tmp/jwt-backup ] || [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
+              mkdir -p config/jwt
+              if [ -d /tmp/jwt-backup ]; then
+                cp -r /tmp/jwt-backup/* config/jwt/ 2>/dev/null || true
+              fi
+              # Восстанавливаем .pem файлы
+              if [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
+                cp /tmp/pem-backup/*.pem config/jwt/ 2>/dev/null || true
+              fi
             fi
+            # Очищаем временные файлы
+            rm -rf /tmp/jwt-backup /tmp/pem-backup || true
 
       - name: Установка прав доступа
         uses: appleboy/ssh-action@v1.0.0
