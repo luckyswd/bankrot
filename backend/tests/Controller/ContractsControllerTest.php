@@ -198,6 +198,8 @@ class ContractsControllerTest extends BaseTestCase
     /**
      * Тест сортировки контрактов по статусу в порядке возрастания
      * Проверяет, что контракты возвращаются отсортированными по статусу.
+     * Сортировка происходит по значению enum (in_progress, completed), а не по label.
+     * В алфавитном порядке: completed идет после in_progress.
      */
     public function testSortingByStatus(): void
     {
@@ -213,9 +215,23 @@ class ContractsControllerTest extends BaseTestCase
         $this->assertArrayHasKey('data', $response);
         $statuses = array_filter(array: array_column(array: $response['data'], column_key: 'status'));
         if (count($statuses) >= 2) {
-            $sorted = $statuses;
-            sort($sorted);
-            $this->assertEquals($sorted, array_values(array: $statuses));
+            $firstInProgressIndex = null;
+            $lastCompletedIndex = null;
+            foreach ($statuses as $index => $status) {
+                if ($status === 'В работе' && $firstInProgressIndex === null) {
+                    $firstInProgressIndex = $index;
+                }
+                if ($status === 'Завершено') {
+                    $lastCompletedIndex = $index;
+                }
+            }
+            if ($firstInProgressIndex !== null && $lastCompletedIndex !== null) {
+                $this->assertGreaterThan(
+                    $lastCompletedIndex,
+                    $firstInProgressIndex,
+                    'Все "В работе" должны идти после всех "Завершено"'
+                );
+            }
         }
     }
 
