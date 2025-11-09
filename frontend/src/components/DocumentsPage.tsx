@@ -393,7 +393,7 @@ export default function DocumentsPage() {
         <CardContent>
           {/* Поиск и фильтры */}
           <div className="mb-4 space-y-4">
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -407,7 +407,7 @@ export default function DocumentsPage() {
               </div>
               <div className="w-64">
                 <Select value={categoryFilter || 'all'} onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Все категории" />
                   </SelectTrigger>
                   <SelectContent>
@@ -488,11 +488,11 @@ export default function DocumentsPage() {
 
               {/* Пагинация */}
               {pages > 1 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center justify-between mt-4 p-4 border-t">
                   <div className="text-sm text-muted-foreground">
                     Показано {(page - 1) * limit + 1} - {Math.min(page * limit, total)} из {total}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
@@ -503,29 +503,63 @@ export default function DocumentsPage() {
                       Назад
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, pages) }, (_, i) => {
-                        let pageNum: number
-                        if (pages <= 5) {
-                          pageNum = i + 1
-                        } else if (page <= 3) {
-                          pageNum = i + 1
-                        } else if (page >= pages - 2) {
-                          pageNum = pages - 4 + i
+                      {(() => {
+                        const pageNumbers: (number | string)[] = []
+                        
+                        if (pages <= 7) {
+                          // Если страниц 7 или меньше, показываем все
+                          for (let i = 1; i <= pages; i++) {
+                            pageNumbers.push(i)
+                          }
                         } else {
-                          pageNum = page - 2 + i
+                          // Всегда показываем первую страницу
+                          pageNumbers.push(1)
+                          
+                          if (page > 3) {
+                            pageNumbers.push('...')
+                          }
+                          
+                          // Показываем страницы вокруг текущей
+                          const start = Math.max(2, page - 1)
+                          const end = Math.min(pages - 1, page + 1)
+                          
+                          for (let i = start; i <= end; i++) {
+                            if (i !== 1 && i !== pages) {
+                              pageNumbers.push(i)
+                            }
+                          }
+                          
+                          if (page < pages - 2) {
+                            pageNumbers.push('...')
+                          }
+                          
+                          // Всегда показываем последнюю страницу
+                          if (pages > 1) {
+                            pageNumbers.push(pages)
+                          }
                         }
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={page === pageNum ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setPage(pageNum)}
-                            className="w-10"
-                          >
-                            {pageNum}
-                          </Button>
-                        )
-                      })}
+                        
+                        return pageNumbers.map((pageNum, idx) => {
+                          if (pageNum === '...') {
+                            return (
+                              <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                                ...
+                              </span>
+                            )
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={page === pageNum ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setPage(pageNum as number)}
+                              className="w-10"
+                            >
+                              {pageNum}
+                            </Button>
+                          )
+                        })
+                      })()}
                     </div>
                     <Button
                       variant="outline"

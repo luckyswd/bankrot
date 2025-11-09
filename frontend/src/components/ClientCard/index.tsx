@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FormProvider, useForm, useWatch } from "react-hook-form"
 import { ArrowLeft, Save } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
+import { apiRequest } from "@/config/api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Loading from "@/components/Loading"
 
 import { GeneralTab } from "./General"
 import { IntroductionTab } from "./Introduction"
@@ -146,12 +148,46 @@ const createDefaultFormValues = (): FormValues => ({
   procedure: { ...defaultProcedure },
 })
 
+// Преобразование данных из API формата в формат формы
+const convertApiDataToFormValues = (apiData?: Record<string, unknown>): FormValues => {
+  const defaults = createDefaultFormValues()
+  if (!apiData) {
+    return defaults
+  }
+
+  return {
+    ...defaults,
+    primaryInfo: {
+      ...defaults.primaryInfo,
+      ...(apiData.basic_info as Partial<PrimaryInfoFields> ?? {}),
+    },
+    pretrial: {
+      ...defaults.pretrial,
+      ...(apiData.pre_court as Partial<PretrialFields> ?? {}),
+    },
+    introduction: {
+      ...defaults.introduction,
+      ...(apiData.procedure_initiation as Partial<IntroductionFields> ?? {}),
+    },
+    procedure: {
+      ...defaults.procedure,
+      ...(apiData.procedure as Partial<ProcedureFields> ?? {}),
+    },
+  }
+}
+
 const buildFormValues = (contract?: Record<string, unknown>): FormValues => {
   const defaults = createDefaultFormValues()
   if (!contract) {
     return defaults
   }
 
+  // Если данные пришли из API (с basic_info, pre_court и т.д.)
+  if (contract.basic_info || contract.pre_court || contract.procedure_initiation || contract.procedure) {
+    return convertApiDataToFormValues(contract)
+  }
+
+  // Если данные в старом формате (primaryInfo, pretrial и т.д.)
   const overrides = contract as Partial<FormSections>
 
   return {
@@ -179,56 +215,114 @@ const buildFormValues = (contract?: Record<string, unknown>): FormValues => {
 function ClientCard() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { contracts, updateContract, databases } = useApp()
+  const { databases } = useApp()
+  const [contract, setContract] = useState<{ id: number; contractNumber: string; status: string } | null>(null)
+  const [contractData, setContractData] = useState<Record<string, unknown> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const contract = useMemo(() => contracts.find((c) => c.id === Number(id)), [contracts, id])
   const form = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: buildFormValues(contract),
+    defaultValues: createDefaultFormValues(),
   })
-  const savedSnapshotRef = useRef<string>(JSON.stringify(buildFormValues(contract)))
+  const savedSnapshotRef = useRef<string>(JSON.stringify(createDefaultFormValues()))
   const watchedValues =
     useWatch<FormValues>({
       control: form.control,
     }) ?? form.getValues()
   const [saveStatus, setSaveStatus] = useState<"" | "saving" | "saved">("")
 
+  // Загрузка контракта из API
   useEffect(() => {
-    if (contract) {
-      const nextValues = buildFormValues(contract)
-      form.reset(nextValues)
-      savedSnapshotRef.current = JSON.stringify(nextValues)
-    } else {
-      const defaults = createDefaultFormValues()
-      form.reset(defaults)
-      savedSnapshotRef.current = JSON.stringify(defaults)
-    }
-  }, [contract, form])
+    const loadContract = async () => {
+      if (!id || id === 'new') {
+        setLoading(false)
+        setContract(null)
+        setContractData(null)
+        const defaults = createDefaultFormValues()
+        form.reset(defaults)
+        savedSnapshotRef.current = JSON.stringify(defaults)
+        return
+      }
 
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await apiRequest(`/api/v1/contracts/${id}`)
+        
+        if (data && typeof data === 'object') {
+          // Преобразуем данные из API формата
+          const formValues = convertApiDataToFormValues(data)
+          form.reset(formValues)
+          savedSnapshotRef.current = JSON.stringify(formValues)
+          
+          // Сохраняем базовую информацию о контракте
+          setContract({
+            id: Number(id),
+            contractNumber: (data.basic_info as any)?.contractNumber || `ДГ-${id}`,
+            status: (data.basic_info as any)?.status || 'active',
+          })
+          setContractData(data)
+        } else {
+          setError('Контракт не найден')
+        }
+      } catch (err) {
+        console.error('Ошибка при загрузке контракта:', err)
+        setError('Не удалось загрузить контракт')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadContract()
+  }, [id, form])
+
+  // Автосохранение изменений
   useEffect(() => {
-    if (!contract || !watchedValues) return
+    if (!contract || !watchedValues || loading) return
 
     const timer = setTimeout(() => {
       const serialized = JSON.stringify(watchedValues)
       if (serialized !== savedSnapshotRef.current) {
         setSaveStatus("saving")
-        savedSnapshotRef.current = serialized
-        updateContract(contract.id, watchedValues)
-        setTimeout(() => {
-          setSaveStatus("saved")
-          setTimeout(() => setSaveStatus(""), 2000)
-        }, 500)
+        
+        // Преобразуем данные формы в формат API
+        const apiData: Record<string, unknown> = {
+          basic_info: watchedValues.primaryInfo || {},
+          pre_court: watchedValues.pretrial || {},
+          procedure_initiation: watchedValues.introduction || {},
+          procedure: watchedValues.procedure || {},
+        }
+
+        // Отправляем на сервер
+        apiRequest(`/api/v1/contracts/${contract.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(apiData),
+        })
+          .then(() => {
+            savedSnapshotRef.current = serialized
+            setSaveStatus("saved")
+            setTimeout(() => setSaveStatus(""), 2000)
+          })
+          .catch((err) => {
+            console.error('Ошибка при сохранении:', err)
+            setSaveStatus("")
+          })
       }
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [watchedValues, contract, updateContract])
+  }, [watchedValues, contract, loading])
 
-  if (!contract) {
+  if (loading) {
+    return <Loading fullScreen text="Загрузка контракта..." />
+  }
+
+  if (error || !contract) {
     return (
       <div className="flex h-full items-center justify-center">
         <Card className="p-8 text-center">
-          <p className="mb-4 text-lg">Договор не найден</p>
+          <p className="mb-4 text-lg">{error || 'Договор не найден'}</p>
           <Button onClick={() => navigate("/contracts")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Вернуться к списку
@@ -274,8 +368,8 @@ function ClientCard() {
               {saveStatus === "saving" ? "Сохранение..." : "Сохранено"}
             </div>
           )}
-          <Badge variant={contract.status === "active" ? "default" : "success"}>
-            {contract.status === "active" ? "В работе" : "Завершено"}
+          <Badge variant={contract.status === "active" || contract.status === "В работе" ? "blue" : "green"}>
+            {contract.status === "active" || contract.status === "В работе" ? "В работе" : "Завершено"}
           </Badge>
         </div>
       </div>

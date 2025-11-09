@@ -70,6 +70,13 @@ class ContractsController extends AbstractController
                 required: false,
                 schema: new OA\Schema(type: 'integer', default: 20, maximum: 100, minimum: 1)
             ),
+            new OA\Parameter(
+                name: 'search',
+                description: 'Поиск по ФИО или номеру договора',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', example: 'Иванов')
+            ),
         ],
         responses: [
             new OA\Response(
@@ -136,6 +143,7 @@ class ContractsController extends AbstractController
         $sortOrder = $request->query->get('sortOrder', 'ASC');
         $page = max(1, (int)($request->query->get('page') ?? 1));
         $limit = min(100, max(1, (int)($request->query->get('limit') ?? 20)));
+        $search = $request->query->get('search');
 
         $contracts = $this->contractsRepository->findWithFilters(
             filter: $filter,
@@ -143,10 +151,11 @@ class ContractsController extends AbstractController
             sortBy: $sortBy,
             sortOrder: $sortOrder,
             page: $page,
-            limit: $limit
+            limit: $limit,
+            search: $search
         );
 
-        $total = $this->contractsRepository->countByFilter(filter: $filter, user: $user);
+        $total = $this->contractsRepository->countByFilter(filter: $filter, user: $user, search: $search);
 
         $data = [];
 

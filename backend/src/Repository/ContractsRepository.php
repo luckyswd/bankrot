@@ -58,6 +58,30 @@ class ContractsRepository extends ServiceEntityRepository
     }
 
     /**
+     * Применить поиск к QueryBuilder.
+     *
+     * @param QueryBuilder $qb QueryBuilder
+     * @param string|null $search Поисковый запрос (по ФИО или номеру договора)
+     */
+    private function applySearch(QueryBuilder $qb, ?string $search): void
+    {
+        if ($search === null || $search === '') {
+            return;
+        }
+
+        $searchTerm = '%' . $search . '%';
+
+        $qb->andWhere(
+            $qb->expr()->orX(
+                $qb->expr()->like('c.contractNumber', ':search'),
+                $qb->expr()->like('c.firstName', ':search'),
+                $qb->expr()->like('c.lastName', ':search'),
+                $qb->expr()->like('c.middleName', ':search')
+            )
+        )->setParameter('search', $searchTerm);
+    }
+
+    /**
      * Применить сортировку к QueryBuilder.
      *
      * @param string|null $sortBy Поле для сортировки
@@ -105,6 +129,7 @@ class ContractsRepository extends ServiceEntityRepository
      * @param string $sortOrder Направление сортировки ('ASC' или 'DESC')
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
+     * @param string|null $search Поисковый запрос (по ФИО или номеру договора)
      *
      * @return array<int, Contracts>
      */
@@ -115,6 +140,7 @@ class ContractsRepository extends ServiceEntityRepository
         string $sortOrder = 'ASC',
         int $page = 1,
         int $limit = 20,
+        ?string $search = null,
     ): array {
         $qb = $this->createQueryBuilder(alias: 'c')
             ->leftJoin('c.author', 'author')
@@ -123,6 +149,7 @@ class ContractsRepository extends ServiceEntityRepository
             ->addSelect('manager');
 
         $this->applyFilterConditions(qb: $qb, filter: $filter, user: $user);
+        $this->applySearch(qb: $qb, search: $search);
         $this->applySorting(qb: $qb, sortBy: $sortBy, sortOrder: $sortOrder);
 
         return $qb->setFirstResult(firstResult: ($page - 1) * $limit)
@@ -136,13 +163,15 @@ class ContractsRepository extends ServiceEntityRepository
      *
      * @param string|null $filter Фильтр: 'all', 'my', 'in_progress', 'completed'
      * @param User|null $user Текущий пользователь (для фильтра 'my')
+     * @param string|null $search Поисковый запрос (по ФИО или номеру договора)
      */
-    public function countByFilter(?string $filter = null, ?User $user = null): int
+    public function countByFilter(?string $filter = null, ?User $user = null, ?string $search = null): int
     {
         $qb = $this->createQueryBuilder(alias: 'c')
             ->select('COUNT(c.id)');
 
         $this->applyFilterConditions(qb: $qb, filter: $filter, user: $user);
+        $this->applySearch(qb: $qb, search: $search);
 
         return (int)$qb->getQuery()->getSingleScalarResult();
     }

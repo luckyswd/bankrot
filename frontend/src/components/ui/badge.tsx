@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-type BadgeVariant = "default" | "secondary" | "destructive" | "outline" | "success"
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline" | "success" | "blue" | "green"
 
 const badgeVariants: Record<BadgeVariant, string> = {
   default: "bg-primary text-primary-foreground hover:bg-primary/80",
@@ -9,6 +9,8 @@ const badgeVariants: Record<BadgeVariant, string> = {
   destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/80",
   outline: "text-foreground border border-input",
   success: "bg-green-500 text-white hover:bg-green-600",
+  blue: "bg-blue-500 text-white hover:bg-blue-600",
+  green: "bg-green-500 text-white hover:bg-green-600",
 }
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
