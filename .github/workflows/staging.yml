@@ -181,6 +181,18 @@ jobs:
       - name: Получение кода
         uses: actions/checkout@v4
 
+      - name: Сохранение config/jwt перед очисткой
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            if [ -d config/jwt ]; then
+              cp -r config/jwt config/jwt.backup || true
+            fi
+
       - name: Очистка старых файлов бэкенда на сервере
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -196,8 +208,15 @@ jobs:
             find . -maxdepth 1 -type f -name "*.xml" -delete
             find . -maxdepth 1 -type f -name "*.neon" -delete
             find . -maxdepth 1 -type f -name "Makefile" -delete
-            # Удаляем директории кроме vendor и var
-            rm -rf bin/ config/ public/ src/ migrations/ templates/ translations/ || true
+            # Удаляем директории кроме vendor, var и config/jwt
+            rm -rf bin/ public/ src/ migrations/ templates/ translations/ || true
+            # Удаляем config, но сохраняем jwt
+            if [ -d config ]; then
+              rm -rf config/* || true
+              if [ -d config/jwt.backup ]; then
+                mv config/jwt.backup config/jwt
+              fi
+            fi
 
       - name: Подготовка файлов для деплоя
         run: |
@@ -221,6 +240,7 @@ jobs:
             --exclude='www.conf' \
             --exclude='*.log' \
             --exclude='*.tmp' \
+            --exclude='config/jwt' \
             . ../backend-deploy/
 
       - name: Деплой бэкенда через SCP
@@ -234,6 +254,19 @@ jobs:
           target: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
           strip_components: 1
           overwrite: true
+
+      - name: Восстановление config/jwt после деплоя
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            if [ -d config/jwt.backup ]; then
+              rm -rf config/jwt || true
+              mv config/jwt.backup config/jwt
+            fi
 
       - name: Установка прав доступа
         uses: appleboy/ssh-action@v1.0.0

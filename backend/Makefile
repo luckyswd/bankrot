@@ -14,10 +14,6 @@ composer-install:
 db-migrate:
 	php bin/console doctrine:migrations:migrate --no-interaction
 
-fix-permissions:
-	@mkdir -p var
-	@chmod -R 777 var
-
 cc:
 	php bin/console cache:clear --no-debug
 	php bin/console doctrine:cache:clear-result
