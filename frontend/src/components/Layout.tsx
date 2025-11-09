@@ -177,7 +177,7 @@ export default function Layout({ children }) {
                  location.pathname.includes('/databases/fns') ? 'ФНС' :
                  location.pathname.includes('/databases/mchs') ? 'ГИМС МЧС' :
                  location.pathname.includes('/databases/rosgvardia') ? 'Росгвардия' :
-                 location.pathname.includes('/client/') ? 'Карточка договора' :
+                 location.pathname.includes('/contract/') ? 'Карточка договора' :
                  ''}
               </h1>
             </div>
@@ -194,7 +194,7 @@ export default function Layout({ children }) {
           </header>
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6" style={{ scrollbarGutter: 'stable' }}>
             {children}
           </main>
         </div>

@@ -93,12 +93,12 @@ function Dashboard() {
   }, [debouncedSearch, filterStatus])
 
   const handleRowClick = (contractId: number) => {
-    navigate(`/client/${contractId}`)
+    navigate(`/contract/${contractId}`)
   }
 
   const handleEdit = (contractId: number, e: React.MouseEvent) => {
     e.stopPropagation()
-    navigate(`/client/${contractId}`)
+    navigate(`/contract/${contractId}`)
   }
 
   const handleDeleteClick = (contract: any, e: React.MouseEvent) => {
@@ -144,7 +144,7 @@ function Dashboard() {
   }
 
   const handleCreateContract = () => {
-    navigate('/client/new')
+    navigate('/contract/new')
   }
 
   // Генерация номеров страниц для пагинации (как в DocumentsPage, но с первой и последней)

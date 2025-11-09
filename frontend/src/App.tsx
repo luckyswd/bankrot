@@ -37,8 +37,8 @@ function AppRoutes() {
                 <Route path="/" element={<Navigate to="/contracts" />} />
                 <Route path="/contracts" element={<Dashboard />} />
                 <Route path="/documents" element={<DocumentsPage />} />
-                <Route path="/client/:id" element={<ClientCard />} />
-                <Route path="/document/:clientId/:docType" element={<DocumentView />} />
+                <Route path="/contract/:id" element={<ClientCard />} />
+                <Route path="/document/:contractId/:docType" element={<DocumentView />} />
                 <Route path="/databases/creditors" element={<CreditorsDatabase />} />
                 <Route path="/databases/courts" element={<CourtsDatabase />} />
                 <Route path="/databases/bailiffs" element={<BailiffsDatabase />} />
