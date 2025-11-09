@@ -65,6 +65,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background: blue;
+    background: red;
   }
 }
