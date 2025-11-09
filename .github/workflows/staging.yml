@@ -85,7 +85,7 @@ jobs:
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
           local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
-          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}
+          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
           exclude: |
             **/.git*
             **/.git*/**
@@ -139,7 +139,7 @@ jobs:
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
           local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
-          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
           exclude: |
             **/.git*
             **/.git*/**
