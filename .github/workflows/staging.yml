@@ -33,6 +33,20 @@ jobs:
           echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
           echo "DATABASE_URL=sqlite:///:memory:" >> .env
 
+      - name: Запуск миграций
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          APP_ENV: "test"
+        run: make db-migrate
+
+      - name: Загрузка фикстур
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          APP_ENV: "test"
+        run: make seed
+
       - name: Запуск тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
