@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext"
 import Layout from "./components/Layout"
 import Login from "./components/Login"
 import Dashboard from "./components/Dashboard"
+import Loading from "./components/Loading"
 import DocumentView from "./components/DocumentView"
 import DocumentsPage from "./components/DocumentsPage"
 import CreditorsDatabase from "./components/databases/CreditorsDatabase"
@@ -20,7 +21,7 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
   
   if (loading) {
-    return <div>Loading...</div>
+    return <Loading fullScreen text="Загрузка..." />
   }
   
   return user ? children : <Navigate to="/login" />

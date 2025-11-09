@@ -5,7 +5,6 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { FileText } from 'lucide-react'
 
 function Login() {
   const [username, setUsername] = useState('')
@@ -51,14 +50,6 @@ function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Logo / Brand */}
-        <div className="flex flex-col items-center space-y-2">
-          <div className="rounded-full bg-primary/10 p-3">
-            <FileText className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-center text-nowrap">Система управления документами</h1>
-        </div>
-
         {/* Login Form */}
         <Card>
           <CardHeader>

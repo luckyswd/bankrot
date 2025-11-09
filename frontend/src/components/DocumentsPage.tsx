@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { Upload, Download, FileText, Trash2 } from 'lucide-react'
+import Loading from './Loading'
 
 const CATEGORIES = [
   { value: 'basic_info', label: 'Основная информация' },
@@ -300,9 +301,7 @@ export default function DocumentsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Загрузка...
-            </div>
+            <Loading text="Загрузка документов..." />
           ) : (
             <Table>
               <TableHeader>
