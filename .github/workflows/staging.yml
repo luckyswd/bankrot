@@ -78,30 +78,28 @@ jobs:
       - name: Получение кода
         uses: actions/checkout@v4
 
-      - name: Деплой бэкенда на FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      - name: Деплой бэкенда через SFTP
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.STG_FTP_IP }}
+          host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
-          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
-          protocol: ftp
-          port: 21
-          timeout: 60000
+          port: 22
+          source: "${{ secrets.LOCAL_BACKEND_DIR }}/*"
+          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
+          strip_components: 1
           exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env*
-            **/tests/**
-            **/var/cache/**
-            **/var/log/**
-            **/.phpunit.cache/**
-            **/phpunit.dist.xml
-            **/docker-compose.yml
-            **/Dockerfile
-            **/www.conf
+            .git*
+            node_modules
+            .env*
+            tests
+            var/cache
+            var/log
+            .phpunit.cache
+            phpunit.dist.xml
+            docker-compose.yml
+            Dockerfile
+            www.conf
 
       - name: Запуск миграций
         uses: appleboy/ssh-action@v1.0.0
@@ -135,18 +133,14 @@ jobs:
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
         run: npm run build
 
-      - name: Деплой фронтенда на FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      - name: Деплой фронтенда через SFTP
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.STG_FTP_IP }}
+          host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
-          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
-          protocol: ftp
-          port: 21
-          timeout: 60000
-          exclude: |
-            **/.git*
-            **/.git*/**
+          port: 22
+          source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
+          target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+          strip_components: 1
 
