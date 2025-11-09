@@ -51,28 +51,63 @@ class DocumentTemplateController extends AbstractController
         tags: ['DocumentTemplates'],
         parameters: [
             new OA\Parameter(
+                name: 'search',
+                description: 'Поиск по названию шаблона',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', example: 'договор')
+            ),
+            new OA\Parameter(
                 name: 'category',
                 description: 'Фильтр по категории',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', enum: BankruptcyStage::class, example: 'Досудебка')
             ),
+            new OA\Parameter(
+                name: 'page',
+                description: 'Номер страницы (начиная с 1)',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', example: 1, default: 1)
+            ),
+            new OA\Parameter(
+                name: 'limit',
+                description: 'Количество элементов на странице',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+            ),
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Список шаблонов',
+                description: 'Список шаблонов с пагинацией',
                 content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(
-                        properties: [
-                            new OA\Property(property: 'id', type: 'integer', example: 1),
-                            new OA\Property(property: 'name', type: 'string', example: 'Шаблон договора'),
-                            new OA\Property(property: 'category', type: 'string', example: 'Досудебка'),
-                        ],
-                        type: 'object'
-                    )
+                    properties: [
+                        new OA\Property(
+                            property: 'items',
+                            type: 'array',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'name', type: 'string', example: 'Шаблон договора'),
+                                    new OA\Property(property: 'category', type: 'string', example: 'Досудебка'),
+                                ],
+                                type: 'object'
+                            )
+                        ),
+                        new OA\Property(property: 'total', type: 'integer', example: 25),
+                        new OA\Property(property: 'page', type: 'integer', example: 1),
+                        new OA\Property(property: 'limit', type: 'integer', example: 10),
+                        new OA\Property(property: 'pages', type: 'integer', example: 3),
+                    ],
+                    type: 'object'
                 )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Ошибка валидации параметров'
             ),
             new OA\Response(
                 response: 401,
@@ -86,22 +121,31 @@ class DocumentTemplateController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
+        $search = $request->query->get('search');
         $categoryValue = $request->query->get('category');
+        $page = max(1, (int)($request->query->get('page') ?? 1));
+        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        if ($categoryValue !== null) {
+        $category = null;
+
+        if ($categoryValue !== null && $categoryValue !== '') {
             try {
                 $category = BankruptcyStage::from($categoryValue);
-                $templates = $this->documentTemplateRepository->findBy(['category' => $category]);
             } catch (\ValueError $e) {
                 return $this->json(data: ['error' => 'Неверная категория'], status: 400);
             }
-        } else {
-            $templates = $this->documentTemplateRepository->findAll();
         }
+
+        $result = $this->documentTemplateRepository->findPaginated(
+            page: $page,
+            limit: $limit,
+            search: $search,
+            category: $category
+        );
 
         $data = [];
 
-        foreach ($templates as $template) {
+        foreach ($result['items'] as $template) {
             $data[] = [
                 'id' => $template->getId(),
                 'name' => $template->getName(),
@@ -109,7 +153,13 @@ class DocumentTemplateController extends AbstractController
             ];
         }
 
-        return $this->json(data: $data);
+        return $this->json(data: [
+            'items' => $data,
+            'total' => $result['total'],
+            'page' => $result['page'],
+            'limit' => $result['limit'],
+            'pages' => $result['pages'],
+        ]);
     }
 
     #[Route('', name: 'api_document_templates_create', methods: ['POST'])]

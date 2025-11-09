@@ -26,8 +26,8 @@ class DocumentTemplateControllerTest extends BaseTestCase
     }
 
     /**
-     * Тест получения списка шаблонов документов.
-     * Проверяет, что API возвращает список шаблонов.
+     * Тест получения списка шаблонов документов с пагинацией.
+     * Проверяет, что API возвращает список шаблонов с метаданными пагинации.
      */
     public function testListDocumentTemplates(): void
     {
@@ -42,6 +42,16 @@ class DocumentTemplateControllerTest extends BaseTestCase
         $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
 
         $this->assertIsArray($response);
+        $this->assertArrayHasKey('items', $response);
+        $this->assertArrayHasKey('total', $response);
+        $this->assertArrayHasKey('page', $response);
+        $this->assertArrayHasKey('limit', $response);
+        $this->assertArrayHasKey('pages', $response);
+        $this->assertIsArray($response['items']);
+        $this->assertIsInt($response['total']);
+        $this->assertIsInt($response['page']);
+        $this->assertIsInt($response['limit']);
+        $this->assertIsInt($response['pages']);
     }
 
     /**
@@ -52,6 +62,11 @@ class DocumentTemplateControllerTest extends BaseTestCase
     {
         $admin = $this->getUser(reference: 'admin');
 
+        // Создаём шаблоны разных категорий
+        $template1 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Шаблон 1');
+        $template2 = $this->createTestTemplateWithCategory(BankruptcyStage::PRE_COURT, 'Шаблон 2');
+        $template3 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Шаблон 3');
+
         $token = $this->getAuthToken(user: $admin);
         $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
 
@@ -61,6 +76,119 @@ class DocumentTemplateControllerTest extends BaseTestCase
         $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
 
         $this->assertIsArray($response);
+        $this->assertArrayHasKey('items', $response);
+        $this->assertEquals(2, $response['total']);
+
+        foreach ($response['items'] as $item) {
+            $this->assertEquals('Основная информация', $item['category']);
+        }
+    }
+
+    /**
+     * Тест поиска шаблонов по названию.
+     * Проверяет, что API возвращает только шаблоны, содержащие поисковый запрос в названии.
+     */
+    public function testSearchDocumentTemplatesByName(): void
+    {
+        $admin = $this->getUser(reference: 'admin');
+
+        // Создаём шаблоны с разными названиями
+        $template1 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Договор купли-продажи');
+        $template2 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Договор аренды');
+        $template3 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Акт приёмки');
+
+        $token = $this->getAuthToken(user: $admin);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $this->client->request(method: 'GET', uri: '/api/v1/document-templates?search=Договор');
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertIsArray($response);
+        $this->assertArrayHasKey('items', $response);
+        $this->assertEquals(2, $response['total']);
+
+        foreach ($response['items'] as $item) {
+            $this->assertStringContainsString('Договор', $item['name']);
+        }
+    }
+
+    /**
+     * Тест пагинации шаблонов.
+     * Проверяет, что API возвращает правильные страницы и метаданные.
+     */
+    public function testPaginationDocumentTemplates(): void
+    {
+        $admin = $this->getUser(reference: 'admin');
+
+        // Создаём 15 шаблонов
+        for ($i = 1; $i <= 15; ++$i) {
+            $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, "Шаблон пагинации {$i}");
+        }
+
+        // Убеждаемся, что все данные сохранены
+        self::$em->flush();
+
+        $token = $this->getAuthToken(user: $admin);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        // Первая страница (10 элементов)
+        $this->client->request(method: 'GET', uri: '/api/v1/document-templates?page=1&limit=10');
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertIsArray($response);
+        $this->assertArrayHasKey('total', $response);
+        $this->assertArrayHasKey('items', $response);
+        $this->assertArrayHasKey('page', $response);
+        $this->assertArrayHasKey('limit', $response);
+        $this->assertArrayHasKey('pages', $response);
+
+        // Проверяем структуру ответа
+        $this->assertEquals(1, $response['page']);
+        $this->assertEquals(10, $response['limit']);
+        $this->assertIsInt($response['total']);
+        $this->assertIsInt($response['pages']);
+        $this->assertIsArray($response['items']);
+
+        // Проверяем, что пагинация работает
+        $this->assertGreaterThanOrEqual(1, $response['pages']);
+        $this->assertLessThanOrEqual($response['limit'], count($response['items']));
+
+        // Проверяем, что total соответствует количеству страниц
+        $expectedPages = (int)ceil($response['total'] / $response['limit']);
+        $this->assertEquals($expectedPages, $response['pages']);
+    }
+
+    /**
+     * Тест комбинированного поиска и фильтрации.
+     * Проверяет, что API правильно комбинирует поиск по названию и фильтр по категории.
+     */
+    public function testSearchAndFilterDocumentTemplates(): void
+    {
+        $admin = $this->getUser(reference: 'admin');
+
+        // Создаём шаблоны
+        $template1 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Договор купли');
+        $template2 = $this->createTestTemplateWithCategory(BankruptcyStage::PRE_COURT, 'Договор аренды');
+        $template3 = $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Акт приёмки');
+
+        $token = $this->getAuthToken(user: $admin);
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+
+        $this->client->request(method: 'GET', uri: '/api/v1/document-templates?search=Договор&category=basic_info');
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+
+        $this->assertIsArray($response);
+        $this->assertArrayHasKey('items', $response);
+        $this->assertEquals(1, $response['total']);
+
+        $this->assertEquals('Договор купли', $response['items'][0]['name']);
+        $this->assertEquals('Основная информация', $response['items'][0]['category']);
     }
 
     /**
@@ -402,6 +530,14 @@ class DocumentTemplateControllerTest extends BaseTestCase
      */
     private function createTestTemplate(): DocumentTemplate
     {
+        return $this->createTestTemplateWithCategory(BankruptcyStage::BASIC_INFO, 'Тестовый шаблон');
+    }
+
+    /**
+     * Создает тестовый шаблон документа в БД с указанной категорией и названием.
+     */
+    private function createTestTemplateWithCategory(BankruptcyStage $category, string $name): DocumentTemplate
+    {
         $container = $this->client->getContainer();
         $parameterBag = $container->get('parameter_bag');
         $projectDir = $parameterBag->get('kernel.project_dir');
@@ -416,8 +552,8 @@ class DocumentTemplateControllerTest extends BaseTestCase
         $this->testFilePaths[] = $filePath;
 
         $template = new DocumentTemplate();
-        $template->setName('Тестовый шаблон');
-        $template->setCategory(BankruptcyStage::BASIC_INFO);
+        $template->setName($name);
+        $template->setCategory($category);
         $template->setPath($filePath);
 
         self::$em->persist($template);

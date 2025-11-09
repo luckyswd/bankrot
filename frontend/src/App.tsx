@@ -15,7 +15,6 @@ import CourtsDatabase from "./components/databases/CourtsDatabase"
 import BailiffsDatabase from "./components/databases/BailiffsDatabase"
 import { FnsDatabase, MchsDatabase, RosgvardiaDatabase } from "./components/databases/OtherDatabases"
 import ClientCard from "./components/ClientCard"
-import TestApi from "./pages/TestApi"
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
@@ -29,7 +28,6 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/test" element={<TestApi />} />
       <Route
         path="/*"
         element={
