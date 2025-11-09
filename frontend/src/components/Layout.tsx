@@ -56,15 +56,6 @@ export default function Layout({ children }) {
             sidebarOpen ? 'w-64' : 'w-0'
           } transition-all duration-300 border-r border-border bg-card flex flex-col overflow-hidden`}
         >
-          {/* Logo / Brand */}
-          <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Система управление документами</span>
-            </div>
-          </div>
-
-          <Separator />
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -187,7 +178,7 @@ export default function Layout({ children }) {
                  location.pathname.includes('/databases/mchs') ? 'ГИМС МЧС' :
                  location.pathname.includes('/databases/rosgvardia') ? 'Росгвардия' :
                  location.pathname.includes('/client/') ? 'Карточка договора' :
-                 'Система управление документами'}
+                 ''}
               </h1>
             </div>
 
