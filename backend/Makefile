@@ -15,14 +15,8 @@ db-migrate:
 	php bin/console doctrine:migrations:migrate --no-interaction
 
 fix-permissions:
-	@if [ ! -d var ]; then \
-		mkdir -p var; \
-	fi
-	@chmod -R 777 var 2>/dev/null || true
-	@if [ ! -d var/document-templates ]; then \
-		mkdir -p var/document-templates; \
-		chmod -R 777 var/document-templates 2>/dev/null || true; \
-	fi
+	@mkdir -p var
+	@chmod -R 777 var
 
 cc:
 	php bin/console cache:clear --no-debug

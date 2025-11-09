@@ -38,53 +38,8 @@ class DocumentTemplateController extends AbstractController
 
     private function ensureUploadDirExists(string $uploadDir): void
     {
-        if (is_dir($uploadDir)) {
-            return;
-        }
-
-        $projectDir = $this->getParameter('kernel.project_dir');
-        $varDir = $projectDir . '/var';
-
-        if (!is_dir($varDir)) {
-            $oldUmask = umask(0000);
-            $varCreated = @mkdir($varDir, 0777, true);
-            umask(022);
-            if (!$varCreated && !is_dir($varDir)) {
-                throw new \RuntimeException("Unable to create the \"{$varDir}\" directory.");
-            }
-        }
-
-        if (!is_writable($varDir)) {
-            @chmod($varDir, 0777);
-            if (!is_writable($varDir)) {
-                $oldUmask = umask(0000);
-                $created = @exec('mkdir -p ' . escapeshellarg($uploadDir) . ' && chmod -R 777 ' . escapeshellarg($uploadDir) . ' 2>&1', $output, $returnCode);
-                umask(022);
-
-                if ($returnCode === 0 && is_dir($uploadDir)) {
-                    return;
-                }
-
-                throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. The \"{$varDir}\" directory is not writable. Please ensure the directory has write permissions (777).");
-            }
-        }
-
-        $oldUmask = umask(0000);
-        $created = @mkdir($uploadDir, 0777, true);
-        umask(022);
-
-        if (!$created && !is_dir($uploadDir)) {
-            $created = @exec('mkdir -p ' . escapeshellarg($uploadDir) . ' && chmod -R 777 ' . escapeshellarg($uploadDir) . ' 2>&1', $output, $returnCode);
-
-            if ($returnCode !== 0 || !is_dir($uploadDir)) {
-                $error = error_get_last();
-                $errorMsg = $error ? $error['message'] : 'Unknown error';
-                throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. Error: {$errorMsg}. Please ensure the parent directory \"{$varDir}\" has write permissions (777).");
-            }
-        }
-
-        if (is_dir($uploadDir) && !is_writable($uploadDir)) {
-            @chmod($uploadDir, 0777);
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
         }
     }
 
