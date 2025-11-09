@@ -12,6 +12,8 @@ class TestApiController extends AbstractController
     public function test(): JsonResponse
     {
 
+
+
         return $this->json([
             'status' => 'success',
             'message' => 'API работает! 🚀',
