@@ -197,7 +197,7 @@ class DocumentTemplateController extends AbstractController
         try {
             $file->move($uploadDir, $fileName);
         } catch (FileException $e) {
-            return $this->json(data: ['error' => 'Ошибка при сохранении файла ' . $e->getMessage() ], status: 500);
+            return $this->json(data: ['error' => 'Ошибка при сохранении файла ' . $e->getMessage()], status: 500);
         }
 
         if ($existingTemplate instanceof DocumentTemplate) {
