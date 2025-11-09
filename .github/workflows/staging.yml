@@ -26,6 +26,16 @@ jobs:
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
+      - name: Создание минимального .env для PHPStan
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: |
+          if [ ! -f .env ]; then
+            echo "APP_ENV=dev" > .env
+            echo "APP_SECRET=temp_secret_for_phpstan" >> .env
+          fi
+          mkdir -p var/cache/dev
+          php bin/console cache:warmup --env=dev || true
+
       - name: Проверка кода PHPStan
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: make stan
