@@ -83,7 +83,7 @@ export default function Layout({ children }) {
                   }`}
                 >
                   <FileBarChart className="h-5 w-5" />
-                  <span className="text-sm font-medium">Документы</span>
+                  <span className="text-sm font-medium">Шаблоны документов</span>
                 </Link>
 
                 <Separator className="my-2" />

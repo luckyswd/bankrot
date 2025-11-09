@@ -52,7 +52,7 @@ function Login() {
       <div className="w-full max-w-md space-y-6">
         {/* Login Form */}
         <Card>
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle>Вход в систему</CardTitle>
             <CardDescription>
               Введите свои учетные данные для доступа
