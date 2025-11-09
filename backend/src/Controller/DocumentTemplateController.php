@@ -59,17 +59,13 @@ class DocumentTemplateController extends AbstractController
         if (is_dir($varDir) && !is_writable($varDir)) {
             $oldVarPerms = @fileperms($varDir);
             $varChmodSuccess = @chmod($varDir, 0777);
-            
+
             if (!$varChmodSuccess) {
                 $varOwner = @fileowner($varDir);
                 $currentUid = function_exists('posix_geteuid') ? @posix_geteuid() : null;
-                
+
                 if ($varOwner !== false && $currentUid !== null && $varOwner !== $currentUid) {
-                    throw new \RuntimeException(
-                        "Unable to create the \"{$uploadDir}\" directory. " .
-                        "The \"{$varDir}\" directory is not writable by the current process. " .
-                        "Please ensure the directory has write permissions (777) or change the owner."
-                    );
+                    throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. The \"{$varDir}\" directory is not writable by the current process. " . 'Please ensure the directory has write permissions (777) or change the owner.');
                 }
             }
         }
@@ -85,11 +81,7 @@ class DocumentTemplateController extends AbstractController
         if (!$created && !is_dir($uploadDir)) {
             $error = error_get_last();
             $errorMsg = $error ? $error['message'] : 'Unknown error';
-            throw new \RuntimeException(
-                "Unable to create the \"{$uploadDir}\" directory. " .
-                "Error: {$errorMsg}. " .
-                "Please ensure the parent directory \"{$varDir}\" has write permissions (777)."
-            );
+            throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory. Error: {$errorMsg}. Please ensure the parent directory \"{$varDir}\" has write permissions (777).");
         }
 
         if (is_dir($uploadDir) && !is_writable($uploadDir)) {
