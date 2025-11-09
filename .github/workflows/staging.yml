@@ -7,10 +7,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  check:
-    name: PHP stan\lint\tests
+  changes:
+    name: Определение изменений
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Проверка изменений
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  phpstan:
+    name: PHPStan
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
@@ -21,6 +44,14 @@ jobs:
           php-version: '8.4'
           extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
           coverage: none
+
+      - name: Получение кэша Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Установка зависимостей Composer
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
@@ -40,9 +71,65 @@ jobs:
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: make stan
 
+  lint:
+    name: PHP CS Fixer
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Настройка PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Получение кэша Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Установка зависимостей Composer
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
       - name: Проверка стиля кода
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: make lint
+
+  test:
+    name: PHPUnit Tests
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Настройка PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Получение кэша Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Установка зависимостей Composer
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Создание директории для базы данных
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
@@ -71,7 +158,8 @@ jobs:
 
   deploy-backend:
     name: Деплой бэкенда
-    needs: check
+    needs: [changes, phpstan, lint, test]
+    if: (needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch') && (needs.phpstan.result == 'success' || needs.phpstan.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
     
     steps:
@@ -111,12 +199,14 @@ jobs:
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
             cp .env.stage .env
             make composer-install
+            make fix-permissions
             make cc
             make db-migrate
 
   deploy-frontend:
     name: Деплой фронтенда
-    needs: check
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     
     steps:

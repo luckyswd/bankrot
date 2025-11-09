@@ -44,22 +44,52 @@ class DocumentTemplateController extends AbstractController
 
         $projectDir = $this->getParameter('kernel.project_dir');
         $varDir = $projectDir . '/var';
+        $oldVarPerms = null;
+        $varChmodSuccess = false;
+
+        if (!is_dir($varDir)) {
+            $oldUmask = umask(0000);
+            $varCreated = @mkdir($varDir, 0777, true);
+            umask(022);
+            if (!$varCreated && !is_dir($varDir)) {
+                throw new \RuntimeException("Unable to create the \"{$varDir}\" directory.");
+            }
+        }
 
         if (is_dir($varDir) && !is_writable($varDir)) {
             $oldVarPerms = @fileperms($varDir);
-            @chmod($varDir, 0777);
+            $varChmodSuccess = @chmod($varDir, 0777);
+            
+            if (!$varChmodSuccess) {
+                $varOwner = @fileowner($varDir);
+                $currentUid = function_exists('posix_geteuid') ? @posix_geteuid() : null;
+                
+                if ($varOwner !== false && $currentUid !== null && $varOwner !== $currentUid) {
+                    throw new \RuntimeException(
+                        "Unable to create the \"{$uploadDir}\" directory. " .
+                        "The \"{$varDir}\" directory is not writable by the current process. " .
+                        "Please ensure the directory has write permissions (777) or change the owner."
+                    );
+                }
+            }
         }
 
         $oldUmask = umask(0000);
-        $created = @mkdir($uploadDir, 0775, true);
-        umask($oldUmask);
+        $created = @mkdir($uploadDir, 0777, true);
+        umask(022);
 
-        if (isset($oldVarPerms)) {
+        if ($oldVarPerms !== null && $varChmodSuccess) {
             @chmod($varDir, $oldVarPerms);
         }
 
         if (!$created && !is_dir($uploadDir)) {
-            throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory.");
+            $error = error_get_last();
+            $errorMsg = $error ? $error['message'] : 'Unknown error';
+            throw new \RuntimeException(
+                "Unable to create the \"{$uploadDir}\" directory. " .
+                "Error: {$errorMsg}. " .
+                "Please ensure the parent directory \"{$varDir}\" has write permissions (777)."
+            );
         }
 
         if (is_dir($uploadDir) && !is_writable($uploadDir)) {
