@@ -35,25 +35,31 @@ jobs:
         run: |
           echo "APP_ENV=test" > .env
           echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
-          echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/test.db" >> .env
+          echo "DATABASE_URL=sqlite:///$(pwd)/var/test.db" >> .env
 
       - name: Создание схемы базы данных
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
           APP_ENV: "test"
-        run: php bin/console doctrine:schema:create --no-interaction
+        run: |
+          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
+          php bin/console doctrine:schema:create --no-interaction
 
       - name: Загрузка фикстур
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
           APP_ENV: "test"
-        run: make seed
+        run: |
+          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
+          make seed
 
       - name: Запуск тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
           APP_ENV: "test"
-        run: make test
+        run: |
+          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
+          make test
 
   deploy-backend:
     name: Деплой бэкенда
