@@ -17,3 +17,6 @@ test:
 
 seed:
 	php bin/console doctrine:fixtures:load --group=seed
+
+jwt-gen:
+	php bin/console lexik:jwt:generate-keypair

@@ -37,6 +37,12 @@ jobs:
           echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
           echo "DATABASE_URL=sqlite:///$(pwd)/var/test.db" >> .env
 
+      - name: Генерация JWT ключей
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        env:
+          APP_ENV: "test"
+        run: make jwt-gen
+
       - name: Создание схемы базы данных
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
