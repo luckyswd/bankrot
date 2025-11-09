@@ -10,20 +10,20 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251109230613 extends AbstractMigration
+final class Version20251109231740 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create courts table';
+        return 'Create fns table';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE courts (
+        $this->addSql('CREATE TABLE fns (
             id INT AUTO_INCREMENT NOT NULL,
             name VARCHAR(500) NOT NULL,
             address LONGTEXT DEFAULT NULL,
-            phone VARCHAR(50) DEFAULT NULL,
+            code VARCHAR(50) DEFAULT NULL,
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             PRIMARY KEY (id)
@@ -32,6 +32,6 @@ final class Version20251109230613 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP TABLE courts');
+        $this->addSql('DROP TABLE fns');
     }
 }

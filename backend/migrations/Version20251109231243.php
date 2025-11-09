@@ -35,4 +35,3 @@ final class Version20251109231243 extends AbstractMigration
         $this->addSql('DROP TABLE bailiffs');
     }
 }
-

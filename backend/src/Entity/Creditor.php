@@ -97,4 +97,3 @@ class Creditor extends BaseEntity
         return $this;
     }
 }
-

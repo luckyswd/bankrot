@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Court;
+use App\Entity\Rosgvardia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Court>
+ * @extends ServiceEntityRepository<Rosgvardia>
  */
-class CourtRepository extends ServiceEntityRepository
+class RosgvardiaRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Court::class);
+        parent::__construct($registry, Rosgvardia::class);
     }
 
     /**
@@ -26,32 +26,32 @@ class CourtRepository extends ServiceEntityRepository
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('c');
+        $qb = $this->createQueryBuilder('r');
 
         if ($search !== null && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->like('c.name', ':search'),
-                    $qb->expr()->like('c.address', ':search'),
-                    $qb->expr()->like('c.phone', ':search')
+                    $qb->expr()->like('r.name', ':search'),
+                    $qb->expr()->like('r.address', ':search'),
+                    $qb->expr()->like('r.phone', ':search')
                 )
             )
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        $qb->orderBy('c.name', 'ASC');
+        $qb->orderBy('r.name', 'ASC');
 
         return $qb;
     }
 
     /**
-     * Находит суды с пагинацией.
+     * Находит отделения Росгвардии с пагинацией.
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
      * @param string|null $search Поиск по наименованию, адресу, телефону
      *
-     * @return array{items: Court[], total: int, page: int, limit: int, pages: int}
+     * @return array{items: Rosgvardia[], total: int, page: int, limit: int, pages: int}
      */
     public function findPaginated(
         int $page = 1,
@@ -62,7 +62,7 @@ class CourtRepository extends ServiceEntityRepository
 
         // Подсчёт общего количества
         $countQb = clone $qb;
-        $total = (int)$countQb->select('COUNT(c.id)')
+        $total = (int)$countQb->select('COUNT(r.id)')
             ->getQuery()
             ->getSingleScalarResult();
 

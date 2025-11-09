@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\CourtRepository;
+use App\Repository\RosgvardiaRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CourtRepository::class)]
-#[ORM\Table(name: 'courts')]
-class Court extends BaseEntity
+#[ORM\Entity(repositoryClass: RosgvardiaRepository::class)]
+#[ORM\Table(name: 'rosgvardia')]
+class Rosgvardia extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

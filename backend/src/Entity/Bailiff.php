@@ -67,4 +67,3 @@ class Bailiff extends BaseEntity
         return $this;
     }
 }
-

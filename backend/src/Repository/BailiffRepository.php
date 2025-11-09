@@ -84,4 +84,3 @@ class BailiffRepository extends ServiceEntityRepository
         ];
     }
 }
-

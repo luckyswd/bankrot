@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\CourtRepository;
+use App\Repository\FnsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CourtRepository::class)]
-#[ORM\Table(name: 'courts')]
-class Court extends BaseEntity
+#[ORM\Entity(repositoryClass: FnsRepository::class)]
+#[ORM\Table(name: 'fns')]
+class Fns extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,7 +24,7 @@ class Court extends BaseEntity
     private ?string $address = null;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $phone = null;
+    private ?string $code = null;
 
     public function getId(): ?int
     {
@@ -55,14 +55,14 @@ class Court extends BaseEntity
         return $this;
     }
 
-    public function getPhone(): ?string
+    public function getCode(): ?string
     {
-        return $this->phone;
+        return $this->code;
     }
 
-    public function setPhone(?string $phone): self
+    public function setCode(?string $code): self
     {
-        $this->phone = $phone;
+        $this->code = $code;
 
         return $this;
     }

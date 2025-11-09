@@ -37,4 +37,3 @@ final class Version20251109225536 extends AbstractMigration
         $this->addSql('DROP TABLE creditors');
     }
 }
-

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Bailiff;
-use App\Repository\BailiffRepository;
+use App\Entity\Fns;
+use App\Repository\FnsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,26 +14,26 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/bailiffs')]
+#[Route('/api/v1/fns')]
 #[IsGranted('ROLE_ADMIN')]
-class BailiffController extends AbstractController
+class FnsController extends AbstractController
 {
     public function __construct(
-        private readonly BailiffRepository $bailiffRepository,
+        private readonly FnsRepository $fnsRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
-    #[Route('', name: 'api_bailiffs_list', methods: ['GET'])]
+    #[Route('', name: 'api_fns_list', methods: ['GET'])]
     #[OA\Get(
-        path: '/api/v1/bailiffs',
-        summary: 'Получить список отделений судебных приставов',
+        path: '/api/v1/fns',
+        summary: 'Получить список отделений ФНС',
         security: [['Bearer' => []]],
-        tags: ['Bailiffs'],
+        tags: ['FNS'],
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по отделению, адресу, телефону',
+                description: 'Поиск по наименованию, адресу, коду',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -65,9 +65,9 @@ class BailiffController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                                    new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                                    new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -96,7 +96,7 @@ class BailiffController extends AbstractController
         $page = max(1, (int)($request->query->get('page') ?? 1));
         $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->bailiffRepository->findPaginated(
+        $result = $this->fnsRepository->findPaginated(
             page: $page,
             limit: $limit,
             search: $search
@@ -104,12 +104,12 @@ class BailiffController extends AbstractController
 
         $data = [];
 
-        foreach ($result['items'] as $bailiff) {
+        foreach ($result['items'] as $fns) {
             $data[] = [
-                'id' => $bailiff->getId(),
-                'department' => $bailiff->getDepartment(),
-                'address' => $bailiff->getAddress(),
-                'phone' => $bailiff->getPhone(),
+                'id' => $fns->getId(),
+                'name' => $fns->getName(),
+                'address' => $fns->getAddress(),
+                'code' => $fns->getCode(),
             ];
         }
 
@@ -122,12 +122,12 @@ class BailiffController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'api_bailiffs_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'api_fns_show', methods: ['GET'])]
     #[OA\Get(
-        path: '/api/v1/bailiffs/{id}',
-        summary: 'Получить отделение приставов по ID',
+        path: '/api/v1/fns/{id}',
+        summary: 'Получить отделение ФНС по ID',
         security: [['Bearer' => []]],
-        tags: ['Bailiffs'],
+        tags: ['FNS'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -144,9 +144,9 @@ class BailiffController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -167,39 +167,39 @@ class BailiffController extends AbstractController
     )]
     public function show(int $id): JsonResponse
     {
-        $bailiff = $this->bailiffRepository->find($id);
+        $fns = $this->fnsRepository->find($id);
 
-        if (!$bailiff instanceof Bailiff) {
+        if (!$fns instanceof Fns) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
         return $this->json(data: [
-            'id' => $bailiff->getId(),
-            'department' => $bailiff->getDepartment(),
-            'address' => $bailiff->getAddress(),
-            'phone' => $bailiff->getPhone(),
+            'id' => $fns->getId(),
+            'name' => $fns->getName(),
+            'address' => $fns->getAddress(),
+            'code' => $fns->getCode(),
         ]);
     }
 
-    #[Route('', name: 'api_bailiffs_create', methods: ['POST'])]
+    #[Route('', name: 'api_fns_create', methods: ['POST'])]
     #[OA\Post(
-        path: '/api/v1/bailiffs',
-        summary: 'Создать отделение приставов',
+        path: '/api/v1/fns',
+        summary: 'Создать отделение ФНС',
         security: [['Bearer' => []]],
         requestBody: new OA\RequestBody(
             description: 'Данные отделения',
             required: true,
             content: new OA\JsonContent(
-                required: ['department'],
+                required: ['name'],
                 properties: [
-                    new OA\Property(property: 'department', description: 'Отделение', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
                 ],
                 type: 'object'
             )
         ),
-        tags: ['Bailiffs'],
+        tags: ['FNS'],
         responses: [
             new OA\Response(
                 response: 201,
@@ -207,9 +207,9 @@ class BailiffController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -232,48 +232,48 @@ class BailiffController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['department']) || empty(trim($data['department']))) {
-            return $this->json(data: ['error' => 'Отделение обязательно'], status: 400);
+        if (!isset($data['name']) || empty(trim($data['name']))) {
+            return $this->json(data: ['error' => 'Наименование обязательно'], status: 400);
         }
 
-        $bailiff = new Bailiff();
-        $bailiff->setDepartment(trim($data['department']));
-        $bailiff->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $bailiff->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
+        $fns = new Fns();
+        $fns->setName(trim($data['name']));
+        $fns->setAddress(isset($data['address']) ? trim($data['address']) : null);
+        $fns->setCode(isset($data['code']) ? trim($data['code']) : null);
 
-        $this->entityManager->persist($bailiff);
+        $this->entityManager->persist($fns);
         $this->entityManager->flush();
 
         return $this->json(
             data: [
-                'id' => $bailiff->getId(),
-                'department' => $bailiff->getDepartment(),
-                'address' => $bailiff->getAddress(),
-                'phone' => $bailiff->getPhone(),
+                'id' => $fns->getId(),
+                'name' => $fns->getName(),
+                'address' => $fns->getAddress(),
+                'code' => $fns->getCode(),
             ],
             status: 201
         );
     }
 
-    #[Route('/{id}', name: 'api_bailiffs_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'api_fns_update', methods: ['PUT'])]
     #[OA\Put(
-        path: '/api/v1/bailiffs/{id}',
-        summary: 'Обновить отделение приставов',
+        path: '/api/v1/fns/{id}',
+        summary: 'Обновить отделение ФНС',
         security: [['Bearer' => []]],
         requestBody: new OA\RequestBody(
             description: 'Данные отделения',
             required: true,
             content: new OA\JsonContent(
-                required: ['department'],
+                required: ['name'],
                 properties: [
-                    new OA\Property(property: 'department', description: 'Отделение', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
                 ],
                 type: 'object'
             )
         ),
-        tags: ['Bailiffs'],
+        tags: ['FNS'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -290,9 +290,9 @@ class BailiffController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -317,38 +317,38 @@ class BailiffController extends AbstractController
     )]
     public function update(int $id, Request $request): JsonResponse
     {
-        $bailiff = $this->bailiffRepository->find($id);
+        $fns = $this->fnsRepository->find($id);
 
-        if (!$bailiff instanceof Bailiff) {
+        if (!$fns instanceof Fns) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['department']) || empty(trim($data['department']))) {
-            return $this->json(data: ['error' => 'Отделение обязательно'], status: 400);
+        if (!isset($data['name']) || empty(trim($data['name']))) {
+            return $this->json(data: ['error' => 'Наименование обязательно'], status: 400);
         }
 
-        $bailiff->setDepartment(trim($data['department']));
-        $bailiff->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $bailiff->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
+        $fns->setName(trim($data['name']));
+        $fns->setAddress(isset($data['address']) ? trim($data['address']) : null);
+        $fns->setCode(isset($data['code']) ? trim($data['code']) : null);
 
         $this->entityManager->flush();
 
         return $this->json(data: [
-            'id' => $bailiff->getId(),
-            'department' => $bailiff->getDepartment(),
-            'address' => $bailiff->getAddress(),
-            'phone' => $bailiff->getPhone(),
+            'id' => $fns->getId(),
+            'name' => $fns->getName(),
+            'address' => $fns->getAddress(),
+            'code' => $fns->getCode(),
         ]);
     }
 
-    #[Route('/{id}', name: 'api_bailiffs_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'api_fns_delete', methods: ['DELETE'])]
     #[OA\Delete(
-        path: '/api/v1/bailiffs/{id}',
-        summary: 'Удалить отделение приставов',
+        path: '/api/v1/fns/{id}',
+        summary: 'Удалить отделение ФНС',
         security: [['Bearer' => []]],
-        tags: ['Bailiffs'],
+        tags: ['FNS'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -379,13 +379,13 @@ class BailiffController extends AbstractController
     )]
     public function delete(int $id): JsonResponse
     {
-        $bailiff = $this->bailiffRepository->find($id);
+        $fns = $this->fnsRepository->find($id);
 
-        if (!$bailiff instanceof Bailiff) {
+        if (!$fns instanceof Fns) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
-        $this->entityManager->remove($bailiff);
+        $this->entityManager->remove($fns);
         $this->entityManager->flush();
 
         return $this->json(data: [], status: 204);

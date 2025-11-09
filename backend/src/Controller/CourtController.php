@@ -391,4 +391,3 @@ class CourtController extends AbstractController
         return $this->json(data: [], status: 204);
     }
 }
-
