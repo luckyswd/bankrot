@@ -60,7 +60,7 @@ export default function Layout({ children }) {
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Сус. Упр. Док.</span>
+              <span className="font-bold text-lg">Система управление документами</span>
             </div>
           </div>
 
@@ -187,7 +187,7 @@ export default function Layout({ children }) {
                  location.pathname.includes('/databases/mchs') ? 'ГИМС МЧС' :
                  location.pathname.includes('/databases/rosgvardia') ? 'Росгвардия' :
                  location.pathname.includes('/client/') ? 'Карточка договора' :
-                 'Сус. Упр. Док.'}
+                 'Система управление документами'}
               </h1>
             </div>
 
