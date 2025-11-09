@@ -11,7 +11,7 @@ class TestApiController extends AbstractController
     #[Route('/api/v1/test', name: 'api_test', methods: ['GET'])]
     public function test(): JsonResponse
     {
-                return $this->json([
+        return $this->json([
             'status' => 'success',
             'message' => 'API работает! 🚀',
             'timestamp' => time(),
