@@ -9,7 +9,7 @@ parameters:
         - tests
     excludePaths:
         - vendor
-        - var
+        - var (?)
         - public
     
     # Symfony
