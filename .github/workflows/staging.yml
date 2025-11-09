@@ -240,6 +240,16 @@ jobs:
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
         run: npm run build
 
+      - name: Очистка старых файлов на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+            rm -rf * || true
+
       - name: Деплой фронтенда через SFTP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -250,4 +260,6 @@ jobs:
           source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
           target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
           strip_components: 1
+          overwrite: true
+          rm: true
 
