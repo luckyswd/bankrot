@@ -283,6 +283,7 @@ jobs:
       - name: Проверка собранного фронтенда
         run: |
           echo "=== Содержимое dist директории ==="
+          pwd
           ls -la ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
 
       - name: Деплой фронтенда через SCP
