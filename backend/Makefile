@@ -20,7 +20,6 @@ cc:
 	php bin/console doctrine:cache:clear-query
 	php bin/console doctrine:cache:clear-metadata
 
-
 check-code: stan lint
 
 stan:
@@ -29,11 +28,15 @@ stan:
 lint:
 	vendor/bin/php-cs-fixer fix --dry-run --config=.php-cs-fixer.dist.php -v --diff --ansi
 
+# Тестовая база данных SQLite (отдельная от основной MySQL базы)
+TEST_DB_URL = sqlite:///$(shell pwd)/var/test.db
+
 test-prepare:
 	mkdir -p var
 	rm -f var/test.db
-	php bin/console doctrine:schema:create --no-interaction
-	php bin/console doctrine:fixtures:load --group=seed --no-interaction
+	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:schema:drop --force --no-interaction --full-database || true
+	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:schema:create --no-interaction
+	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:fixtures:load --group=seed --no-interaction
 
 test: test-prepare
 	php bin/phpunit --no-coverage
