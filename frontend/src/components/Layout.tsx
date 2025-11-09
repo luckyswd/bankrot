@@ -177,7 +177,7 @@ export default function Layout({ children }) {
                  location.pathname.includes('/databases/fns') ? 'ФНС' :
                  location.pathname.includes('/databases/mchs') ? 'ГИМС МЧС' :
                  location.pathname.includes('/databases/rosgvardia') ? 'Росгвардия' :
-                 location.pathname.includes('/client/') ? 'Карточка договора' :
+                 location.pathname.includes('/contract/') ? 'Карточка договора' :
                  ''}
               </h1>
             </div>

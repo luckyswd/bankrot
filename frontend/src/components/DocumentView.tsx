@@ -6,11 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { ArrowLeft, Download, X } from 'lucide-react'
 
 function DocumentView() {
-  const { clientId, docType } = useParams()
+  const { contractId, docType } = useParams()
   const navigate = useNavigate()
   const { contracts } = useApp()
   
-  const contract = contracts.find(c => c.id === parseInt(clientId))
+  const contract = contracts.find(c => c.id === parseInt(contractId || ''))
   const template = documentTemplates[docType]
 
   if (!contract || !template) {
@@ -47,7 +47,7 @@ function DocumentView() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <CardHeader className="border-b">
