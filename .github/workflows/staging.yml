@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: Запуск тестов
+  check:
+    name: Проверка кода и тесты
     runs-on: ubuntu-latest
 
     steps:
@@ -25,6 +25,14 @@ jobs:
       - name: Установка зависимостей Composer
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Проверка кода PHPStan
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: make stan
+
+      - name: Проверка стиля кода
+        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        run: make lint
 
       - name: Создание директории для базы данных
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
@@ -43,22 +51,6 @@ jobs:
           APP_ENV: "test"
         run: make jwt-gen
 
-      - name: Создание схемы базы данных
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
-        env:
-          APP_ENV: "test"
-        run: |
-          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
-          php bin/console doctrine:schema:create --no-interaction
-
-      - name: Загрузка фикстур
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
-        env:
-          APP_ENV: "test"
-        run: |
-          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
-          make seed
-
       - name: Запуск тестов
         working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
         env:
@@ -69,7 +61,7 @@ jobs:
 
   deploy-backend:
     name: Деплой бэкенда
-    needs: test
+    needs: check
     runs-on: ubuntu-latest
     
     steps:
@@ -110,7 +102,7 @@ jobs:
 
   deploy-frontend:
     name: Деплой фронтенда
-    needs: test
+    needs: check
     runs-on: ubuntu-latest
     
     steps:
