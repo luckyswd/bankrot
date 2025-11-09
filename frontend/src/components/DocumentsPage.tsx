@@ -42,11 +42,22 @@ export default function DocumentsPage() {
   
   // Поиск и фильтры
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [pages, setPages] = useState(1)
   const limit = 10
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search.length >= 3 || search.length === 0) {
+        setDebouncedSearch(search)
+      }
+    }, 200)
+
+    return () => clearTimeout(timer)
+  }, [search])
 
   // Загрузка данных при изменении страницы, поиска или фильтра
   useEffect(() => {
@@ -58,8 +69,9 @@ export default function DocumentsPage() {
           limit: limit.toString(),
         })
         
-        if (search) {
-          params.append('search', search)
+        // Поиск только если 3 и более символов
+        if (debouncedSearch && debouncedSearch.length >= 3) {
+          params.append('search', debouncedSearch)
         }
         
         if (categoryFilter && categoryFilter !== '') {
@@ -94,14 +106,12 @@ export default function DocumentsPage() {
     }
 
     loadTemplates()
-  }, [page, search, categoryFilter, limit])
+  }, [page, debouncedSearch, categoryFilter, limit])
 
   // Сброс на первую страницу при изменении поиска или фильтра
   useEffect(() => {
-    if (page !== 1) {
-      setPage(1)
-    }
-  }, [search, categoryFilter, page])
+    setPage(1)
+  }, [debouncedSearch, categoryFilter])
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0]
@@ -163,8 +173,8 @@ export default function DocumentsPage() {
         page: page.toString(),
         limit: limit.toString(),
       })
-      if (search) {
-        params.append('search', search)
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch)
       }
       if (categoryFilter && categoryFilter !== '') {
         params.append('category', categoryFilter)
@@ -236,8 +246,8 @@ export default function DocumentsPage() {
         page: page.toString(),
         limit: limit.toString(),
       })
-      if (search) {
-        params.append('search', search)
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch)
       }
       if (categoryFilter && categoryFilter !== '') {
         params.append('category', categoryFilter)
@@ -390,7 +400,7 @@ export default function DocumentsPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Поиск по названию шаблона..."
+                    placeholder="Поиск по названию шаблона"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-10"
@@ -433,7 +443,7 @@ export default function DocumentsPage() {
                   {templates.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
-                        {search || (categoryFilter && categoryFilter !== '')
+                        {(debouncedSearch && debouncedSearch.length >= 3) || (categoryFilter && categoryFilter !== '')
                           ? 'Шаблоны не найдены'
                           : 'Нет шаблонов. Загрузите первый шаблон!'}
                       </TableCell>

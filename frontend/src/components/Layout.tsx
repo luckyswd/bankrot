@@ -170,7 +170,7 @@ export default function Layout({ children }) {
             <div className="flex-1">
               <h1 className="text-xl font-semibold">
                 {location.pathname === '/contracts' || location.pathname === '/' ? 'Договоры' : 
-                 location.pathname === '/documents' ? 'Документы' :
+                 location.pathname === '/documents' ? 'Шаблоны документов' :
                  location.pathname.includes('/databases/creditors') ? 'Кредиторы' :
                  location.pathname.includes('/databases/courts') ? 'Арбитражные суды' :
                  location.pathname.includes('/databases/bailiffs') ? 'Судебные приставы' :
