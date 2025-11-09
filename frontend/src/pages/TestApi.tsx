@@ -8,6 +8,9 @@ const TestApi = () => {
   useEffect(() => {
     console.log('🔍 API URL:', apiUrl)
 
+
+
+
     console.log('🚀 Отправляю запросы к backend...')
   }, [apiUrl])
 
