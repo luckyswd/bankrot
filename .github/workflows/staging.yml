@@ -28,6 +28,11 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
+      
+      - name: Вывод результатов проверки изменений
+        run: |
+          echo "Backend changes: ${{ steps.filter.outputs.backend }}"
+          echo "Frontend changes: ${{ steps.filter.outputs.frontend }}"
 
   phpstan:
     name: PHPStan
@@ -159,7 +164,7 @@ jobs:
   deploy-backend:
     name: Деплой бэкенда
     needs: [changes, phpstan, lint, test]
-    if: (needs.changes.outputs.backend == 'true' && (needs.phpstan.result == 'success' || needs.phpstan.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped')) || (github.event_name == 'workflow_dispatch' && needs.phpstan.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success')
+    if: needs.changes.outputs.backend == 'true' && needs.phpstan.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success'
     runs-on: ubuntu-latest
     
     steps:
