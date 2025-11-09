@@ -181,6 +181,24 @@ jobs:
       - name: Получение кода
         uses: actions/checkout@v4
 
+      - name: Очистка старых файлов бэкенда на сервере
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            # Удаляем старые файлы, но сохраняем vendor, var и .env файлы
+            find . -maxdepth 1 -type f -name "*.php" -delete
+            find . -maxdepth 1 -type f -name "*.json" -delete
+            find . -maxdepth 1 -type f -name "*.lock" -delete
+            find . -maxdepth 1 -type f -name "*.xml" -delete
+            find . -maxdepth 1 -type f -name "*.neon" -delete
+            find . -maxdepth 1 -type f -name "Makefile" -delete
+            # Удаляем директории кроме vendor и var
+            rm -rf bin/ config/ public/ src/ migrations/ templates/ translations/ || true
+
       - name: Подготовка файлов для деплоя
         run: |
           # Создаем временную директорию для деплоя
@@ -188,17 +206,22 @@ jobs:
           
           # Копируем файлы бэкенда, исключая ненужные
           cd ${{ secrets.LOCAL_BACKEND_DIR }}
-          find . -type f -name "*" | \
-          grep -v -E '(\.git|\.github|node_modules|tests|var/cache|var/log|\.env|\.phpunit\.cache|phpunit\.dist\.xml|docker-compose\.yml|Dockerfile|www\.conf|\.log|\.tmp)' | \
-          while read file; do
-            mkdir -p "../backend-deploy/$(dirname "$file")"
-            cp "$file" "../backend-deploy/$file"
-          done
-          
-          echo "=== Содержимое backend-deploy ==="
-          ls -la ../backend-deploy/
-          echo "=== Проверка наличия ключевых файлов ==="
-          ls -la ../backend-deploy/bin/ ../backend-deploy/src/ ../backend-deploy/config/ || echo "Некоторые директории отсутствуют"
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='var/cache/*' \
+            --exclude='var/log/*' \
+            --exclude='.env*' \
+            --exclude='.phpunit.cache' \
+            --exclude='phpunit.dist.xml' \
+            --exclude='docker-compose.yml' \
+            --exclude='Dockerfile' \
+            --exclude='www.conf' \
+            --exclude='*.log' \
+            --exclude='*.tmp' \
+            . ../backend-deploy/
 
       - name: Деплой бэкенда через SCP
         uses: appleboy/scp-action@v0.1.4
@@ -208,9 +231,20 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           port: 22
           source: "backend-deploy/*"
-          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
-          strip_components: 0
+          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
+          strip_components: 1
           overwrite: true
+
+      - name: Установка прав доступа
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STG_FTP_IP }}
+          username: ${{ secrets.STG_FTP_USERNAME }}
+          password: ${{ secrets.STG_FTP_PASSWORD }}
+          script: |
+            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
+            chmod -R 755 bin/ public/ src/ config/ migrations/
+            chmod 644 composer.json composer.lock symfony.lock
 
       - name: Установка зависимостей и запуск миграций
         uses: appleboy/ssh-action@v1.0.0
