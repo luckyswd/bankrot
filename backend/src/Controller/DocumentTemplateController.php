@@ -188,7 +188,7 @@ class DocumentTemplateController extends AbstractController
         $uploadDir = $this->getUploadDir();
 
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+            mkdir($uploadDir, 0777, true);
         }
 
         $fileName = uniqid('', true) . '_' . $file->getClientOriginalName();
