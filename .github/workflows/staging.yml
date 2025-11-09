@@ -19,11 +19,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Определение базового коммита
+        id: base
+        run: |
+          if [ -n "${{ github.event.before }}" ]; then
+            echo "ref=${{ github.event.before }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+
       - name: Проверка изменений
         uses: dorny/paths-filter@v2
         id: filter
         with:
-          base: ${{ github.event.before || github.sha~1 }}
+          base: ${{ steps.base.outputs.ref }}
           filters: |
             backend:
               - 'backend/**'
