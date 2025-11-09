@@ -16,13 +16,11 @@ db-migrate:
 
 cc:
 	php bin/console cache:clear --no-debug
-
-doctrine-cache-clear:
 	php bin/console doctrine:cache:clear-result
 	php bin/console doctrine:cache:clear-query
 	php bin/console doctrine:cache:clear-metadata
 
-deploy: composer-install cc doctrine-cache-clear db-migrate
+deploy: composer-install cc db-migrate
 
 check-code: stan lint
 
