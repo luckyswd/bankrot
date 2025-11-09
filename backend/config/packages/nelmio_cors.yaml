@@ -1,19 +1,15 @@
 nelmio_cors:
     defaults:
         origin_regex: true
-        allow_origin: ['*']
+        allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
         allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
         allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
         expose_headers: ['Link']
         max_age: 3600
-        allow_credentials: false
     paths:
         '^/api/':
             origin_regex: true
-            allow_origin:
-                - 'https://littlewell-app.work'
-                - 'https://www.littlewell-app.work'
-                - '^https?://(localhost|127\.0\.0\.1|.*\.localhost)(:\d+)?$'
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
             allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
             allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Accept', 'Origin']
             expose_headers: ['Link']
