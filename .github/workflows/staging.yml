@@ -176,34 +176,44 @@ jobs:
     needs: [changes, phpstan, lint, test]
     if: needs.changes.outputs.backend == 'true' && needs.phpstan.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
 
-      - name: Деплой бэкенда через FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      - name: Создание архива бэкенда
+        run: |
+          cd ${{ secrets.LOCAL_BACKEND_DIR }}
+          mkdir -p ../backend-deploy
+          # Копируем только нужные файлы, исключая ненужные
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='var/cache/*' \
+            --exclude='var/log/*' \
+            --exclude='.env*' \
+            --exclude='.phpunit.cache' \
+            --exclude='phpunit.dist.xml' \
+            --exclude='docker-compose.yml' \
+            --exclude='Dockerfile' \
+            --exclude='www.conf' \
+            --exclude='*.log' \
+            --exclude='*.tmp' \
+            . ../backend-deploy/
+
+      - name: Деплой бэкенда через SCP
+        uses: appleboy/scp-action@v0.1.4
         with:
-          server: ${{ secrets.STG_FTP_IP }}
+          host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
-          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
-          exclude: |
-            .git*
-            .github*
-            node_modules/
-            tests/
-            var/cache/*
-            var/log/*
-            .env*
-            .phpunit.cache
-            phpunit.dist.xml
-            docker-compose.yml
-            Dockerfile
-            www.conf
-            *.log
-            *.tmp
+          port: 22
+          source: "backend-deploy/*"
+          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
+          strip_components: 1
+          overwrite: true
 
       - name: Установка зависимостей и запуск миграций
         uses: appleboy/ssh-action@v1.0.0
@@ -241,22 +251,15 @@ jobs:
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
         run: npm run build
 
-      - name: Очистка старых файлов на сервере
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Деплой фронтенда через SCP
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-            rm -rf * || true
-
-      - name: Деплой фронтенда через FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
-        with:
-          server: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
-          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
-          dangerous-clean-slate: true
+          port: 22
+          source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
+          target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+          strip_components: 1
+          overwrite: true
+          rm: true
