@@ -408,7 +408,11 @@ function ClientCard() {
   // Автосохранение отключено - сохранение только по кнопке
 
   if (loading) {
-    return <Loading fullScreen text="Загрузка контракта..." />
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loading text="Загрузка контракта..." />
+      </div>
+    )
   }
 
   if (error || !contract) {
