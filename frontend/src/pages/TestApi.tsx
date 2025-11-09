@@ -7,11 +7,13 @@ const TestApi = () => {
 
   useEffect(() => {
     console.log('🔍 API URL:', apiUrl)
+
     console.log('🚀 Отправляю запросы к backend...')
   }, [apiUrl])
 
   const testQuery = useQuery({
     queryKey: ['test-api', 'test'],
+
     queryFn: () => apiRequest('/api/v1/test'),
   })
 
