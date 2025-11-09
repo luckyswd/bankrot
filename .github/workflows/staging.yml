@@ -199,7 +199,6 @@ jobs:
             cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
             cp .env.stage .env
             make composer-install
-            make fix-permissions
             make cc
             make db-migrate
 

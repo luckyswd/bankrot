@@ -16,7 +16,6 @@ import { FnsDatabase, MchsDatabase, RosgvardiaDatabase } from "./components/data
 import ClientCard from "./components/ClientCard"
 import TestApi from "./pages/TestApi"
 
-
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
   
