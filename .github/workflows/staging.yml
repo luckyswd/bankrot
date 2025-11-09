@@ -38,7 +38,7 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
-      
+
       - name: Вывод результатов проверки изменений
         run: |
           echo "Backend changes: ${{ steps.filter.outputs.backend }}"
@@ -181,28 +181,29 @@ jobs:
       - name: Получение кода
         uses: actions/checkout@v4
 
-      - name: Деплой бэкенда через SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Деплой бэкенда через FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          host: ${{ secrets.STG_FTP_IP }}
+          server: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          port: 22
-          source: "${{ secrets.LOCAL_BACKEND_DIR }}/*"
-          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}
-          strip_components: 1
+          local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
+          server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
           exclude: |
             .git*
-            node_modules
+            .github*
+            node_modules/
+            tests/
+            var/cache/*
+            var/log/*
             .env*
-            tests
-            var/cache
-            var/log
             .phpunit.cache
             phpunit.dist.xml
             docker-compose.yml
             Dockerfile
             www.conf
+            *.log
+            *.tmp
 
       - name: Установка зависимостей и запуск миграций
         uses: appleboy/ssh-action@v1.0.0
@@ -222,7 +223,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
@@ -250,16 +251,12 @@ jobs:
             cd ${{ secrets.STG_SERVER_FRONTEND_DIR }}
             rm -rf * || true
 
-      - name: Деплой фронтенда через SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Деплой фронтенда через FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          host: ${{ secrets.STG_FTP_IP }}
+          server: ${{ secrets.STG_FTP_IP }}
           username: ${{ secrets.STG_FTP_USERNAME }}
           password: ${{ secrets.STG_FTP_PASSWORD }}
-          port: 22
-          source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
-          target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-          strip_components: 1
-          overwrite: true
-          rm: true
-
+          local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
+          server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
+          dangerous-clean-slate: true
