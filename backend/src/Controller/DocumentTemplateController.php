@@ -36,6 +36,37 @@ class DocumentTemplateController extends AbstractController
         return $projectDir . '/var/document-templates';
     }
 
+    private function ensureUploadDirExists(string $uploadDir): void
+    {
+        if (is_dir($uploadDir)) {
+            return;
+        }
+
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $varDir = $projectDir . '/var';
+
+        if (is_dir($varDir) && !is_writable($varDir)) {
+            $oldVarPerms = @fileperms($varDir);
+            @chmod($varDir, 0777);
+        }
+
+        $oldUmask = umask(0000);
+        $created = @mkdir($uploadDir, 0775, true);
+        umask($oldUmask);
+
+        if (isset($oldVarPerms)) {
+            @chmod($varDir, $oldVarPerms);
+        }
+
+        if (!$created && !is_dir($uploadDir)) {
+            throw new \RuntimeException("Unable to create the \"{$uploadDir}\" directory.");
+        }
+
+        if (is_dir($uploadDir) && !is_writable($uploadDir)) {
+            @chmod($uploadDir, 0775);
+        }
+    }
+
     #[Route('', name: 'api_document_templates_list', methods: ['GET'])]
     #[OA\Get(
         path: '/api/v1/document-templates',
@@ -186,10 +217,7 @@ class DocumentTemplateController extends AbstractController
         $existingTemplate = $this->documentTemplateRepository->findByNameAndCategory(name: $name, category: $category);
 
         $uploadDir = $this->getUploadDir();
-
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
+        $this->ensureUploadDirExists($uploadDir);
 
         $fileName = uniqid('', true) . '_' . $file->getClientOriginalName();
         $filePath = $uploadDir . '/' . $fileName;
@@ -375,6 +403,7 @@ class DocumentTemplateController extends AbstractController
         }
 
         $uploadDir = $this->getUploadDir();
+        $this->ensureUploadDirExists($uploadDir);
         $fileName = uniqid('', true) . '_' . $file->getClientOriginalName();
         $newFilePath = $uploadDir . '/' . $fileName;
 

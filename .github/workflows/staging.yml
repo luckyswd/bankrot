@@ -8,7 +8,7 @@ on:
 
 jobs:
   check:
-    name: Проверка кода и тесты
+    name: PHP stan\lint\tests
     runs-on: ubuntu-latest
 
     steps:
