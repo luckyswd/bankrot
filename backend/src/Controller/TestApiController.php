@@ -14,7 +14,6 @@ class TestApiController extends AbstractController
         return $this->json([
             'status' => 'success',
             'message' => 'API работает! 🚀',
-            'timestamp' => time(),
             'data' => [
                 'backend' => 'Symfony 6.4',
                 'php_version' => PHP_VERSION,
