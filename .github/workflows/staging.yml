@@ -86,6 +86,9 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           local-dir: ${{ secrets.LOCAL_BACKEND_DIR }}/
           server-dir: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
+          protocol: ftp
+          port: 21
+          timeout: 60000
           exclude: |
             **/.git*
             **/.git*/**
@@ -140,6 +143,9 @@ jobs:
           password: ${{ secrets.STG_FTP_PASSWORD }}
           local-dir: ${{ secrets.LOCAL_FRONTEND_DIR }}/dist/
           server-dir: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
+          protocol: ftp
+          port: 21
+          timeout: 60000
           exclude: |
             **/.git*
             **/.git*/**
