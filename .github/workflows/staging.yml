@@ -307,3 +307,4 @@ jobs:
           script: |
             echo "=== Содержимое фронтенд директории на сервере ==="
             ls -la ${{ secrets.STG_SERVER_FRONTEND_DIR }}
+            pwd
