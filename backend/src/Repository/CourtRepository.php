@@ -22,7 +22,7 @@ class CourtRepository extends ServiceEntityRepository
     /**
      * Создаёт QueryBuilder с фильтрами по поиску.
      *
-     * @param string|null $search Поиск по наименованию, адресу, телефону
+     * @param string|null $search Поиск по наименованию, адресу
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
@@ -32,8 +32,7 @@ class CourtRepository extends ServiceEntityRepository
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->like('c.name', ':search'),
-                    $qb->expr()->like('c.address', ':search'),
-                    $qb->expr()->like('c.phone', ':search')
+                    $qb->expr()->like('c.address', ':search')
                 )
             )
                 ->setParameter('search', '%' . $search . '%');
@@ -49,7 +48,7 @@ class CourtRepository extends ServiceEntityRepository
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
-     * @param string|null $search Поиск по наименованию, адресу, телефону
+     * @param string|null $search Поиск по наименованию, адресу
      *
      * @return array{items: Court[], total: int, page: int, limit: int, pages: int}
      */

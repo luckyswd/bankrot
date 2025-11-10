@@ -33,7 +33,7 @@ class CourtController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по наименованию, адресу, телефону',
+                description: 'Поиск по наименованию, адресу',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -67,7 +67,6 @@ class CourtController extends AbstractController
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
                                     new OA\Property(property: 'name', type: 'string', example: 'Арбитражный суд города Москвы'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                                    new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -109,7 +108,6 @@ class CourtController extends AbstractController
                 'id' => $court->getId(),
                 'name' => $court->getName(),
                 'address' => $court->getAddress(),
-                'phone' => $court->getPhone(),
             ];
         }
 
@@ -177,7 +175,6 @@ class CourtController extends AbstractController
             'id' => $court->getId(),
             'name' => $court->getName(),
             'address' => $court->getAddress(),
-            'phone' => $court->getPhone(),
         ]);
     }
 
@@ -194,7 +191,6 @@ class CourtController extends AbstractController
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Арбитражный суд города Москвы'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                 ],
                 type: 'object'
             )
@@ -239,7 +235,6 @@ class CourtController extends AbstractController
         $court = new Court();
         $court->setName(trim($data['name']));
         $court->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $court->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
 
         $this->entityManager->persist($court);
         $this->entityManager->flush();
@@ -249,7 +244,6 @@ class CourtController extends AbstractController
                 'id' => $court->getId(),
                 'name' => $court->getName(),
                 'address' => $court->getAddress(),
-                'phone' => $court->getPhone(),
             ],
             status: 201
         );
@@ -268,7 +262,6 @@ class CourtController extends AbstractController
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Арбитражный суд города Москвы'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                 ],
                 type: 'object'
             )
@@ -331,7 +324,6 @@ class CourtController extends AbstractController
 
         $court->setName(trim($data['name']));
         $court->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $court->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
 
         $this->entityManager->flush();
 
@@ -339,7 +331,6 @@ class CourtController extends AbstractController
             'id' => $court->getId(),
             'name' => $court->getName(),
             'address' => $court->getAddress(),
-            'phone' => $court->getPhone(),
         ]);
     }
 

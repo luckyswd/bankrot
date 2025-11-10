@@ -29,7 +29,6 @@ export default function CourtsDatabase() {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
-    phone: '',
   })
 
   // Поиск и пагинация
@@ -98,7 +97,6 @@ export default function CourtsDatabase() {
     setFormData({
       name: '',
       address: '',
-      phone: '',
     })
     setEditingCourt(null)
   }
@@ -113,7 +111,6 @@ export default function CourtsDatabase() {
     setFormData({
       name: court.name || '',
       address: court.address || '',
-      phone: court.phone || '',
     })
     setEditDialogOpen(true)
   }
@@ -130,7 +127,6 @@ export default function CourtsDatabase() {
       const data = {
         name: formData.name.trim(),
         address: formData.address.trim() || null,
-        phone: formData.phone.trim() || null,
       }
 
       if (editingCourt) {
@@ -285,15 +281,6 @@ export default function CourtsDatabase() {
                 placeholder="Введите адрес"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Телефон</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Введите телефон"
-              />
-            </div>
           </div>
           <DialogFooter>
             <Button
@@ -334,7 +321,7 @@ export default function CourtsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, адресу, телефону"
+                placeholder="Поиск по наименованию, адресу"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -353,14 +340,13 @@ export default function CourtsDatabase() {
                   <TableRow>
                     <TableHead>Наименование</TableHead>
                     <TableHead>Адрес</TableHead>
-                    <TableHead>Телефон</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {courts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
                           ? 'Суды не найдены'
                           : 'Нет судов. Добавьте первый суд!'}
@@ -371,7 +357,6 @@ export default function CourtsDatabase() {
                       <TableRow key={court.id}>
                         <TableCell className="font-medium">{court.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{court.address || '-'}</TableCell>
-                        <TableCell className="text-sm">{court.phone || '-'}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button

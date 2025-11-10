@@ -184,7 +184,6 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
             $court = new Court();
             $court->setName($name);
             $court->setAddress($this->generateAddress());
-            $court->setPhone($this->generatePhone());
 
             $manager->persist($court);
             $this->addReference('court_' . ($index + 1), $court);
