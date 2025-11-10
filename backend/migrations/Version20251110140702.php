@@ -34,4 +34,3 @@ final class Version20251110140702 extends AbstractMigration
         $this->addSql('DROP TABLE gostekhnadzor');
     }
 }
-

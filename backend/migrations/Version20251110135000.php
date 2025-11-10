@@ -126,4 +126,3 @@ final class Version20251110135000 extends AbstractMigration
         $this->addSql('DELETE FROM mchs WHERE code IS NOT NULL');
     }
 }
-

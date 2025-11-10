@@ -27,4 +27,3 @@ final class Version20251110134726 extends AbstractMigration
         $this->addSql('ALTER TABLE mchs DROP code');
     }
 }
-

@@ -52,4 +52,3 @@ class Gostekhnadzor extends BaseEntity
         return $this;
     }
 }
-

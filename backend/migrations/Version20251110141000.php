@@ -105,4 +105,3 @@ final class Version20251110141000 extends AbstractMigration
         $this->addSql('DELETE FROM gostekhnadzor');
     }
 }
-
