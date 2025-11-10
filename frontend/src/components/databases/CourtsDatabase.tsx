@@ -1,35 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { apiRequest } from '../../config/api'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Input } from '../ui/input'
-import { Label } from '../ui/label'
 import { Toast } from '../ui/toast'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from '../Loading'
+import Loading from '../shared/Loading'
+import { useModalStore } from '../Modals/ModalProvider'
 
 export default function CourtsDatabase() {
   const [courts, setCourts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [courtToDelete, setCourtToDelete] = useState(null)
-  const [editingCourt, setEditingCourt] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-  })
+  const { openModal } = useModalStore()
 
   // Поиск и пагинация
   const [search, setSearch] = useState('')
@@ -50,168 +34,84 @@ export default function CourtsDatabase() {
   }, [search])
 
   // Загрузка данных при изменении страницы или поиска
-  useEffect(() => {
-    const loadCourts = async () => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        })
+  const fetchCourts = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      })
 
-        if (debouncedSearch && debouncedSearch.length >= 3) {
-          params.append('search', debouncedSearch)
-        }
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch)
+      }
 
-        const data = await apiRequest(`/api/v1/courts?${params.toString()}`)
+      const data = await apiRequest(`/courts?${params.toString()}`)
 
-        if (data && typeof data === 'object' && Array.isArray(data.items)) {
-          setCourts(data.items)
-          setTotal(data.total || 0)
-          setPages(data.pages || 1)
-        } else {
-          setCourts([])
-          setTotal(0)
-          setPages(1)
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке судов:', error)
-        setToast({ message: 'Не удалось загрузить список судов', type: 'error' })
+      if (data && typeof data === 'object' && Array.isArray(data.items)) {
+        setCourts(data.items)
+        setTotal(data.total || 0)
+        setPages(data.pages || 1)
+      } else {
         setCourts([])
         setTotal(0)
         setPages(1)
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error('Ошибка при загрузке судов:', error)
+      setToast({ message: 'Не удалось загрузить список судов', type: 'error' })
+      setCourts([])
+      setTotal(0)
+      setPages(1)
+    } finally {
+      setLoading(false)
     }
-
-    loadCourts()
   }, [page, debouncedSearch, limit])
+
+  useEffect(() => {
+    fetchCourts()
+  }, [fetchCourts])
 
   // Сброс на первую страницу при изменении поиска
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch])
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      address: '',
-    })
-    setEditingCourt(null)
-  }
-
   const handleCreateClick = () => {
-    resetForm()
-    setEditDialogOpen(true)
+    openModal('courtForm', {
+      onSuccess: async (message: string) => {
+        setToast({ message, type: 'success' })
+        await fetchCourts()
+      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
+    })
   }
 
   const handleEditClick = (court) => {
-    setEditingCourt(court)
-    setFormData({
-      name: court.name || '',
-      address: court.address || '',
+    openModal('courtForm', {
+      court,
+      onSuccess: async (message: string) => {
+        setToast({ message, type: 'success' })
+        await fetchCourts()
+      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
     })
-    setEditDialogOpen(true)
-  }
-
-  const handleSave = async () => {
-    if (!formData.name.trim()) {
-      setToast({ message: 'Наименование обязательно', type: 'error' })
-      return
-    }
-
-    try {
-      setSaving(true)
-
-      const data = {
-        name: formData.name.trim(),
-        address: formData.address.trim() || null,
-      }
-
-      if (editingCourt) {
-        await apiRequest(`/api/v1/courts/${editingCourt.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        setToast({ message: 'Суд успешно обновлен', type: 'success' })
-      } else {
-        await apiRequest('/api/v1/courts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        setToast({ message: 'Суд успешно создан', type: 'success' })
-      }
-
-      setEditDialogOpen(false)
-      resetForm()
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const response = await apiRequest(`/api/v1/courts?${params.toString()}`)
-      if (response && typeof response === 'object') {
-        setCourts(response.items || [])
-        setTotal(response.total || 0)
-        setPages(response.pages || 1)
-      }
-    } catch (error) {
-      console.error('Ошибка при сохранении суда:', error)
-      const errorMessage = error.body?.error || 'Не удалось сохранить суд'
-      setToast({ message: errorMessage, type: 'error' })
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDeleteClick = (court) => {
-    setCourtToDelete(court)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!courtToDelete) return
-
-    try {
-      await apiRequest(`/api/v1/courts/${courtToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      setToast({ message: 'Суд успешно удален', type: 'success' })
-      setDeleteDialogOpen(false)
-      setCourtToDelete(null)
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const data = await apiRequest(`/api/v1/courts?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setCourts(data.items || [])
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении суда:', error)
-      setToast({ message: 'Не удалось удалить суд', type: 'error' })
-      setDeleteDialogOpen(false)
-      setCourtToDelete(null)
-    }
+    openModal('confirm', {
+      title: 'Удаление суда',
+      description: `Вы уверены, что хотите удалить суд "${court.name}"? Это действие нельзя отменить.`,
+      confirmLabel: 'Удалить',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        await apiRequest(`/courts/${court.id}`, {
+          method: 'DELETE',
+        })
+        setToast({ message: 'Суд успешно удален', type: 'success' })
+        await fetchCourts()
+      },
+    })
   }
 
   return (
@@ -223,81 +123,6 @@ export default function CourtsDatabase() {
           onClose={() => setToast(null)}
         />
       )}
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Удаление суда</DialogTitle>
-            <DialogDescription>
-              Вы уверены, что хотите удалить суд "{courtToDelete?.name}"? Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setCourtToDelete(null)
-              }}
-            >
-              Отмена
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Удалить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editDialogOpen} onOpenChange={(open) => {
-        setEditDialogOpen(open)
-        if (!open) {
-          resetForm()
-        }
-      }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingCourt ? 'Редактировать суд' : 'Новый суд'}</DialogTitle>
-            <DialogDescription>
-              {editingCourt ? 'Измените данные суда' : 'Добавьте новый арбитражный суд в базу данных'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Наименование *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Введите наименование"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Адрес</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Введите адрес"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditDialogOpen(false)
-                resetForm()
-              }}
-            >
-              Отмена
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Сохранение...' : 'Сохранить'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <div className="flex justify-between items-center">
         <div>

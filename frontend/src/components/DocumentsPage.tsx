@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { apiRequest } from '../config/api'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
@@ -8,16 +8,9 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Toast } from './ui/toast'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog'
 import { Upload, Download, FileText, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from './Loading'
+import Loading from './shared/Loading'
+import { useModalStore } from './Modals/ModalProvider'
 
 const CATEGORIES = [
   { value: 'basic_info', label: 'Основная информация' },
@@ -37,8 +30,7 @@ export default function DocumentsPage() {
   const [templateName, setTemplateName] = useState('')
   const [templateCategory, setTemplateCategory] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [templateToDelete, setTemplateToDelete] = useState(null)
+  const { openModal } = useModalStore()
   
   // Поиск и фильтры
   const [search, setSearch] = useState('')
@@ -59,54 +51,52 @@ export default function DocumentsPage() {
     return () => clearTimeout(timer)
   }, [search])
 
-  // Загрузка данных при изменении страницы, поиска или фильтра
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        })
-        
-        // Поиск только если 3 и более символов
-        if (debouncedSearch && debouncedSearch.length >= 3) {
-          params.append('search', debouncedSearch)
-        }
-        
-        if (categoryFilter && categoryFilter !== '') {
-          params.append('category', categoryFilter)
-        }
-        
-        const data = await apiRequest(`/api/v1/document-templates?${params.toString()}`)
-        
-        if (data && typeof data === 'object' && Array.isArray(data.items)) {
-          setTemplates(data.items)
-          setTotal(data.total || 0)
-          setPages(data.pages || 1)
-        } else if (Array.isArray(data)) {
-          // Обработка старого формата ответа (массив)
-          setTemplates(data)
-          setTotal(data.length)
-          setPages(1)
-        } else {
-          setTemplates([])
-          setTotal(0)
-          setPages(1)
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке шаблонов:', error)
-        setToast({ message: 'Не удалось загрузить список шаблонов', type: 'error' })
+  const fetchTemplates = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      })
+
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch)
+      }
+
+      if (categoryFilter && categoryFilter !== '') {
+        params.append('category', categoryFilter)
+      }
+
+      const data = await apiRequest(`/document-templates?${params.toString()}`)
+
+      if (data && typeof data === 'object' && Array.isArray(data.items)) {
+        setTemplates(data.items)
+        setTotal(data.total || 0)
+        setPages(data.pages || 1)
+      } else if (Array.isArray(data)) {
+        setTemplates(data)
+        setTotal(data.length)
+        setPages(1)
+      } else {
         setTemplates([])
         setTotal(0)
         setPages(1)
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error('Ошибка при загрузке шаблонов:', error)
+      setToast({ message: 'Не удалось загрузить список шаблонов', type: 'error' })
+      setTemplates([])
+      setTotal(0)
+      setPages(1)
+    } finally {
+      setLoading(false)
     }
-
-    loadTemplates()
   }, [page, debouncedSearch, categoryFilter, limit])
+
+  // Загрузка данных при изменении страницы, поиска или фильтра
+  useEffect(() => {
+    fetchTemplates()
+  }, [fetchTemplates])
 
   // Сброс на первую страницу при изменении поиска или фильтра
   useEffect(() => {
@@ -148,7 +138,7 @@ export default function DocumentsPage() {
       formData.append('name', templateName.trim())
       formData.append('category', templateCategory)
 
-      await apiRequest('/api/v1/document-templates', {
+      await apiRequest('/document-templates', {
         method: 'POST',
         body: formData,
         headers: {},
@@ -174,7 +164,7 @@ export default function DocumentsPage() {
       if (categoryFilter && categoryFilter !== '') {
         params.append('category', categoryFilter)
       }
-      const data = await apiRequest(`/api/v1/document-templates?${params.toString()}`)
+      const data = await apiRequest(`/document-templates?${params.toString()}`)
       if (data && typeof data === 'object') {
         setTemplates(data.items || [])
         setTotal(data.total || 0)
@@ -192,7 +182,7 @@ export default function DocumentsPage() {
   const handleDownload = async (template) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/document-templates/${template.id}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}document-templates/${template.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -220,45 +210,19 @@ export default function DocumentsPage() {
   }
 
   const handleDeleteClick = (template) => {
-    setTemplateToDelete(template)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!templateToDelete) return
-
-    try {
-      await apiRequest(`/api/v1/document-templates/${templateToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      setToast({ message: 'Шаблон успешно удален', type: 'success' })
-      setDeleteDialogOpen(false)
-      setTemplateToDelete(null)
-      
-      // Перезагружаем список шаблонов
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      if (categoryFilter && categoryFilter !== '') {
-        params.append('category', categoryFilter)
-      }
-      const data = await apiRequest(`/api/v1/document-templates?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setTemplates(data.items || [])
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении шаблона:', error)
-      setToast({ message: 'Не удалось удалить шаблон', type: 'error' })
-      setDeleteDialogOpen(false)
-      setTemplateToDelete(null)
-    }
+    openModal('confirm', {
+      title: 'Удаление шаблона',
+      description: `Вы уверены, что хотите удалить шаблон "${template.name}"? Это действие нельзя отменить.`,
+      confirmLabel: 'Удалить',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        await apiRequest(`/document-templates/${template.id}`, {
+          method: 'DELETE',
+        })
+        setToast({ message: 'Шаблон успешно удален', type: 'success' })
+        await fetchTemplates()
+      },
+    })
   }
 
   const getCategoryColor = (category) => {
@@ -284,33 +248,6 @@ export default function DocumentsPage() {
         />
       )}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Удаление шаблона</DialogTitle>
-            <DialogDescription>
-              Вы уверены, что хотите удалить шаблон "{templateToDelete?.name}"? Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setTemplateToDelete(null)
-              }}
-            >
-              Отмена
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-            >
-              Удалить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {/* Upload Card */}
       <Card>
         <CardHeader>

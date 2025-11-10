@@ -1,36 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { apiRequest } from '../../config/api'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Input } from '../ui/input'
-import { Label } from '../ui/label'
 import { Toast } from '../ui/toast'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from '../Loading'
+import Loading from '../shared/Loading'
+import { useModalStore } from '../Modals/ModalProvider'
 
 export default function BailiffsDatabase() {
   const [bailiffs, setBailiffs] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [bailiffToDelete, setBailiffToDelete] = useState(null)
-  const [editingBailiff, setEditingBailiff] = useState(null)
-  const [formData, setFormData] = useState({
-    department: '',
-    address: '',
-    phone: '',
-  })
+  const { openModal } = useModalStore()
 
   // Поиск и пагинация
   const [search, setSearch] = useState('')
@@ -50,172 +33,84 @@ export default function BailiffsDatabase() {
     return () => clearTimeout(timer)
   }, [search])
 
-  // Загрузка данных при изменении страницы или поиска
-  useEffect(() => {
-    const loadBailiffs = async () => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        })
+  const fetchBailiffs = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      })
 
-        if (debouncedSearch && debouncedSearch.length >= 3) {
-          params.append('search', debouncedSearch)
-        }
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch)
+      }
 
-        const data = await apiRequest(`/api/v1/bailiffs?${params.toString()}`)
+      const data = await apiRequest(`/bailiffs?${params.toString()}`)
 
-        if (data && typeof data === 'object' && Array.isArray(data.items)) {
-          setBailiffs(data.items)
-          setTotal(data.total || 0)
-          setPages(data.pages || 1)
-        } else {
-          setBailiffs([])
-          setTotal(0)
-          setPages(1)
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке отделений приставов:', error)
-        setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+      if (data && typeof data === 'object' && Array.isArray(data.items)) {
+        setBailiffs(data.items)
+        setTotal(data.total || 0)
+        setPages(data.pages || 1)
+      } else {
         setBailiffs([])
         setTotal(0)
         setPages(1)
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error('Ошибка при загрузке отделений приставов:', error)
+      setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+      setBailiffs([])
+      setTotal(0)
+      setPages(1)
+    } finally {
+      setLoading(false)
     }
-
-    loadBailiffs()
   }, [page, debouncedSearch, limit])
+
+  useEffect(() => {
+    fetchBailiffs()
+  }, [fetchBailiffs])
 
   // Сброс на первую страницу при изменении поиска
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch])
 
-  const resetForm = () => {
-    setFormData({
-      department: '',
-      address: '',
-      phone: '',
-    })
-    setEditingBailiff(null)
-  }
-
   const handleCreateClick = () => {
-    resetForm()
-    setEditDialogOpen(true)
+    openModal('bailiffForm', {
+      onSuccess: async (message: string) => {
+        setToast({ message, type: 'success' })
+        await fetchBailiffs()
+      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
+    })
   }
 
   const handleEditClick = (bailiff) => {
-    setEditingBailiff(bailiff)
-    setFormData({
-      department: bailiff.department || '',
-      address: bailiff.address || '',
-      phone: bailiff.phone || '',
+    openModal('bailiffForm', {
+      bailiff,
+      onSuccess: async (message: string) => {
+        setToast({ message, type: 'success' })
+        await fetchBailiffs()
+      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
     })
-    setEditDialogOpen(true)
-  }
-
-  const handleSave = async () => {
-    if (!formData.department.trim()) {
-      setToast({ message: 'Отделение обязательно', type: 'error' })
-      return
-    }
-
-    try {
-      setSaving(true)
-
-      const data = {
-        department: formData.department.trim(),
-        address: formData.address.trim() || null,
-        phone: formData.phone.trim() || null,
-      }
-
-      if (editingBailiff) {
-        await apiRequest(`/api/v1/bailiffs/${editingBailiff.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        setToast({ message: 'Отделение успешно обновлено', type: 'success' })
-      } else {
-        await apiRequest('/api/v1/bailiffs', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        setToast({ message: 'Отделение успешно создано', type: 'success' })
-      }
-
-      setEditDialogOpen(false)
-      resetForm()
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const response = await apiRequest(`/api/v1/bailiffs?${params.toString()}`)
-      if (response && typeof response === 'object') {
-        setBailiffs(response.items || [])
-        setTotal(response.total || 0)
-        setPages(response.pages || 1)
-      }
-    } catch (error) {
-      console.error('Ошибка при сохранении отделения:', error)
-      const errorMessage = error.body?.error || 'Не удалось сохранить отделение'
-      setToast({ message: errorMessage, type: 'error' })
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDeleteClick = (bailiff) => {
-    setBailiffToDelete(bailiff)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!bailiffToDelete) return
-
-    try {
-      await apiRequest(`/api/v1/bailiffs/${bailiffToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      setToast({ message: 'Отделение успешно удалено', type: 'success' })
-      setDeleteDialogOpen(false)
-      setBailiffToDelete(null)
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const data = await apiRequest(`/api/v1/bailiffs?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setBailiffs(data.items || [])
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении отделения:', error)
-      setToast({ message: 'Не удалось удалить отделение', type: 'error' })
-      setDeleteDialogOpen(false)
-      setBailiffToDelete(null)
-    }
+    openModal('confirm', {
+      title: 'Удаление отделения',
+      description: `Вы уверены, что хотите удалить отделение "${bailiff.department}"? Это действие нельзя отменить.`,
+      confirmLabel: 'Удалить',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        await apiRequest(`/bailiffs/${bailiff.id}`, {
+          method: 'DELETE',
+        })
+        setToast({ message: 'Отделение успешно удалено', type: 'success' })
+        await fetchBailiffs()
+      },
+    })
   }
 
   return (
@@ -227,90 +122,6 @@ export default function BailiffsDatabase() {
           onClose={() => setToast(null)}
         />
       )}
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Удаление отделения</DialogTitle>
-            <DialogDescription>
-              Вы уверены, что хотите удалить отделение "{bailiffToDelete?.department}"? Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setBailiffToDelete(null)
-              }}
-            >
-              Отмена
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Удалить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editDialogOpen} onOpenChange={(open) => {
-        setEditDialogOpen(open)
-        if (!open) {
-          resetForm()
-        }
-      }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingBailiff ? 'Редактировать отделение' : 'Новое отделение'}</DialogTitle>
-            <DialogDescription>
-              {editingBailiff ? 'Измените данные отделения' : 'Добавьте новое отделение судебных приставов в базу данных'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="department">Отделение *</Label>
-              <Input
-                id="department"
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                placeholder="Введите наименование отделения"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Адрес</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Введите адрес"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Телефон</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Введите телефон"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditDialogOpen(false)
-                resetForm()
-              }}
-            >
-              Отмена
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Сохранение...' : 'Сохранить'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <div className="flex justify-between items-center">
         <div>

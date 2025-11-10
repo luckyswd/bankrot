@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { apiRequest } from '../../config/api'
-import { Button } from '../ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Input } from '../ui/input'
-import { Toast } from '../ui/toast'
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { Button } from '@ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
+import { Input } from '@ui/input'
+import { Toast } from '@ui/toast'
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search} from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
-import { CREDITOR_TYPES } from './constants'
 
-export default function CreditorsDatabase() {
-  const [creditors, setCreditors] = useState([])
+
+export function FnsDatabase() {
+  const [fns, setFns] = useState([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
@@ -34,7 +34,7 @@ export default function CreditorsDatabase() {
     return () => clearTimeout(timer)
   }, [search])
 
-  const fetchCreditors = useCallback(async () => {
+  const fetchFns = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -46,21 +46,21 @@ export default function CreditorsDatabase() {
         params.append('search', debouncedSearch)
       }
 
-      const data = await apiRequest(`/creditors?${params.toString()}`)
+      const data = await apiRequest(`/fns?${params.toString()}`)
 
       if (data && typeof data === 'object' && Array.isArray(data.items)) {
-        setCreditors(data.items)
+        setFns(data.items)
         setTotal(data.total || 0)
         setPages(data.pages || 1)
       } else {
-        setCreditors([])
+        setFns([])
         setTotal(0)
         setPages(1)
       }
     } catch (error) {
-      console.error('Ошибка при загрузке кредиторов:', error)
-      setToast({ message: 'Не удалось загрузить список кредиторов', type: 'error' })
-      setCreditors([])
+      console.error('Ошибка при загрузке отделений ФНС:', error)
+      setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+      setFns([])
       setTotal(0)
       setPages(1)
     } finally {
@@ -69,8 +69,8 @@ export default function CreditorsDatabase() {
   }, [page, debouncedSearch, limit])
 
   useEffect(() => {
-    fetchCreditors()
-  }, [fetchCreditors])
+    fetchFns()
+  }, [fetchFns])
 
   // Сброс на первую страницу при изменении поиска
   useEffect(() => {
@@ -78,49 +78,40 @@ export default function CreditorsDatabase() {
   }, [debouncedSearch])
 
   const handleCreateClick = () => {
-    openModal('creditorForm', {
+    openModal('fnsForm', {
       onSuccess: async (message: string) => {
         setToast({ message, type: 'success' })
-        await fetchCreditors()
+        await fetchFns()
       },
-      onError: (message: string) => {
-        setToast({ message, type: 'error' })
-      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
     })
   }
 
-  const handleEditClick = (creditor) => {
-    openModal('creditorForm', {
-      creditor,
+  const handleEditClick = (fnsItem) => {
+    openModal('fnsForm', {
+      branch: fnsItem,
       onSuccess: async (message: string) => {
         setToast({ message, type: 'success' })
-        await fetchCreditors()
+        await fetchFns()
       },
-      onError: (message: string) => {
-        setToast({ message, type: 'error' })
-      },
+      onError: (message: string) => setToast({ message, type: 'error' }),
     })
   }
 
-  const handleDeleteClick = (creditor) => {
+  const handleDeleteClick = (fnsItem) => {
     openModal('confirm', {
-      title: 'Удаление кредитора',
-      description: `Вы уверены, что хотите удалить кредитора "${creditor.name}"? Это действие нельзя отменить.`,
+      title: 'Удаление отделения',
+      description: `Вы уверены, что хотите удалить отделение "${fnsItem.name}"? Это действие нельзя отменить.`,
       confirmLabel: 'Удалить',
       confirmVariant: 'destructive',
       onConfirm: async () => {
-        await apiRequest(`/creditors/${creditor.id}`, {
+        await apiRequest(`/fns/${fnsItem.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Кредитор успешно удален', type: 'success' })
-        await fetchCreditors()
+        setToast({ message: 'Отделение успешно удалено', type: 'success' })
+        await fetchFns()
       },
     })
-  }
-
-  const getTypeLabel = (type) => {
-    const found = CREDITOR_TYPES.find((t) => t.value === type)
-    return found ? found.label : type || '-'
   }
 
   return (
@@ -135,19 +126,19 @@ export default function CreditorsDatabase() {
 
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold">Кредиторы</h2>
-          <p className="text-muted-foreground">Управление базой кредиторов</p>
+          <h2 className="text-3xl font-bold">ФНС</h2>
+          <p className="text-muted-foreground">Управление базой инспекций ФНС</p>
         </div>
         <Button onClick={handleCreateClick}>
           <Plus className="h-4 w-4 mr-2" />
-          Добавить кредитора
+          Добавить отделение
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Список кредиторов ({total})</CardTitle>
-          <CardDescription>Все кредиторы в базе данных</CardDescription>
+          <CardTitle>Список отделений ({total})</CardTitle>
+          <CardDescription>Все отделения ФНС в базе данных</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Поиск */}
@@ -155,7 +146,7 @@ export default function CreditorsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, ИНН, ОГРН"
+                placeholder="Поиск по наименованию, адресу, коду"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -165,7 +156,7 @@ export default function CreditorsDatabase() {
 
           {loading ? (
             <div className="py-8">
-              <Loading text="Загрузка кредиторов..." />
+              <Loading text="Загрузка отделений..." />
             </div>
           ) : (
             <>
@@ -173,36 +164,32 @@ export default function CreditorsDatabase() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Наименование</TableHead>
-                    <TableHead>ИНН</TableHead>
-                    <TableHead>ОГРН</TableHead>
-                    <TableHead>Тип</TableHead>
                     <TableHead>Адрес</TableHead>
+                    <TableHead>Код</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {creditors.length === 0 ? (
+                  {fns.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
-                          ? 'Кредиторы не найдены'
-                          : 'Нет кредиторов. Добавьте первого кредитора!'}
+                          ? 'Отделения не найдены'
+                          : 'Нет отделений. Добавьте первое отделение!'}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    creditors.map((creditor) => (
-                      <TableRow key={creditor.id}>
-                        <TableCell className="font-medium">{creditor.name}</TableCell>
-                        <TableCell className="font-mono text-sm">{creditor.inn || '-'}</TableCell>
-                        <TableCell className="font-mono text-sm">{creditor.ogrn || '-'}</TableCell>
-                        <TableCell>{getTypeLabel(creditor.type)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{creditor.address || '-'}</TableCell>
+                    fns.map((fnsItem) => (
+                      <TableRow key={fnsItem.id}>
+                        <TableCell className="font-medium">{fnsItem.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{fnsItem.address || '-'}</TableCell>
+                        <TableCell className="text-sm font-mono">{fnsItem.code || '-'}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleEditClick(creditor)}
+                              onClick={() => handleEditClick(fnsItem)}
                               title="Редактировать"
                             >
                               <Edit className="h-4 w-4" />
@@ -210,7 +197,7 @@ export default function CreditorsDatabase() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteClick(creditor)}
+                              onClick={() => handleDeleteClick(fnsItem)}
                               title="Удалить"
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />

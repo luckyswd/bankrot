@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isFetching,
   } = useQuery<AuthUser | null>({
     queryKey: ["auth", "me"],
-    queryFn: () => apiRequest("/api/v1/me"),
+    queryFn: () => apiRequest("/me"),
     enabled: Boolean(token),
     retry: false,
   })
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const loginMutation = useMutation<LoginResponse, Error, { username: string; password: string }>({
     mutationFn: ({ username, password }) =>
-      apiRequest("/api/v1/login", {
+      apiRequest("/login", {
         method: "POST",
         auth: false,
         body: JSON.stringify({ username, password }),

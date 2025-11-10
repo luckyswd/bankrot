@@ -9,294 +9,17 @@ import { apiRequest } from "@/config/api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import Loading from "@/components/Loading"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Loading from "@/components/shared/Loading"
 
 import { GeneralTab, SaveContext } from "./General"
 import { PretrialTab } from "./Pretrial"
 import { JudicialTab } from "./JudicialTab"
+import { FormValues, PrimaryInfoFields } from "./types"
+import { convertApiDataToFormValues, createDefaultFormValues } from "./helpers"
 
-type PrimaryInfoFields = {
-  lastName?: string | null
-  firstName?: string | null
-  middleName?: string | null
-  isLastNameChanged?: boolean | null
-  changedLastName?: string | null
-  birthDate?: string | null
-  birthPlace?: string | null
-  snils?: string | null
-  registrationRegion?: string | null
-  registrationDistrict?: string | null
-  registrationCity?: string | null
-  registrationSettlement?: string | null
-  registrationStreet?: string | null
-  registrationHouse?: string | null
-  registrationBuilding?: string | null
-  registrationApartment?: string | null
-  passportSeries?: string | null
-  passportNumber?: string | null
-  passportIssuedBy?: string | null
-  passportIssuedDate?: string | null
-  passportDepartmentCode?: string | null
-  maritalStatus?: string | null
-  spouseFullName?: string | null
-  spouseBirthDate?: string | null
-  hasMinorChildren?: boolean | null
-  children?: Array<{
-    firstName: string
-    lastName: string
-    middleName?: string | null
-    isLastNameChanged: boolean
-    changedLastName?: string | null
-    birthDate: string
-  }> | null
-  isStudent?: boolean | null
-  employerName?: string | null
-  employerAddress?: string | null
-  employerInn?: string | null
-  socialBenefits?: string | null
-  phone?: string | null
-  email?: string | null
-  mailingAddress?: string | null
-  debtAmount?: string | null
-  hasEnforcementProceedings?: boolean | null
-  contractNumber?: string | null
-  contractDate?: string | null
-}
 
-type PretrialFields = {
-  court: string
-  creditors: string
-  powerOfAttorneyNumber: string
-  powerOfAttorneyDate: string
-  creditor: string
-  caseNumber: string
-  hearingDate: string
-  hearingTime: string
-}
 
-type IntroductionFields = {
-  courtDecisionDate: string
-  gims: string
-  gostechnadzor: string
-  fns: string
-  documentNumber: string
-  caseNumber: string
-  rosaviation: string
-  caseNumber2: string
-  judge: string
-  bailiff: string
-  executionNumber: string
-  executionDate: string
-  specialAccountNumber: string
-}
-
-type ProcedureFields = {
-  creditorRequirement: string
-  receivedRequirements: string
-  principalAmount: string
-}
-
-type FormSections = {
-  primaryInfo: PrimaryInfoFields
-  pretrial: PretrialFields
-  introduction: IntroductionFields
-  procedure: ProcedureFields
-}
-
-export type FormValues = FormSections & Record<string, unknown>
-
-const defaultPrimaryInfo: PrimaryInfoFields = {
-  lastName: null,
-  firstName: null,
-  middleName: null,
-  isLastNameChanged: null,
-  changedLastName: null,
-  birthDate: null,
-  birthPlace: null,
-  snils: null,
-  registrationRegion: null,
-  registrationDistrict: null,
-  registrationCity: null,
-  registrationSettlement: null,
-  registrationStreet: null,
-  registrationHouse: null,
-  registrationBuilding: null,
-  registrationApartment: null,
-  passportSeries: null,
-  passportNumber: null,
-  passportIssuedBy: null,
-  passportIssuedDate: null,
-  passportDepartmentCode: null,
-  maritalStatus: null,
-  spouseFullName: null,
-  spouseBirthDate: null,
-  hasMinorChildren: null,
-  children: null,
-  isStudent: null,
-  employerName: null,
-  employerAddress: null,
-  employerInn: null,
-  socialBenefits: null,
-  phone: null,
-  email: null,
-  mailingAddress: null,
-  debtAmount: null,
-  hasEnforcementProceedings: null,
-  contractNumber: null,
-  contractDate: null,
-}
-
-const defaultPretrial: PretrialFields = {
-  court: "",
-  creditors: "",
-  powerOfAttorneyNumber: "",
-  powerOfAttorneyDate: "",
-  creditor: "",
-  caseNumber: "",
-  hearingDate: "",
-  hearingTime: "",
-}
-
-const defaultIntroduction: IntroductionFields = {
-  courtDecisionDate: "",
-  gims: "",
-  gostechnadzor: "",
-  fns: "",
-  documentNumber: "",
-  caseNumber: "",
-  rosaviation: "",
-  caseNumber2: "",
-  judge: "",
-  bailiff: "",
-  executionNumber: "",
-  executionDate: "",
-  specialAccountNumber: "",
-}
-
-const defaultProcedure: ProcedureFields = {
-  creditorRequirement: "",
-  receivedRequirements: "",
-  principalAmount: "",
-}
-
-const createDefaultFormValues = (): FormValues => ({
-  primaryInfo: { ...defaultPrimaryInfo },
-  pretrial: { ...defaultPretrial },
-  introduction: { ...defaultIntroduction },
-  procedure: { ...defaultProcedure },
-})
-
-// Преобразование данных из API формата в формат формы
-const convertApiDataToFormValues = (apiData?: Record<string, unknown>): FormValues => {
-  const defaults = createDefaultFormValues()
-  if (!apiData) {
-    return defaults
-  }
-
-  const basicInfo = apiData.basic_info as Record<string, unknown> | undefined ?? {}
-  
-  // Преобразуем даты из формата API в строки
-  const formatDate = (date: unknown): string | null => {
-    if (!date) return null
-    if (typeof date === 'string') return date
-    if (date instanceof Date) return date.toISOString().split('T')[0]
-    return String(date)
-  }
-
-  return {
-    ...defaults,
-    primaryInfo: {
-      ...defaults.primaryInfo,
-      lastName: basicInfo.lastName ?? null,
-      firstName: basicInfo.firstName ?? null,
-      middleName: basicInfo.middleName ?? null,
-      isLastNameChanged: basicInfo.isLastNameChanged ?? null,
-      changedLastName: basicInfo.changedLastName ?? null,
-      birthDate: formatDate(basicInfo.birthDate),
-      birthPlace: basicInfo.birthPlace ?? null,
-      snils: basicInfo.snils ?? null,
-      registrationRegion: basicInfo.registrationRegion ?? null,
-      registrationDistrict: basicInfo.registrationDistrict ?? null,
-      registrationCity: basicInfo.registrationCity ?? null,
-      registrationSettlement: basicInfo.registrationSettlement ?? null,
-      registrationStreet: basicInfo.registrationStreet ?? null,
-      registrationHouse: basicInfo.registrationHouse ?? null,
-      registrationBuilding: basicInfo.registrationBuilding ?? null,
-      registrationApartment: basicInfo.registrationApartment ?? null,
-      passportSeries: basicInfo.passportSeries ?? null,
-      passportNumber: basicInfo.passportNumber ?? null,
-      passportIssuedBy: basicInfo.passportIssuedBy ?? null,
-      passportIssuedDate: formatDate(basicInfo.passportIssuedDate),
-      passportDepartmentCode: basicInfo.passportDepartmentCode ?? null,
-      maritalStatus: basicInfo.maritalStatus ?? null,
-      spouseFullName: basicInfo.spouseFullName ?? null,
-      spouseBirthDate: formatDate(basicInfo.spouseBirthDate),
-      hasMinorChildren: basicInfo.hasMinorChildren ?? null,
-      children: basicInfo.children ?? null,
-      isStudent: basicInfo.isStudent ?? null,
-      employerName: basicInfo.employerName ?? null,
-      employerAddress: basicInfo.employerAddress ?? null,
-      employerInn: basicInfo.employerInn ?? null,
-      socialBenefits: basicInfo.socialBenefits ?? null,
-      phone: basicInfo.phone ?? null,
-      email: basicInfo.email ?? null,
-      mailingAddress: basicInfo.mailingAddress ?? null,
-      debtAmount: basicInfo.debtAmount ? String(basicInfo.debtAmount) : null,
-      hasEnforcementProceedings: basicInfo.hasEnforcementProceedings ?? null,
-      contractNumber: basicInfo.contractNumber ?? null,
-      contractDate: formatDate(basicInfo.contractDate),
-    },
-    pretrial: {
-      ...defaults.pretrial,
-      ...(apiData.pre_court as Partial<PretrialFields> ?? {}),
-    },
-    introduction: {
-      ...defaults.introduction,
-      ...(apiData.procedure_initiation as Partial<IntroductionFields> ?? {}),
-    },
-    procedure: {
-      ...defaults.procedure,
-      ...(apiData.procedure as Partial<ProcedureFields> ?? {}),
-    },
-  }
-}
-
-const buildFormValues = (contract?: Record<string, unknown>): FormValues => {
-  const defaults = createDefaultFormValues()
-  if (!contract) {
-    return defaults
-  }
-
-  // Если данные пришли из API (с basic_info, pre_court и т.д.)
-  if (contract.basic_info || contract.pre_court || contract.procedure_initiation || contract.procedure) {
-    return convertApiDataToFormValues(contract)
-  }
-
-  // Если данные в старом формате (primaryInfo, pretrial и т.д.)
-  const overrides = contract as Partial<FormSections>
-
-  return {
-    ...defaults,
-    ...contract,
-    primaryInfo: {
-      ...defaults.primaryInfo,
-      ...(overrides.primaryInfo ?? {}),
-    },
-    pretrial: {
-      ...defaults.pretrial,
-      ...(overrides.pretrial ?? {}),
-    },
-    introduction: {
-      ...defaults.introduction,
-      ...(overrides.introduction ?? {}),
-    },
-    procedure: {
-      ...defaults.procedure,
-      ...(overrides.procedure ?? {}),
-    },
-  }
-}
 
 function ClientCard() {
   const { id } = useParams<{ id: string }>()
@@ -339,7 +62,7 @@ function ClientCard() {
     }
 
     try {
-      await apiRequest(`/api/v1/contracts/${contract.id}`, {
+      await apiRequest(`/contracts/${contract.id}`, {
         method: 'PUT',
         body: JSON.stringify(apiData),
       })
@@ -376,7 +99,7 @@ function ClientCard() {
       try {
         setLoading(true)
         setError(null)
-        const data = await apiRequest(`/api/v1/contracts/${id}`)
+        const data = await apiRequest(`/contracts/${id}`)
         
         if (data && typeof data === 'object') {
           // Преобразуем данные из API формата
@@ -481,14 +204,12 @@ function ClientCard() {
             <TabsTrigger value="pretrial" className="text-sm font-medium">Досудебка</TabsTrigger>
             <TabsTrigger value="judicial" className="text-sm font-medium">Судебка</TabsTrigger>
           </TabsList>
-          <TabsContent value="judicial" className="mt-0 p-0 border-0">
-            <JudicialTab openDocument={openDocument} databases={databases} />
-          </TabsContent>
         </div>
 
         <div className="mt-6 pb-24">
           <GeneralTab />
           <PretrialTab openDocument={openDocument} databases={databases} />
+          <JudicialTab openDocument={openDocument} databases={databases} />
         </div>
       </Tabs>
 

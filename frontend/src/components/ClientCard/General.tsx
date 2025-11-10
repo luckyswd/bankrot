@@ -3,7 +3,6 @@ import React from "react"
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form"
 import { Save, Plus, Trash2 } from "lucide-react"
 
-import type { FormValues } from "./index"
 import { DatePickerInput } from "@/components/ui/DatePickerInput"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,33 +11,39 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TabsContent } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import { ChildInfo, FormValues } from "./types"
 
-// Создаем контекст для функции сохранения
 export const SaveContext = React.createContext<(() => Promise<void>) | null>(null)
 export const useSaveContract = () => useContext(SaveContext)
+
+type SelectOption = { value: string | boolean; label: string }
 
 interface SelectFieldProps {
   value: string | boolean | null | undefined
   onChange: (value: string | boolean | null) => void
-  options: { value: string; label: string }[]
+  options: SelectOption[]
   placeholder?: string
 }
 
-const yesNoOptions = [
-  { value: "true", label: "Да" },
-  { value: "false", label: "Нет" },
+const yesNoOptions: SelectOption[] = [
+  { value: true, label: "Да" },
+  { value: false, label: "Нет" },
 ]
 
-const marriageOptions = [
-  { value: "Да", label: "Да" },
-  { value: "Нет", label: "Нет" },
-  { value: "Не состоял в течение 3 лет", label: "Не состоял в течение 3 лет" },
+const marriageOptions: SelectOption[] = [
+  { value: "married", label: "Да" },
+  { value: "single", label: "Нет" },
+  { value: "married_3y_ago", label: "Нет, но состоял в течение 3 лет" },
 ]
 
 const CLEAR_VALUE = "__clear__"
 
 const SelectField = ({ value, onChange, options, placeholder = "Не указано" }: SelectFieldProps) => {
-  const stringValue = value === true ? "true" : value === false ? "false" : value ? String(value) : undefined
+  const stringValue = value === undefined || value === null ? undefined : String(value)
+  const optionValueMap = options.reduce<Record<string, string | boolean>>((acc, option) => {
+    acc[String(option.value)] = option.value
+    return acc
+  }, {})
 
   return (
     <Select
@@ -48,13 +53,11 @@ const SelectField = ({ value, onChange, options, placeholder = "Не указа�
           onChange(null)
           return
         }
-        if (selected === "true") {
-          onChange(true)
-        } else if (selected === "false") {
-          onChange(false)
-        } else {
-          onChange(selected)
+        if (Object.prototype.hasOwnProperty.call(optionValueMap, selected)) {
+          onChange(optionValueMap[selected])
+          return
         }
+        onChange(selected)
       }}
     >
       <SelectTrigger>
@@ -63,7 +66,7 @@ const SelectField = ({ value, onChange, options, placeholder = "Не указа�
       <SelectContent>
         <SelectItem value={CLEAR_VALUE}>Не указано</SelectItem>
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem key={String(option.value)} value={String(option.value)}>
             {option.label}
           </SelectItem>
         ))}
@@ -71,6 +74,15 @@ const SelectField = ({ value, onChange, options, placeholder = "Не указа�
     </Select>
   )
 }
+
+const createEmptyChild = (): ChildInfo => ({
+  firstName: "",
+  lastName: "",
+  middleName: null,
+  isLastNameChanged: false,
+  changedLastName: null,
+  birthDate: "",
+})
 
 export const GeneralTab = () => {
   const { register, control, formState: { isDirty }, watch } = useFormContext<FormValues>()
@@ -85,6 +97,7 @@ export const GeneralTab = () => {
     control,
     name: "primaryInfo.maritalStatus",
   }) as string | undefined
+  const shouldShowSpouseFields = maritalStatus === "married" || maritalStatus === "married_3y_ago"
 
   const hasMinorChildren = useWatch({
     control,
@@ -92,15 +105,13 @@ export const GeneralTab = () => {
   }) as boolean | undefined
 
   // Управление списком детей
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<FormValues, "primaryInfo.children">({
     control,
     name: "primaryInfo.children",
   })
 
   // Отслеживаем изменения для всех детей сразу
-  const childrenValues = watch("primaryInfo.children") as Array<{
-    isLastNameChanged?: boolean
-  }> | undefined
+  const childrenValues = watch("primaryInfo.children") ?? []
 
   const handleSave = async () => {
     if (saveContract) {
@@ -297,7 +308,7 @@ export const GeneralTab = () => {
                     />
                   </div>
 
-                  {(maritalStatus === "Да") && (
+                  {shouldShowSpouseFields && (
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="primaryInfo.spouseFullName">ФИО супруга</Label>
@@ -343,16 +354,7 @@ export const GeneralTab = () => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          append({
-                            firstName: "",
-                            lastName: "",
-                            middleName: null,
-                            isLastNameChanged: false,
-                            changedLastName: null,
-                            birthDate: "",
-                          })
-                        }
+                        onClick={() => append(createEmptyChild())}
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Добавить ребенка
@@ -366,7 +368,7 @@ export const GeneralTab = () => {
                     )}
 
                     {fields.map((field, index) => {
-                      const childIsLastNameChanged = childrenValues?.[index]?.isLastNameChanged
+                      const childIsLastNameChanged = childrenValues[index]?.isLastNameChanged
 
                       return (
                         <Card key={field.id} className="p-4">

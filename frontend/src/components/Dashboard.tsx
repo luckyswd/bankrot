@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest } from '../config/api'
 import { Button } from './ui/button'
@@ -6,17 +6,10 @@ import { Input } from './ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog'
 import { Toast } from './ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from './Loading'
+import Loading from './shared/Loading'
+import { useModalStore } from './Modals/ModalProvider'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -30,8 +23,7 @@ function Dashboard() {
   const [pages, setPages] = useState(1)
   const [counts, setCounts] = useState({ all: 0, my: 0, in_progress: 0, completed: 0 })
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [contractToDelete, setContractToDelete] = useState(null)
+  const { openModal } = useModalStore()
   const limit = 20
 
   // Дебаунс для поиска (200ms, только от 3 символов)
@@ -45,47 +37,47 @@ function Dashboard() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Загрузка данных при изменении страницы, поиска или фильтра
-  useEffect(() => {
-    const loadContracts = async () => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-          filter: filterStatus,
-        })
+  const fetchContracts = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        filter: filterStatus,
+      })
 
-        // Поиск только если 3 и более символов
-        if (debouncedSearch && debouncedSearch.length >= 3) {
-          params.append('search', debouncedSearch.trim())
-        }
+      // Поиск только если 3 и более символов
+      if (debouncedSearch && debouncedSearch.length >= 3) {
+        params.append('search', debouncedSearch.trim())
+      }
 
-        const data = await apiRequest(`/api/v1/contracts?${params.toString()}`)
+      const data = await apiRequest(`/contracts?${params.toString()}`)
 
-        if (data && typeof data === 'object') {
-          setContracts(data.data || [])
-          setTotal(data.pagination?.total || 0)
-          setPages(data.pagination?.pages || 1)
-          setCounts(data.counts || { all: 0, my: 0, in_progress: 0, completed: 0 })
-        } else {
-          setContracts([])
-          setTotal(0)
-          setPages(1)
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке контрактов:', error)
-        setToast({ message: 'Не удалось загрузить список контрактов', type: 'error' })
+      if (data && typeof data === 'object') {
+        setContracts(data.data || [])
+        setTotal(data.pagination?.total || 0)
+        setPages(data.pagination?.pages || 1)
+        setCounts(data.counts || { all: 0, my: 0, in_progress: 0, completed: 0 })
+      } else {
         setContracts([])
         setTotal(0)
         setPages(1)
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error('Ошибка при загрузке контрактов:', error)
+      setToast({ message: 'Не удалось загрузить список контрактов', type: 'error' })
+      setContracts([])
+      setTotal(0)
+      setPages(1)
+    } finally {
+      setLoading(false)
     }
-
-    loadContracts()
   }, [page, debouncedSearch, filterStatus, limit])
+
+  // Загрузка данных при изменении страницы, поиска или фильтра
+  useEffect(() => {
+    fetchContracts()
+  }, [fetchContracts])
 
   // Сброс на первую страницу при изменении поиска или фильтра
   useEffect(() => {
@@ -103,48 +95,34 @@ function Dashboard() {
 
   const handleDeleteClick = (contract: any, e: React.MouseEvent) => {
     e.stopPropagation()
-    setContractToDelete(contract)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!contractToDelete) return
-
-    try {
-      await apiRequest(`/api/v1/contracts/${contractToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      setToast({ message: 'Контракт успешно удален', type: 'success' })
-      setDeleteDialogOpen(false)
-      setContractToDelete(null)
-
-      // Перезагружаем список контрактов
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        filter: filterStatus,
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch.trim())
-      }
-      const data = await apiRequest(`/api/v1/contracts?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setContracts(data.data || [])
-        setTotal(data.pagination?.total || 0)
-        setPages(data.pagination?.pages || 1)
-        setCounts(data.counts || { all: 0, my: 0, in_progress: 0, completed: 0 })
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении контракта:', error)
-      setToast({ message: 'Не удалось удалить контракт', type: 'error' })
-      setDeleteDialogOpen(false)
-      setContractToDelete(null)
-    }
+    openModal('confirm', {
+      title: 'Удаление контракта',
+      description: `Вы уверены, что хотите удалить контракт "${contract.contractNumber}"? Это действие нельзя отменить.`,
+      confirmLabel: 'Удалить',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        await apiRequest(`/contracts/${contract.id}`, {
+          method: 'DELETE',
+        })
+        setToast({ message: 'Контракт успешно удален', type: 'success' })
+        await fetchContracts()
+      },
+    })
   }
 
   const handleCreateContract = () => {
-    navigate('/contract/new')
+    openModal('createContract', {
+      onSuccess: async (contractNumber?: string) => {
+        setToast({
+          message: contractNumber ? `Договор ${contractNumber} создан` : 'Договор создан',
+          type: 'success',
+        })
+        await fetchContracts()
+      },
+      onError: (message: string) => {
+        setToast({ message, type: 'error' })
+      },
+    })
   }
 
   // Генерация номеров страниц для пагинации (как в DocumentsPage, но с первой и последней)
@@ -196,34 +174,6 @@ function Dashboard() {
           onClose={() => setToast(null)}
         />
       )}
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Удаление контракта</DialogTitle>
-            <DialogDescription>
-              Вы уверены, что хотите удалить контракт "{contractToDelete?.contractNumber}"? Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setContractToDelete(null)
-              }}
-            >
-              Отмена
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-            >
-              Удалить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Controls */}
       <Card>

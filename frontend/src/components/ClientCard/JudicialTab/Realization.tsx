@@ -1,13 +1,8 @@
 import { useFormContext } from "react-hook-form"
-import { FileText } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { TabsContent } from "@/components/ui/tabs"
+import { FormValues } from "../types"
 
-import type { FormValues } from "./index"
 
 interface ReferenceItem {
   id: number | string
@@ -42,4 +37,3 @@ export const RealizationTab = ({ openDocument, databases }: RealizationTabProps)
     </TabsContent>
   )
 }
-
