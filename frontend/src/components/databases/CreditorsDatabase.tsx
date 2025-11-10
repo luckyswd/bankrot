@@ -189,7 +189,7 @@ export default function CreditorsDatabase() {
                         <TableCell>{getTypeLabel(creditor.type)}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{creditor.address || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

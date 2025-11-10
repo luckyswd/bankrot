@@ -389,7 +389,7 @@ export default function DocumentsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

@@ -178,7 +178,7 @@ export function RosgvardiaDatabase() {
                         <TableCell className="text-sm text-muted-foreground">{rosgvardiaItem.address || '-'}</TableCell>
                         <TableCell className="text-sm">{rosgvardiaItem.phone || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

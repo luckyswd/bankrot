@@ -23,6 +23,10 @@ import {
   FileBarChart,
   Wrench
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
+import { useModalStore } from './Modals/ModalProvider'
 
 export default function Layout({ children }) {
   const location = useLocation()
@@ -31,6 +35,7 @@ export default function Layout({ children }) {
   const { theme, toggleTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [databasesOpen, setDatabasesOpen] = useState(false)
+  const { openModal } = useModalStore()
 
   const databaseItems = [
     { icon: Users, label: 'Кредиторы', path: '/databases/creditors' },
@@ -43,117 +48,160 @@ export default function Layout({ children }) {
   ]
 
   const handleLogout = () => {
-    if (window.confirm('Вы уверены, что хотите выйти?')) {
-      logout()
-      navigate('/login')
-    }
+    openModal('confirm', {
+      title: 'Подтверждение выхода',
+      description: 'Вы уверены, что хотите выйти из аккаунта?',
+      confirmLabel: 'Выйти',
+      confirmVariant: 'destructive',
+      onConfirm: () => {
+        logout()
+        navigate('/login')
+      },
+    })
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <TooltipProvider delayDuration={200}>
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
         <aside 
-          className={`${
-            sidebarOpen ? 'w-64' : 'w-0'
-          } transition-all duration-300 border-r border-border bg-card flex flex-col overflow-hidden`}
+          className={`transition-all duration-300 border-r border-border bg-card flex flex-col ${
+            sidebarOpen ? 'w-64' : 'w-16'
+          }`}
         >
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {/* Договоры */}
-            <Link
-              to="/contracts"
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                location.pathname === '/contracts' || location.pathname === '/'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-accent hover:text-accent-foreground'
-              }`}
-            >
-              <FileText className="h-5 w-5" />
-              <span className="text-sm font-medium">Договоры</span>
-            </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/contracts"
+                  className={`flex items-center ${sidebarOpen ? 'gap-3 justify-start px-3 py-2' : 'justify-center p-2'}  rounded-md transition-colors ${
+                    location.pathname === '/contracts' || location.pathname === '/'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <FileText className="h-5 w-5" />
+                  {sidebarOpen && <span className="text-sm font-medium">Договоры</span>}
+                </Link>
+              </TooltipTrigger>
+              {!sidebarOpen && <TooltipContent side="right">Договоры</TooltipContent>}
+            </Tooltip>
 
             {user?.roles?.includes('ROLE_ADMIN') && (
               <>
-                <Link
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
                   to="/documents"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  className={`flex items-center ${sidebarOpen ? 'gap-3 justify-start px-3 py-2' : 'justify-center p-2'} rounded-md transition-colors ${
                     location.pathname === '/documents'
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-accent hover:text-accent-foreground'
                   }`}
                 >
                   <FileBarChart className="h-5 w-5" />
-                  <span className="text-sm font-medium">Шаблоны документов</span>
-                </Link>
+                  {sidebarOpen && <span className="text-sm font-medium whitespace-nowrap">Шаблоны документов</span>}
+                    </Link>
+                  </TooltipTrigger>
+                  {!sidebarOpen && <TooltipContent side="right">Шаблоны документов</TooltipContent>}
+                </Tooltip>
 
                 <Separator className="my-2" />
               </>
             )}
 
             {user?.roles?.includes('ROLE_ADMIN') && (
-              <div>
-                <button
-                  onClick={() => setDatabasesOpen(!databasesOpen)}
-                  className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    <span>Справочники</span>
-                  </div>
-                  {databasesOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </button>
-
-                {databasesOpen && (
-                  <div className="mt-1 space-y-1 pl-2">
+              <Accordion type="single" collapsible value={sidebarOpen ? (databasesOpen ? "databases" : undefined) : undefined} onValueChange={(value) => setDatabasesOpen(value === "databases")}>
+                <AccordionItem value="databases" className="border-none">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccordionTrigger className={`w-full flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'} gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors`}>
+                        <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
+                          <Database className="h-4 w-4" />
+                          {sidebarOpen && <span>Справочники</span>}
+                        </div>
+                      </AccordionTrigger>
+                    </TooltipTrigger>
+                    {!sidebarOpen && <TooltipContent side="right">Справочники</TooltipContent>}
+                  </Tooltip>
+                  <AccordionContent className="mt-1 space-y-1 pl-0">
                     {databaseItems.map((item, index) => {
                       const isActive = location.pathname === item.path
                       const Icon = item.icon
 
                       return (
-                        <Link
-                          key={index}
-                          to={item.path}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                            isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'hover:bg-accent hover:text-accent-foreground'
-                          }`}
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </Link>
+                        <Tooltip key={index}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              to={item.path}
+                              className={`flex items-center ${sidebarOpen ? 'gap-3 justify-start px-3 py-2' : 'justify-center p-2'}  rounded-md transition-colors ${
+                                isActive
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'hover:bg-accent hover:text-accent-foreground'
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                              {sidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
+                            </Link>
+                          </TooltipTrigger>
+                          {!sidebarOpen && <TooltipContent side="right">{item.label}</TooltipContent>}
+                        </Tooltip>
                       )
                     })}
-                  </div>
-                )}
-              </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             )}
           </nav>
 
           <Separator />
 
           {/* User Info */}
-          <div className="p-4">
-            <div className="flex items-center gap-3 p-3 rounded-md bg-accent/50">
-              <UserCircle className="h-8 w-8 text-primary" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.username}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
-                   user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
-                </p>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              className="w-full mt-2 justify-start" 
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Выйти
-            </Button>
+          <div className="p-4 space-y-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={cn("flex items-center gap-3 rounded-md bg-accent/50", sidebarOpen ? "p-3" : "p-2 justify-center")}>
+                  <UserCircle className="h-8 w-8 text-primary" />
+                  {sidebarOpen && (
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{user?.username}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
+                         user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {!sidebarOpen && (
+                <TooltipContent side="right">
+                  <div className="text-center">
+                    <p className="text-sm font-medium">{user?.username}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
+                       user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
+                    </p>
+                  </div>
+                </TooltipContent>
+              )}
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full mt-2 justify-start ${sidebarOpen ? '' : 'px-0 !justify-center'}`} 
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {sidebarOpen && 'Выйти'}
+                </Button>
+              </TooltipTrigger>
+              {!sidebarOpen && <TooltipContent side="right">Выйти</TooltipContent>}
+            </Tooltip>
           </div>
         </aside>
 
@@ -166,7 +214,7 @@ export default function Layout({ children }) {
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className={cn("h-5 w-5", !sidebarOpen && 'rotate-90')} />
             </Button>
             
             <div className="flex-1">
@@ -201,6 +249,7 @@ export default function Layout({ children }) {
           </main>
         </div>
       </div>
+      </TooltipProvider>
     </div>
   )
 }

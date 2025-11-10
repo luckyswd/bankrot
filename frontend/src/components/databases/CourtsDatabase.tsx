@@ -174,7 +174,7 @@ export default function CourtsDatabase() {
                         <TableCell className="font-medium">{court.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{court.address || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

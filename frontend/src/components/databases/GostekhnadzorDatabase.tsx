@@ -349,7 +349,7 @@ export default function GostekhnadzorDatabase() {
                         <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{item.address || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

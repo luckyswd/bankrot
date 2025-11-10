@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
         "@pages": path.resolve(__dirname, "./src/pages"),
         "@api": path.resolve(__dirname, "./src/api"),
         "@ui": path.resolve(__dirname, "./src/components/ui"),
+        "@shared": path.resolve(__dirname, "./src/components/shared"),
       },
     },
     server: {

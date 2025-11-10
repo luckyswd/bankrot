@@ -176,7 +176,7 @@ export function MchsDatabase() {
                         <TableCell className="text-sm text-muted-foreground">{mchsItem.address || '-'}</TableCell>
                         <TableCell className="text-sm">{mchsItem.phone || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

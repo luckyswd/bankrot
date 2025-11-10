@@ -25,7 +25,8 @@
       "@store/*": ["./src/store/*"],
       "@pages/*": ["./src/pages/*"],
       "@api/*": ["./src/api/*"],
-      "@ui/*": ["./src/components/ui/*"]
+      "@ui/*": ["./src/components/ui/*"],
+      "@shared/*": ["./src/components/shared/*"]
     }
   },
   "include": ["src"],

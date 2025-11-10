@@ -175,7 +175,7 @@ export default function BailiffsDatabase() {
                         <TableCell className="text-sm text-muted-foreground">{bailiff.address || '-'}</TableCell>
                         <TableCell className="text-sm">{bailiff.phone || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"

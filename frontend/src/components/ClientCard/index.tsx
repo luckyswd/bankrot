@@ -6,7 +6,6 @@ import { notify } from "@/components/ui/toast"
 
 import { useApp } from "@/context/AppContext"
 import { apiRequest } from "@/config/api"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,6 +16,7 @@ import { PretrialTab } from "./Pretrial"
 import { JudicialTab } from "./JudicialTab"
 import { FormValues, PrimaryInfoFields } from "./types"
 import { convertApiDataToFormValues, createDefaultFormValues } from "./helpers"
+import { StatusBadge } from "@shared/StatusBadge"
 
 
 
@@ -165,9 +165,8 @@ function ClientCard() {
         <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate("/contracts")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Назад
+          <Button className="text-center p-2" variant="outline" onClick={() => navigate("/contracts")}>
+            <ArrowLeft className="size-4" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Договор № {contract.contractNumber}</h1>
@@ -177,9 +176,7 @@ function ClientCard() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant={contract.status === "active" || contract.status === "В работе" ? "blue" : "green"}>
-            {contract.status === "active" || contract.status === "В работе" ? "В работе" : "Завершено"}
-          </Badge>
+          <StatusBadge status={contract.status} />
         </div>
       </div>
 
@@ -201,7 +198,7 @@ function ClientCard() {
 
       {/* Фиксированная кнопка сохранения внизу справа */}
       <div className="fixed bottom-4 z-50" style={{ right: '2rem' }}>
-        <Button type="button" onClick={saveContract} disabled={!isDirty || loading} size="lg" className="shadow-lg text-base px-6 py-6">
+        <Button type="button" onClick={saveContract} disabled={!isDirty || loading} size="lg" className="shadow-lg text-base px-6 py-6 bg-green-600">
           <Save className="h-5 w-5 mr-2" />
           Сохранить
         </Button>

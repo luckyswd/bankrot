@@ -288,7 +288,7 @@ function Dashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex" onClick={(e) => e.stopPropagation()}>
                             <Button
                               variant="ghost"
                               size="icon"

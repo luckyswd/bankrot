@@ -176,7 +176,7 @@ export function FnsDatabase() {
                         <TableCell className="text-sm text-muted-foreground">{fnsItem.address || '-'}</TableCell>
                         <TableCell className="text-sm font-mono">{fnsItem.code || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex">
                             <Button
                               variant="ghost"
                               size="icon"
