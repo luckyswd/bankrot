@@ -7,7 +7,15 @@
  * - .env.local (для локальных переопределений, не коммитится в git)
  */
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const isProd = import.meta.env.PROD
+const envApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') ?? ''
+const ensurePathSuffix = (base, suffix) => (base.endsWith(suffix) ? base : `${base}${suffix}`)
+const prodBase = envApiUrl || ''
+const devBase = envApiUrl || '/api'
+
+export const API_URL = isProd
+  ? ensurePathSuffix(prodBase, '/api/v1')
+  : devBase
 
 // Базовые настройки для fetch запросов
 export const API_CONFIG = {
