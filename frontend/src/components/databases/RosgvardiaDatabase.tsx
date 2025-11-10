@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/c
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
 import { Input } from '@ui/input'
 import { Label } from '@ui/label'
-import { Toast } from '@ui/toast'
+import { notify } from '@ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
@@ -15,7 +15,6 @@ import { useModalStore } from '../Modals/ModalProvider'
 export function RosgvardiaDatabase() {
   const [rosgvardia, setRosgvardia] = useState([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
 
   // Поиск и пагинация
@@ -61,7 +60,7 @@ export function RosgvardiaDatabase() {
       }
     } catch (error) {
       console.error('Ошибка при загрузке отделений Росгвардии:', error)
-      setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+      notify({ message: 'Не удалось загрузить список отделений', type: 'error' })
       setRosgvardia([])
       setTotal(0)
       setPages(1)
@@ -82,10 +81,10 @@ export function RosgvardiaDatabase() {
   const handleCreateClick = () => {
     openModal('rosgvardiaForm', {
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchRosgvardia()
       },
-      onError: (message: string) => setToast({ message, type: 'error' }),
+      onError: (message: string) => notify({ message, type: 'error' }),
     })
   }
 
@@ -93,10 +92,10 @@ export function RosgvardiaDatabase() {
     openModal('rosgvardiaForm', {
       branch: rosgvardiaItem,
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchRosgvardia()
       },
-      onError: (message: string) => setToast({ message, type: 'error' }),
+      onError: (message: string) => notify({ message, type: 'error' }),
     })
   }
 
@@ -110,7 +109,7 @@ export function RosgvardiaDatabase() {
         await apiRequest(`/rosgvardia/${rosgvardiaItem.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Отделение успешно удалено', type: 'success' })
+        notify({ message: 'Отделение успешно удалено', type: 'success' })
         await fetchRosgvardia()
       },
     })
@@ -118,14 +117,6 @@ export function RosgvardiaDatabase() {
 
   return (
     <div className="space-y-6 p-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold">Росгвардия</h2>

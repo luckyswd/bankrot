@@ -4,7 +4,7 @@ import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
 import { Input } from '@ui/input'
-import { Toast } from '@ui/toast'
+import { notify } from '@ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search} from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
@@ -13,7 +13,6 @@ import { useModalStore } from '../Modals/ModalProvider'
 export function FnsDatabase() {
   const [fns, setFns] = useState([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
 
   // Поиск и пагинация
@@ -59,7 +58,7 @@ export function FnsDatabase() {
       }
     } catch (error) {
       console.error('Ошибка при загрузке отделений ФНС:', error)
-      setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+      notify({ message: 'Не удалось загрузить список отделений', type: 'error' })
       setFns([])
       setTotal(0)
       setPages(1)
@@ -80,10 +79,10 @@ export function FnsDatabase() {
   const handleCreateClick = () => {
     openModal('fnsForm', {
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchFns()
       },
-      onError: (message: string) => setToast({ message, type: 'error' }),
+      onError: (message: string) => notify({ message, type: 'error' }),
     })
   }
 
@@ -91,10 +90,10 @@ export function FnsDatabase() {
     openModal('fnsForm', {
       branch: fnsItem,
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchFns()
       },
-      onError: (message: string) => setToast({ message, type: 'error' }),
+      onError: (message: string) => notify({ message, type: 'error' }),
     })
   }
 
@@ -108,7 +107,7 @@ export function FnsDatabase() {
         await apiRequest(`/fns/${fnsItem.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Отделение успешно удалено', type: 'success' })
+        notify({ message: 'Отделение успешно удалено', type: 'success' })
         await fetchFns()
       },
     })
@@ -116,14 +115,6 @@ export function FnsDatabase() {
 
   return (
     <div className="space-y-6 p-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold">ФНС</h2>

@@ -7,7 +7,7 @@ import { Badge } from './ui/badge'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Toast } from './ui/toast'
+import { notify } from './ui/toast'
 import { Upload, Download, FileText, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from './shared/Loading'
 import { useModalStore } from './Modals/ModalProvider'
@@ -29,7 +29,6 @@ export default function DocumentsPage() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [templateName, setTemplateName] = useState('')
   const [templateCategory, setTemplateCategory] = useState('')
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
   
   // Поиск и фильтры
@@ -84,7 +83,7 @@ export default function DocumentsPage() {
       }
     } catch (error) {
       console.error('Ошибка при загрузке шаблонов:', error)
-      setToast({ message: 'Не удалось загрузить список шаблонов', type: 'error' })
+      notify({ message: 'Не удалось загрузить список шаблонов', type: 'error' })
       setTemplates([])
       setTotal(0)
       setPages(1)
@@ -108,7 +107,7 @@ export default function DocumentsPage() {
     if (!file) return
 
     if (!file.name.endsWith('.docx')) {
-      setToast({ message: 'Поддерживаются только DOCX файлы', type: 'error' })
+      notify({ message: 'Поддерживаются только DOCX файлы', type: 'error' })
       e.target.value = ''
       return
     }
@@ -121,12 +120,12 @@ export default function DocumentsPage() {
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
-      setToast({ message: 'Выберите файл', type: 'error' })
+      notify({ message: 'Выберите файл', type: 'error' })
       return
     }
 
     if (!templateCategory) {
-      setToast({ message: 'Выберите категорию', type: 'error' })
+      notify({ message: 'Выберите категорию', type: 'error' })
       return
     }
 
@@ -151,7 +150,7 @@ export default function DocumentsPage() {
       if (fileInput) {
         fileInput.value = ''
       }
-      setToast({ message: 'Шаблон успешно загружен', type: 'success' })
+      notify({ message: 'Шаблон успешно загружен', type: 'success' })
       
       // Перезагружаем список шаблонов
       const params = new URLSearchParams({
@@ -173,7 +172,7 @@ export default function DocumentsPage() {
     } catch (error) {
       console.error('Ошибка при загрузке шаблона:', error)
       const errorMessage = error.body?.error || 'Не удалось загрузить шаблон'
-      setToast({ message: errorMessage, type: 'error' })
+      notify({ message: errorMessage, type: 'error' })
     } finally {
       setUploading(false)
     }
@@ -205,7 +204,7 @@ export default function DocumentsPage() {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Ошибка при скачивании шаблона:', error)
-      setToast({ message: 'Не удалось скачать шаблон', type: 'error' })
+      notify({ message: 'Не удалось скачать шаблон', type: 'error' })
     }
   }
 
@@ -219,7 +218,7 @@ export default function DocumentsPage() {
         await apiRequest(`/document-templates/${template.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Шаблон успешно удален', type: 'success' })
+        notify({ message: 'Шаблон успешно удален', type: 'success' })
         await fetchTemplates()
       },
     })
@@ -240,14 +239,6 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       {/* Upload Card */}
       <Card>
         <CardHeader>

@@ -4,7 +4,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Input } from '../ui/input'
-import { Toast } from '../ui/toast'
+import { notify } from '../ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
@@ -13,7 +13,6 @@ import { CREDITOR_TYPES } from './constants'
 export default function CreditorsDatabase() {
   const [creditors, setCreditors] = useState([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
 
   // Поиск и пагинация
@@ -59,7 +58,7 @@ export default function CreditorsDatabase() {
       }
     } catch (error) {
       console.error('Ошибка при загрузке кредиторов:', error)
-      setToast({ message: 'Не удалось загрузить список кредиторов', type: 'error' })
+      notify({ message: 'Не удалось загрузить список кредиторов', type: 'error' })
       setCreditors([])
       setTotal(0)
       setPages(1)
@@ -80,11 +79,11 @@ export default function CreditorsDatabase() {
   const handleCreateClick = () => {
     openModal('creditorForm', {
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchCreditors()
       },
       onError: (message: string) => {
-        setToast({ message, type: 'error' })
+        notify({ message, type: 'error' })
       },
     })
   }
@@ -93,11 +92,11 @@ export default function CreditorsDatabase() {
     openModal('creditorForm', {
       creditor,
       onSuccess: async (message: string) => {
-        setToast({ message, type: 'success' })
+        notify({ message, type: 'success' })
         await fetchCreditors()
       },
       onError: (message: string) => {
-        setToast({ message, type: 'error' })
+        notify({ message, type: 'error' })
       },
     })
   }
@@ -112,7 +111,7 @@ export default function CreditorsDatabase() {
         await apiRequest(`/creditors/${creditor.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Кредитор успешно удален', type: 'success' })
+        notify({ message: 'Кредитор успешно удален', type: 'success' })
         await fetchCreditors()
       },
     })
@@ -125,14 +124,6 @@ export default function CreditorsDatabase() {
 
   return (
     <div className="space-y-6 p-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold">Кредиторы</h2>

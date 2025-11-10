@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FormProvider, useForm, useWatch } from "react-hook-form"
 import { ArrowLeft, Save } from "lucide-react"
-import { Toast } from "@/components/ui/toast"
+import { notify } from "@/components/ui/toast"
 
 import { useApp } from "@/context/AppContext"
 import { apiRequest } from "@/config/api"
@@ -39,8 +39,6 @@ function ClientCard() {
     useWatch<FormValues>({
       control: form.control,
     }) ?? form.getValues()
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-
   // Функция для ручного сохранения
   const saveContract = useCallback(async () => {
     if (!contract || loading) return
@@ -49,8 +47,7 @@ function ClientCard() {
     const serialized = JSON.stringify(currentValues)
     
     if (serialized === savedSnapshotRef.current) {
-      setToast({ message: "Нет изменений для сохранения", type: "info" })
-      setTimeout(() => setToast(null), 3000)
+      notify({ message: "Нет изменений для сохранения", type: "info", duration: 3000 })
       return // Нет изменений
     }
 
@@ -69,17 +66,14 @@ function ClientCard() {
       savedSnapshotRef.current = serialized
       // Сбрасываем состояние формы, чтобы isDirty стал false
       form.reset(currentValues, { keepValues: true })
-      setToast({ message: "Изменения успешно сохранены", type: "success" })
-      setTimeout(() => {
-        setToast(null)
-      }, 3000)
+      notify({ message: "Изменения успешно сохранены", type: "success" })
     } catch (err) {
       console.error('Ошибка при сохранении:', err)
-      setToast({ 
+      notify({ 
         message: err instanceof Error ? err.message : "Не удалось сохранить изменения", 
-        type: "error" 
+        type: "error",
+        duration: 5000,
       })
-      setTimeout(() => setToast(null), 5000)
     }
   }, [contract, loading, form])
 
@@ -168,14 +162,6 @@ function ClientCard() {
   return (
     <SaveContext.Provider value={saveContract}>
       <FormProvider {...form}>
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            onClose={() => setToast(null)}
-            duration={toast.type === "error" ? 5000 : 3000}
-          />
-        )}
         <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

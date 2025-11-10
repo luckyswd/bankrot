@@ -6,7 +6,7 @@ import { Input } from './ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Toast } from './ui/toast'
+import { notify } from './ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from './shared/Loading'
 import { useModalStore } from './Modals/ModalProvider'
@@ -22,7 +22,6 @@ function Dashboard() {
   const [total, setTotal] = useState(0)
   const [pages, setPages] = useState(1)
   const [counts, setCounts] = useState({ all: 0, my: 0, in_progress: 0, completed: 0 })
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const { openModal } = useModalStore()
   const limit = 20
 
@@ -65,7 +64,7 @@ function Dashboard() {
       }
     } catch (error) {
       console.error('Ошибка при загрузке контрактов:', error)
-      setToast({ message: 'Не удалось загрузить список контрактов', type: 'error' })
+      notify({ message: 'Не удалось загрузить список контрактов', type: 'error' })
       setContracts([])
       setTotal(0)
       setPages(1)
@@ -104,7 +103,7 @@ function Dashboard() {
         await apiRequest(`/contracts/${contract.id}`, {
           method: 'DELETE',
         })
-        setToast({ message: 'Контракт успешно удален', type: 'success' })
+        notify({ message: 'Контракт успешно удален', type: 'success' })
         await fetchContracts()
       },
     })
@@ -113,14 +112,14 @@ function Dashboard() {
   const handleCreateContract = () => {
     openModal('createContract', {
       onSuccess: async (contractNumber?: string) => {
-        setToast({
+        notify({
           message: contractNumber ? `Договор ${contractNumber} создан` : 'Договор создан',
           type: 'success',
         })
         await fetchContracts()
       },
       onError: (message: string) => {
-        setToast({ message, type: 'error' })
+      notify({ message, type: 'error' })
       },
     })
   }
@@ -167,14 +166,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       {/* Controls */}
       <Card>
         <CardHeader>

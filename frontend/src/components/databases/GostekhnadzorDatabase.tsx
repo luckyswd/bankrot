@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/c
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
 import { Input } from '@ui/input'
 import { Label } from '@ui/label'
-import { Toast } from '@ui/toast'
+import { notify } from '@ui/toast'
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,6 @@ export default function GostekhnadzorDatabase() {
   const [gostekhnadzor, setGostekhnadzor] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [gostekhnadzorToDelete, setGostekhnadzorToDelete] = useState(null)
@@ -76,7 +75,7 @@ export default function GostekhnadzorDatabase() {
         }
       } catch (error) {
         console.error('Ошибка при загрузке отделений Гостехнадзора:', error)
-        setToast({ message: 'Не удалось загрузить список отделений', type: 'error' })
+        notify({ message: 'Не удалось загрузить список отделений', type: 'error' })
         setGostekhnadzor([])
         setTotal(0)
         setPages(1)
@@ -117,7 +116,7 @@ export default function GostekhnadzorDatabase() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      setToast({ message: 'Наименование обязательно', type: 'error' })
+      notify({ message: 'Наименование обязательно', type: 'error' })
       return
     }
 
@@ -137,7 +136,7 @@ export default function GostekhnadzorDatabase() {
           },
           body: JSON.stringify(data),
         })
-        setToast({ message: 'Отделение успешно обновлено', type: 'success' })
+        notify({ message: 'Отделение успешно обновлено', type: 'success' })
       } else {
         await apiRequest('/api/v1/gostekhnadzor', {
           method: 'POST',
@@ -146,7 +145,7 @@ export default function GostekhnadzorDatabase() {
           },
           body: JSON.stringify(data),
         })
-        setToast({ message: 'Отделение успешно создано', type: 'success' })
+        notify({ message: 'Отделение успешно создано', type: 'success' })
       }
 
       setEditDialogOpen(false)
@@ -169,7 +168,7 @@ export default function GostekhnadzorDatabase() {
     } catch (error) {
       console.error('Ошибка при сохранении отделения:', error)
       const errorMessage = error.body?.error || 'Не удалось сохранить отделение'
-      setToast({ message: errorMessage, type: 'error' })
+      notify({ message: errorMessage, type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -188,7 +187,7 @@ export default function GostekhnadzorDatabase() {
         method: 'DELETE',
       })
 
-      setToast({ message: 'Отделение успешно удалено', type: 'success' })
+      notify({ message: 'Отделение успешно удалено', type: 'success' })
       setDeleteDialogOpen(false)
       setGostekhnadzorToDelete(null)
 
@@ -208,7 +207,7 @@ export default function GostekhnadzorDatabase() {
       }
     } catch (error) {
       console.error('Ошибка при удалении отделения:', error)
-      setToast({ message: 'Не удалось удалить отделение', type: 'error' })
+      notify({ message: 'Не удалось удалить отделение', type: 'error' })
       setDeleteDialogOpen(false)
       setGostekhnadzorToDelete(null)
     }
@@ -216,14 +215,6 @@ export default function GostekhnadzorDatabase() {
 
   return (
     <div className="space-y-6 p-6">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -473,4 +464,3 @@ export default function GostekhnadzorDatabase() {
     </div>
   )
 }
-

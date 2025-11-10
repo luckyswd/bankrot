@@ -20,16 +20,26 @@ const initialForm = {
   middleName: "",
 }
 
+type FieldName = keyof typeof initialForm
+type FieldErrors = Partial<Record<FieldName, string>>
+const detailKeyMap: Record<string, FieldName> = {
+  name: "contractNumber",
+  contractNumber: "contractNumber",
+  lastName: "lastName",
+  firstName: "firstName",
+  middleName: "middleName",
+}
+
 export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: CreateContractModalProps) => {
   const [form, setForm] = useState(initialForm)
-  const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   useEffect(() => {
     if (isOpen) {
       setForm(initialForm)
-      setError(null)
       setSubmitting(false)
+      setFieldErrors({})
     }
   }, [isOpen])
 
@@ -38,21 +48,23 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
   }
 
   const handleSubmit = async () => {
-    if (!form.contractNumber.trim() || !form.lastName.trim() || !form.firstName.trim()) {
-      setError("Укажите номер договора, фамилию и имя")
-      return
-    }
-
-    const payload = {
+    const normalizedForm = {
       contractNumber: form.contractNumber.trim(),
       lastName: form.lastName.trim(),
       firstName: form.firstName.trim(),
-      middleName: form.middleName.trim() || null,
+      middleName: form.middleName.trim(),
+    }
+
+    const payload = {
+      contractNumber: normalizedForm.contractNumber,
+      lastName: normalizedForm.lastName,
+      firstName: normalizedForm.firstName,
+      middleName: normalizedForm.middleName || null,
     }
 
     try {
       setSubmitting(true)
-      setError(null)
+      setFieldErrors({})
       await apiRequest("/contracts", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -63,7 +75,31 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
       console.error("Ошибка при создании договора:", err)
       const message =
         err instanceof Error ? err.message : "Не удалось создать договор"
-      setError(message)
+
+      const serverFieldErrors: FieldErrors = {}
+      const details =
+        err && typeof err === "object" && "body" in err && err.body && typeof err.body === "object"
+          ? (err.body as Record<string, unknown>).details
+          : undefined
+
+      if (details && typeof details === "object") {
+        Object.entries(details as Record<string, unknown>).forEach(([key, value]) => {
+          if (typeof value === "string") {
+            const mappedKey = detailKeyMap[key] ?? (key in initialForm ? (key as FieldName) : undefined)
+            if (mappedKey) {
+              serverFieldErrors[mappedKey] = value
+            }
+          }
+        })
+      }
+
+      if (Object.keys(serverFieldErrors).length > 0) {
+        setFieldErrors(serverFieldErrors)
+        const firstErrorMessage = serverFieldErrors[Object.keys(serverFieldErrors)[0] as FieldName]
+      } else {
+        setFieldErrors({})
+      }
+
       onError?.(message)
     } finally {
       setSubmitting(false)
@@ -79,7 +115,7 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="modal-contract-number">Номер договора *</Label>
+            <Label htmlFor="modal-contract-number" required>Номер договора</Label>
             <Input
               id="modal-contract-number"
               placeholder="ДГ-001"
@@ -87,10 +123,13 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
               onChange={handleChange("contractNumber")}
               disabled={submitting}
             />
+            {fieldErrors.contractNumber && (
+              <p className="text-xs text-destructive">{fieldErrors.contractNumber}</p>
+            )}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="modal-last-name">Фамилия *</Label>
+              <Label htmlFor="modal-last-name" required>Фамилия</Label>
               <Input
                 id="modal-last-name"
                 placeholder="Иванов"
@@ -98,9 +137,12 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
                 onChange={handleChange("lastName")}
                 disabled={submitting}
               />
+              {fieldErrors.lastName && (
+                <p className="text-xs text-destructive">{fieldErrors.lastName}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modal-first-name">Имя *</Label>
+              <Label htmlFor="modal-first-name" required>Имя</Label>
               <Input
                 id="modal-first-name"
                 placeholder="Иван"
@@ -108,10 +150,13 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
                 onChange={handleChange("firstName")}
                 disabled={submitting}
               />
+              {fieldErrors.firstName && (
+                <p className="text-xs text-destructive">{fieldErrors.firstName}</p>
+              )}
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="modal-middle-name">Отчество</Label>
+            <Label htmlFor="modal-middle-name" required>Отчество</Label>
             <Input
               id="modal-middle-name"
               placeholder="Иванович"
@@ -119,8 +164,10 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
               onChange={handleChange("middleName")}
               disabled={submitting}
             />
+            {fieldErrors.middleName && (
+              <p className="text-xs text-destructive">{fieldErrors.middleName}</p>
+            )}
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
