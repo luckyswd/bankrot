@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Mchs;
-use App\Repository\MchsRepository;
+use App\Entity\Gostekhnadzor;
+use App\Repository\GostekhnadzorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,26 +14,26 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/mchs')]
+#[Route('/api/v1/gostekhnadzor')]
 #[IsGranted('ROLE_ADMIN')]
-class MchsController extends AbstractController
+class GostekhnadzorController extends AbstractController
 {
     public function __construct(
-        private readonly MchsRepository $mchsRepository,
+        private readonly GostekhnadzorRepository $gostekhnadzorRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
-    #[Route('', name: 'api_mchs_list', methods: ['GET'])]
+    #[Route('', name: 'api_gostekhnadzor_list', methods: ['GET'])]
     #[OA\Get(
-        path: '/api/v1/mchs',
-        summary: 'Получить список отделений ГИМС МЧС',
+        path: '/api/v1/gostekhnadzor',
+        summary: 'Получить список отделений Гостехнадзора',
         security: [['Bearer' => []]],
-        tags: ['MCHS'],
+        tags: ['Gostekhnadzor'],
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по наименованию, адресу, телефону, коду',
+                description: 'Поиск по наименованию, адресу',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -65,10 +65,8 @@ class MchsController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'name', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                                    new OA\Property(property: 'name', type: 'string', example: 'Гостехнадзор по г. Москве'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
-                                    new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -97,7 +95,7 @@ class MchsController extends AbstractController
         $page = max(1, (int)($request->query->get('page') ?? 1));
         $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->mchsRepository->findPaginated(
+        $result = $this->gostekhnadzorRepository->findPaginated(
             page: $page,
             limit: $limit,
             search: $search
@@ -105,13 +103,11 @@ class MchsController extends AbstractController
 
         $data = [];
 
-        foreach ($result['items'] as $mchs) {
+        foreach ($result['items'] as $gostekhnadzor) {
             $data[] = [
-                'id' => $mchs->getId(),
-                'name' => $mchs->getName(),
-                'address' => $mchs->getAddress(),
-                'phone' => $mchs->getPhone(),
-                'code' => $mchs->getCode(),
+                'id' => $gostekhnadzor->getId(),
+                'name' => $gostekhnadzor->getName(),
+                'address' => $gostekhnadzor->getAddress(),
             ];
         }
 
@@ -124,12 +120,12 @@ class MchsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'api_mchs_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'api_gostekhnadzor_show', methods: ['GET'])]
     #[OA\Get(
-        path: '/api/v1/mchs/{id}',
-        summary: 'Получить отделение ГИМС МЧС по ID',
+        path: '/api/v1/gostekhnadzor/{id}',
+        summary: 'Получить отделение по ID',
         security: [['Bearer' => []]],
-        tags: ['MCHS'],
+        tags: ['Gostekhnadzor'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -146,9 +142,8 @@ class MchsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Гостехнадзор по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -169,25 +164,23 @@ class MchsController extends AbstractController
     )]
     public function show(int $id): JsonResponse
     {
-        $mchs = $this->mchsRepository->find($id);
+        $gostekhnadzor = $this->gostekhnadzorRepository->find($id);
 
-        if (!$mchs instanceof Mchs) {
+        if (!$gostekhnadzor instanceof Gostekhnadzor) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
         return $this->json(data: [
-            'id' => $mchs->getId(),
-            'name' => $mchs->getName(),
-            'address' => $mchs->getAddress(),
-            'phone' => $mchs->getPhone(),
-            'code' => $mchs->getCode(),
+            'id' => $gostekhnadzor->getId(),
+            'name' => $gostekhnadzor->getName(),
+            'address' => $gostekhnadzor->getAddress(),
         ]);
     }
 
-    #[Route('', name: 'api_mchs_create', methods: ['POST'])]
+    #[Route('', name: 'api_gostekhnadzor_create', methods: ['POST'])]
     #[OA\Post(
-        path: '/api/v1/mchs',
-        summary: 'Создать отделение ГИМС МЧС',
+        path: '/api/v1/gostekhnadzor',
+        summary: 'Создать отделение',
         security: [['Bearer' => []]],
         requestBody: new OA\RequestBody(
             description: 'Данные отделения',
@@ -195,15 +188,13 @@ class MchsController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Гостехнадзор по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
-                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
                 ],
                 type: 'object'
             )
         ),
-        tags: ['MCHS'],
+        tags: ['Gostekhnadzor'],
         responses: [
             new OA\Response(
                 response: 201,
@@ -211,9 +202,8 @@ class MchsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Гостехнадзор по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -240,30 +230,27 @@ class MchsController extends AbstractController
             return $this->json(data: ['error' => 'Наименование обязательно'], status: 400);
         }
 
-        $mchs = new Mchs();
-        $mchs->setName(trim($data['name']));
-        $mchs->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $mchs->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
-        $mchs->setCode(isset($data['code']) ? trim($data['code']) : null);
+        $gostekhnadzor = new Gostekhnadzor();
+        $gostekhnadzor->setName(trim($data['name']));
+        $gostekhnadzor->setAddress(isset($data['address']) ? trim($data['address']) : null);
 
-        $this->entityManager->persist($mchs);
+        $this->entityManager->persist($gostekhnadzor);
         $this->entityManager->flush();
 
         return $this->json(
             data: [
-                'id' => $mchs->getId(),
-                'name' => $mchs->getName(),
-                'address' => $mchs->getAddress(),
-                'phone' => $mchs->getPhone(),
+                'id' => $gostekhnadzor->getId(),
+                'name' => $gostekhnadzor->getName(),
+                'address' => $gostekhnadzor->getAddress(),
             ],
             status: 201
         );
     }
 
-    #[Route('/{id}', name: 'api_mchs_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'api_gostekhnadzor_update', methods: ['PUT'])]
     #[OA\Put(
-        path: '/api/v1/mchs/{id}',
-        summary: 'Обновить отделение ГИМС МЧС',
+        path: '/api/v1/gostekhnadzor/{id}',
+        summary: 'Обновить отделение',
         security: [['Bearer' => []]],
         requestBody: new OA\RequestBody(
             description: 'Данные отделения',
@@ -271,15 +258,13 @@ class MchsController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Гостехнадзор по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
-                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
                 ],
                 type: 'object'
             )
         ),
-        tags: ['MCHS'],
+        tags: ['Gostekhnadzor'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -296,9 +281,8 @@ class MchsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ГИМС МЧС России по г. Москве'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Гостехнадзор по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -323,9 +307,9 @@ class MchsController extends AbstractController
     )]
     public function update(int $id, Request $request): JsonResponse
     {
-        $mchs = $this->mchsRepository->find($id);
+        $gostekhnadzor = $this->gostekhnadzorRepository->find($id);
 
-        if (!$mchs instanceof Mchs) {
+        if (!$gostekhnadzor instanceof Gostekhnadzor) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
@@ -335,28 +319,24 @@ class MchsController extends AbstractController
             return $this->json(data: ['error' => 'Наименование обязательно'], status: 400);
         }
 
-        $mchs->setName(trim($data['name']));
-        $mchs->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $mchs->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
-        $mchs->setCode(isset($data['code']) ? trim($data['code']) : null);
+        $gostekhnadzor->setName(trim($data['name']));
+        $gostekhnadzor->setAddress(isset($data['address']) ? trim($data['address']) : null);
 
         $this->entityManager->flush();
 
         return $this->json(data: [
-            'id' => $mchs->getId(),
-            'name' => $mchs->getName(),
-            'address' => $mchs->getAddress(),
-            'phone' => $mchs->getPhone(),
-            'code' => $mchs->getCode(),
+            'id' => $gostekhnadzor->getId(),
+            'name' => $gostekhnadzor->getName(),
+            'address' => $gostekhnadzor->getAddress(),
         ]);
     }
 
-    #[Route('/{id}', name: 'api_mchs_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'api_gostekhnadzor_delete', methods: ['DELETE'])]
     #[OA\Delete(
-        path: '/api/v1/mchs/{id}',
-        summary: 'Удалить отделение ГИМС МЧС',
+        path: '/api/v1/gostekhnadzor/{id}',
+        summary: 'Удалить отделение',
         security: [['Bearer' => []]],
-        tags: ['MCHS'],
+        tags: ['Gostekhnadzor'],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -387,15 +367,16 @@ class MchsController extends AbstractController
     )]
     public function delete(int $id): JsonResponse
     {
-        $mchs = $this->mchsRepository->find($id);
+        $gostekhnadzor = $this->gostekhnadzorRepository->find($id);
 
-        if (!$mchs instanceof Mchs) {
+        if (!$gostekhnadzor instanceof Gostekhnadzor) {
             return $this->json(data: ['error' => 'Отделение не найдено'], status: 404);
         }
 
-        $this->entityManager->remove($mchs);
+        $this->entityManager->remove($gostekhnadzor);
         $this->entityManager->flush();
 
         return $this->json(data: [], status: 204);
     }
 }
+

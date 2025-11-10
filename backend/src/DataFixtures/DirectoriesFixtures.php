@@ -224,6 +224,7 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
             $mchs->setName($name);
             $mchs->setAddress($this->generateAddress());
             $mchs->setPhone($this->generatePhone());
+            $mchs->setCode($this->generateFnsCode());
 
             $manager->persist($mchs);
             $this->addReference('mchs_' . ($index + 1), $mchs);

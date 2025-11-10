@@ -14,6 +14,7 @@ import CreditorsDatabase from "./components/databases/CreditorsDatabase"
 import CourtsDatabase from "./components/databases/CourtsDatabase"
 import BailiffsDatabase from "./components/databases/BailiffsDatabase"
 import { FnsDatabase, MchsDatabase, RosgvardiaDatabase } from "./components/databases/OtherDatabases"
+import GostekhnadzorDatabase from "./components/databases/GostekhnadzorDatabase"
 import ClientCard from "./components/ClientCard"
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -45,6 +46,7 @@ function AppRoutes() {
                 <Route path="/databases/fns" element={<FnsDatabase />} />
                 <Route path="/databases/mchs" element={<MchsDatabase />} />
                 <Route path="/databases/rosgvardia" element={<RosgvardiaDatabase />} />
+                <Route path="/databases/gostekhnadzor" element={<GostekhnadzorDatabase />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

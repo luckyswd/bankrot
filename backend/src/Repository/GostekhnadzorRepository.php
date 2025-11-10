@@ -4,55 +4,53 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Mchs;
+use App\Entity\Gostekhnadzor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Mchs>
+ * @extends ServiceEntityRepository<Gostekhnadzor>
  */
-class MchsRepository extends ServiceEntityRepository
+class GostekhnadzorRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Mchs::class);
+        parent::__construct($registry, Gostekhnadzor::class);
     }
 
     /**
      * Создаёт QueryBuilder с фильтрами по поиску.
      *
-     * @param string|null $search Поиск по наименованию, адресу, телефону
+     * @param string|null $search Поиск по наименованию, адресу
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('m');
+        $qb = $this->createQueryBuilder('g');
 
         if ($search !== null && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->like('m.name', ':search'),
-                    $qb->expr()->like('m.address', ':search'),
-                    $qb->expr()->like('m.phone', ':search'),
-                    $qb->expr()->like('m.code', ':search')
+                    $qb->expr()->like('g.name', ':search'),
+                    $qb->expr()->like('g.address', ':search')
                 )
             )
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        $qb->orderBy('m.name', 'ASC');
+        $qb->orderBy('g.name', 'ASC');
 
         return $qb;
     }
 
     /**
-     * Находит отделения ГИМС МЧС с пагинацией.
+     * Находит записи с пагинацией.
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
-     * @param string|null $search Поиск по наименованию, адресу, телефону
+     * @param string|null $search Поиск по наименованию, адресу
      *
-     * @return array{items: Mchs[], total: int, page: int, limit: int, pages: int}
+     * @return array{items: Gostekhnadzor[], total: int, page: int, limit: int, pages: int}
      */
     public function findPaginated(
         int $page = 1,
@@ -63,7 +61,7 @@ class MchsRepository extends ServiceEntityRepository
 
         // Подсчёт общего количества
         $countQb = clone $qb;
-        $total = (int)$countQb->select('COUNT(m.id)')
+        $total = (int)$countQb->select('COUNT(g.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -85,3 +83,4 @@ class MchsRepository extends ServiceEntityRepository
         ];
     }
 }
+

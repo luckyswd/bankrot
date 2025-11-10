@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  FileBarChart
+  FileBarChart,
+  Wrench
 } from 'lucide-react'
 
 export default function Layout({ children }) {
@@ -38,6 +39,7 @@ export default function Layout({ children }) {
     { icon: Building2, label: 'ФНС', path: '/databases/fns' },
     { icon: Flame, label: 'ГИМС МЧС', path: '/databases/mchs' },
     { icon: Shield, label: 'Росгвардия', path: '/databases/rosgvardia' },
+    { icon: Wrench, label: 'Гостехнадзор', path: '/databases/gostekhnadzor' },
   ]
 
   const handleLogout = () => {

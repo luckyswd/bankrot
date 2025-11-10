@@ -685,6 +685,7 @@ export function MchsDatabase() {
       name: '',
       address: '',
       phone: '',
+      code: '',
     })
     setEditingMchs(null)
   }
@@ -700,6 +701,7 @@ export function MchsDatabase() {
       name: mchsItem.name || '',
       address: mchsItem.address || '',
       phone: mchsItem.phone || '',
+      code: mchsItem.code || '',
     })
     setEditDialogOpen(true)
   }
@@ -717,6 +719,7 @@ export function MchsDatabase() {
         name: formData.name.trim(),
         address: formData.address.trim() || null,
         phone: formData.phone.trim() || null,
+        code: formData.code.trim() || null,
       }
 
       if (editingMchs) {
@@ -880,6 +883,15 @@ export function MchsDatabase() {
                 placeholder="Введите телефон"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="code">Код</Label>
+              <Input
+                id="code"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                placeholder="Введите код"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -920,7 +932,7 @@ export function MchsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, адресу, телефону"
+                placeholder="Поиск по наименованию, адресу, телефону, коду"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -940,13 +952,14 @@ export function MchsDatabase() {
                     <TableHead>Наименование</TableHead>
                     <TableHead>Адрес</TableHead>
                     <TableHead>Телефон</TableHead>
+                    <TableHead>Код</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {mchs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
                           ? 'Отделения не найдены'
                           : 'Нет отделений. Добавьте первое отделение!'}
@@ -958,6 +971,7 @@ export function MchsDatabase() {
                         <TableCell className="font-medium">{mchsItem.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{mchsItem.address || '-'}</TableCell>
                         <TableCell className="text-sm">{mchsItem.phone || '-'}</TableCell>
+                        <TableCell className="text-sm">{mchsItem.code || '-'}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button
@@ -1523,7 +1537,7 @@ export function RosgvardiaDatabase() {
                             >
                               {pageNum}
                             </Button>
-                          )
+  )
                         })
                       })()}
                     </div>

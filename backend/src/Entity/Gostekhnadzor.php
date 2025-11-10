@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\MchsRepository;
+use App\Repository\GostekhnadzorRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: MchsRepository::class)]
-#[ORM\Table(name: 'mchs')]
-class Mchs extends BaseEntity
+#[ORM\Entity(repositoryClass: GostekhnadzorRepository::class)]
+#[ORM\Table(name: 'gostekhnadzor')]
+class Gostekhnadzor extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -22,12 +22,6 @@ class Mchs extends BaseEntity
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
-
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $phone = null;
-
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $code = null;
 
     public function getId(): ?int
     {
@@ -57,28 +51,5 @@ class Mchs extends BaseEntity
 
         return $this;
     }
-
-    public function getPhone(): ?string
-    {
-        return $this->phone;
-    }
-
-    public function setPhone(?string $phone): self
-    {
-        $this->phone = $phone;
-
-        return $this;
-    }
-
-    public function getCode(): ?string
-    {
-        return $this->code;
-    }
-
-    public function setCode(?string $code): self
-    {
-        $this->code = $code;
-
-        return $this;
-    }
 }
+
