@@ -17,6 +17,7 @@ import ClientCard from "./components/ClientCard"
 import { RosgvardiaDatabase } from "./components/databases/RosgvardiaDatabase"
 import { MchsDatabase } from "./components/databases/MchsDatabase"
 import { FnsDatabase } from "./components/databases/FnsDatabase"
+import GostekhnadzorDatabase from "./components/databases/GostekhnadzorDatabase"
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()

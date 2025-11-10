@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { apiRequest } from '../../config/api'
-import { Button } from '../ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Input } from '../ui/input'
-import { Label } from '../ui/label'
-import { Toast } from '../ui/toast'
+import { Button } from '@ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
+import { Input } from '@ui/input'
+import { Label } from '@ui/label'
+import { Toast } from '@ui/toast'
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '../ui/dialog'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from '../Loading'
+import Loading from '../shared/Loading'
 
 export default function GostekhnadzorDatabase() {
   const [gostekhnadzor, setGostekhnadzor] = useState([])
