@@ -5,13 +5,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Input } from '../ui/input'
 import { notify } from '../ui/toast'
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 import { CREDITOR_TYPES } from './constants'
 
+interface Creditor {
+  id: number
+  name: string
+  inn: string
+  ogrn: string
+  type: string
+  address: string
+  [key: string]: unknown
+}
+
 export default function CreditorsDatabase() {
-  const [creditors, setCreditors] = useState([])
+  const [creditors, setCreditors] = useState<Creditor[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -88,7 +98,7 @@ export default function CreditorsDatabase() {
     })
   }
 
-  const handleEditClick = (creditor) => {
+  const handleEditClick = (creditor: Creditor) => {
     openModal('creditorForm', {
       creditor,
       onSuccess: async (message: string) => {
@@ -101,7 +111,7 @@ export default function CreditorsDatabase() {
     })
   }
 
-  const handleDeleteClick = (creditor) => {
+  const handleDeleteClick = (creditor: Creditor) => {
     openModal('confirm', {
       title: 'Удаление кредитора',
       description: `Вы уверены, что хотите удалить кредитора "${creditor.name}"? Это действие нельзя отменить.`,
@@ -117,7 +127,7 @@ export default function CreditorsDatabase() {
     })
   }
 
-  const getTypeLabel = (type) => {
+  const getTypeLabel = (type: string) => {
     const found = CREDITOR_TYPES.find((t) => t.value === type)
     return found ? found.label : type || '-'
   }

@@ -1,18 +1,14 @@
-import { useFormContext } from "react-hook-form"
-import { FileText } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { TabsContent } from "@/components/ui/tabs"
-import { FormValues } from "../types"
-
+import { DocumentsList } from "../DocumentsList"
 
 interface ReportTabProps {
-  openDocument: (docType: string) => void
+  openDocument: (document: { id: number; name: string }) => void
+  contractData?: Record<string, unknown> | null
 }
 
-export const ReportTab = ({ openDocument }: ReportTabProps) => {
-  const { register } = useFormContext<FormValues>()
+export const ReportTab = ({ openDocument, contractData }: ReportTabProps): JSX.Element => {
+  const documents = (contractData?.report as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
     <TabsContent value="report" className="space-y-6">
@@ -23,16 +19,15 @@ export const ReportTab = ({ openDocument }: ReportTabProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <Button onClick={() => openDocument("financialReport")} variant="outline" className="justify-start" size="sm">
-                Отчет финансового управляющего
-              </Button>
-            </div>
             <p className="text-sm text-muted-foreground">
               Раздел в разработке
             </p>
           </div>
+          <DocumentsList
+            documents={documents}
+            title="Документы отчетов:"
+            onDocumentClick={openDocument}
+          />
         </CardContent>
       </Card>
     </TabsContent>

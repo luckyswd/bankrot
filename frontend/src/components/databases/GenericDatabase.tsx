@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useApp } from '../../context/AppContext'
+import { useApp, type ReferenceData } from '../../context/AppContext'
 import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
@@ -7,18 +7,31 @@ import { Input } from '@ui/input'
 import { Label } from '@ui/label'
 import { Plus, Edit, Trash2, X } from 'lucide-react'
 
+interface Field {
+  key: string
+  label: string
+  required?: boolean
+}
+
+interface GenericDatabaseProps {
+  dbKey: keyof ReferenceData
+  title: string
+  description: string
+  fields: Field[]
+}
+
 // Generic database component for other databases (MCHS, Rosgvardia)
-export function GenericDatabase({ dbKey, title, description, fields }) {
-  const { databases, addToDatabase } = useApp()
+export function GenericDatabase({ dbKey, title, description, fields }: GenericDatabaseProps) {
+  const { referenceData, addToReferenceData } = useApp()
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState(
-    fields.reduce((acc, field) => ({ ...acc, [field.key]: '' }), {})
+  const [formData, setFormData] = useState<Record<string, string>>(
+    fields.reduce((acc: Record<string, string>, field: Field) => ({ ...acc, [field.key]: '' }), {})
   )
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    addToDatabase(dbKey, formData)
-    setFormData(fields.reduce((acc, field) => ({ ...acc, [field.key]: '' }), {}))
+    addToReferenceData(dbKey, { id: Date.now(), name: formData.name || String(formData[Object.keys(formData)[0] || ''] || ''), ...formData })
+    setFormData(fields.reduce((acc: Record<string, string>, field: Field) => ({ ...acc, [field.key]: '' }), {}))
     setShowForm(false)
   }
 
@@ -60,8 +73,8 @@ export function GenericDatabase({ dbKey, title, description, fields }) {
                     </Label>
                     <Input
                       id={field.key}
-                      value={formData[field.key]}
-                      onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                      value={formData[field.key] || ''}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, [field.key]: e.target.value })}
                       required={field.required}
                     />
                   </div>
@@ -85,19 +98,19 @@ export function GenericDatabase({ dbKey, title, description, fields }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {databases[dbKey]?.length === 0 ? (
+            {!referenceData[dbKey] || referenceData[dbKey]?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={fields.length + 2} className="text-center py-12 text-muted-foreground">
                   Нет записей
                 </TableCell>
               </TableRow>
             ) : (
-              databases[dbKey]?.map((item, index) => (
+              referenceData[dbKey]?.map((item, index: number) => (
                 <TableRow key={item.id}>
                   <TableCell>{index + 1}</TableCell>
-                  {fields.map((field) => (
-                    <TableCell key={field.key} className={field.key === fields[0].key ? 'font-medium' : 'text-sm text-muted-foreground'}>
-                      {item[field.key]}
+                  {fields.map((field: Field) => (
+                    <TableCell key={field.key} className={field.key === fields[0]?.key ? 'font-medium' : 'text-sm text-muted-foreground'}>
+                      {String((item as unknown as Record<string, unknown>)[field.key] || '')}
                     </TableCell>
                   ))}
                   <TableCell>

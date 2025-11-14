@@ -9,8 +9,15 @@ import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-re
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 
+interface Court {
+  id: number
+  name: string
+  address: string
+  [key: string]: unknown
+}
+
 export default function CourtsDatabase() {
-  const [courts, setCourts] = useState([])
+  const [courts, setCourts] = useState<Court[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -86,7 +93,7 @@ export default function CourtsDatabase() {
     })
   }
 
-  const handleEditClick = (court) => {
+  const handleEditClick = (court: Court) => {
     openModal('courtForm', {
       court,
       onSuccess: async (message: string) => {
@@ -97,7 +104,7 @@ export default function CourtsDatabase() {
     })
   }
 
-  const handleDeleteClick = (court) => {
+  const handleDeleteClick = (court: Court) => {
     openModal('confirm', {
       title: 'Удаление суда',
       description: `Вы уверены, что хотите удалить суд "${court.name}"? Это действие нельзя отменить.`,

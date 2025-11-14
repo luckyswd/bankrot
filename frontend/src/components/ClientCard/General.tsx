@@ -1,7 +1,7 @@
 import { useContext } from "react"
 import React from "react"
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form"
-import { Save, Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 
 import { DatePickerInput } from "@/components/ui/DatePickerInput"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TabsContent } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { ChildInfo, FormValues } from "./types"
+import { DocumentsList } from "./DocumentsList"
 
 export const SaveContext = React.createContext<(() => Promise<void>) | null>(null)
 export const useSaveContract = () => useContext(SaveContext)
@@ -84,9 +85,15 @@ const createEmptyChild = (): ChildInfo => ({
   birthDate: "",
 })
 
-export const GeneralTab = () => {
-  const { register, control, formState: { isDirty }, watch } = useFormContext<FormValues>()
-  const saveContract = useSaveContract()
+interface GeneralTabProps {
+  contractData?: Record<string, unknown> | null
+  openDocument?: (document: { id: number; name: string }) => void
+}
+
+export const GeneralTab = ({ contractData, openDocument }: GeneralTabProps = {}): JSX.Element => {
+  const { register, control, watch } = useFormContext<FormValues>()
+  
+  const documents = (contractData?.basic_info as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   const isLastNameChanged = useWatch({
     control,
@@ -112,12 +119,6 @@ export const GeneralTab = () => {
 
   // Отслеживаем изменения для всех детей сразу
   const childrenValues = watch("primaryInfo.children") ?? []
-
-  const handleSave = async () => {
-    if (saveContract) {
-      await saveContract()
-    }
-  }
 
   return (
     <TabsContent value="primary" className="space-y-6">
@@ -559,6 +560,13 @@ export const GeneralTab = () => {
                 </div>
               </div>
             </div>
+            {openDocument && (
+              <DocumentsList
+                documents={documents}
+                title="Документы основной информации:"
+                onDocumentClick={openDocument}
+              />
+            )}
           </CardContent>
         </Card>
     </TabsContent>

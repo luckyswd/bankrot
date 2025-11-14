@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
+use App\Repository\ContractsRepository;
 use App\Repository\DocumentTemplateRepository;
+use App\Service\DocumentTemplateProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +18,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -26,6 +30,8 @@ class DocumentTemplateController extends AbstractController
     public function __construct(
         private readonly DocumentTemplateRepository $documentTemplateRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentTemplateProcessor $templateProcessor,
+        private readonly ContractsRepository $contractsRepository,
     ) {
     }
 
@@ -69,14 +75,14 @@ class DocumentTemplateController extends AbstractController
                 description: 'Номер страницы (начиная с 1)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 1, default: 1)
+                schema: new OA\Schema(type: 'integer', default: 1, example: 1)
             ),
             new OA\Parameter(
                 name: 'limit',
                 description: 'Количество элементов на странице',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'integer', default: 10, example: 10)
             ),
         ],
         responses: [
@@ -501,5 +507,112 @@ class DocumentTemplateController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json(data: [], status: 204);
+    }
+
+    #[Route('/{id}/generate', name: 'api_document_templates_generate', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    #[OA\Post(
+        path: '/api/v1/document-templates/{id}/generate',
+        summary: 'Сгенерировать документ из шаблона',
+        security: [['Bearer' => []]],
+        requestBody: new OA\RequestBody(
+            description: 'Параметры для генерации документа',
+            required: true,
+            content: new OA\JsonContent(
+                required: ['contractId'],
+                properties: [
+                    new OA\Property(property: 'contractId', description: 'ID контракта', type: 'integer', example: 1),
+                ],
+                type: 'object'
+            )
+        ),
+        tags: ['DocumentTemplates'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID шаблона',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Сгенерированный документ',
+                content: new OA\MediaType(
+                    mediaType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Ошибка валидации'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Шаблон не найден'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Неавторизован'
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Доступ запрещен'
+            ),
+        ]
+    )]
+    public function generate(int $id, Request $request): Response|JsonResponse
+    {
+        $template = $this->documentTemplateRepository->find($id);
+
+        if (!$template instanceof DocumentTemplate) {
+            return $this->json(data: ['error' => 'Шаблон не найден'], status: 404);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        if (!isset($data['contractId'])) {
+            return $this->json(data: ['error' => 'Параметр contractId обязателен'], status: 400);
+        }
+
+        $contractId = (int)$data['contractId'];
+        $contract = $this->contractsRepository->find($contractId);
+
+        if (!$contract instanceof Contracts) {
+            return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
+        }
+
+        try {
+            $outputPath = $this->templateProcessor->processTemplate(template: $template, contract: $contract);
+        } catch (\Exception $e) {
+            return $this->json(data: ['error' => 'Ошибка при обработке шаблона: ' . $e->getMessage()], status: 500);
+        }
+
+        if (!file_exists($outputPath)) {
+            return $this->json(data: ['error' => 'Ошибка при создании файла'], status: 500);
+        }
+
+        $fileName = $template->getName() . '.docx';
+        $fileName = preg_replace('/[^a-zA-Z0-9а-яА-ЯёЁ\s\-_\.]/u', '', $fileName);
+        $fileContent = file_get_contents($outputPath);
+
+        if ($fileContent === false) {
+            unlink($outputPath);
+
+            return $this->json(data: ['error' => 'Ошибка при чтении файла'], status: 500);
+        }
+
+        $response = new Response($fileContent);
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $response->headers->set('Content-Length', (string)strlen($fileContent));
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . addslashes($fileName) . '"');
+        $response->headers->set('Content-Transfer-Encoding', 'binary');
+        $response->headers->set('Pragma', 'public');
+        $response->headers->set('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
+
+        unlink($outputPath);
+
+        return $response;
     }
 }

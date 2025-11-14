@@ -1,30 +1,26 @@
 import { Controller, useFormContext } from "react-hook-form"
-import { FileText } from "lucide-react"
 
 import { DatePickerInput } from "@/components/ui/DatePickerInput"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { TabsContent } from "@/components/ui/tabs"
 import { FormValues } from "./types"
+import { DocumentsList } from "./DocumentsList"
 
 
-interface ReferenceItem {
-  id: number | string
-  name: string
-}
+import { ReferenceData } from "@/context/AppContext"
 
 interface PretrialTabProps {
-  openDocument: (docType: string) => void
-  databases?: {
-    courts?: ReferenceItem[]
-  }
+  openDocument: (document: { id: number; name: string }) => void
+  referenceData?: ReferenceData
+  contractData?: Record<string, unknown> | null
 }
 
-export const PretrialTab = ({ openDocument, databases }: PretrialTabProps) => {
+export const PretrialTab = ({ openDocument, referenceData, contractData }: PretrialTabProps): JSX.Element => {
   const { register, control } = useFormContext<FormValues>()
+  
+  const documents = (contractData?.pre_court as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
     <TabsContent value="pretrial" className="space-y-6">
@@ -44,7 +40,7 @@ export const PretrialTab = ({ openDocument, databases }: PretrialTabProps) => {
                 {...register("pretrial.court")}
               />
               <datalist id="courts-list">
-                {databases?.courts?.map((court) => (
+                {referenceData?.courts?.map((court) => (
                   <option key={court.id} value={court.name} />
                 ))}
               </datalist>
@@ -104,15 +100,11 @@ export const PretrialTab = ({ openDocument, databases }: PretrialTabProps) => {
             </div>
           </div>
 
-          <Separator className="my-6" />
-
-          <div className="space-y-3">
-            <h4 className="font-semibold">Документы досудебного этапа:</h4>
-            <Button onClick={() => openDocument("bankruptcyApplication")} variant="outline" className="w-full justify-start">
-              <FileText className="mr-2 h-4 w-4" />
-              Заявление о признании банкротом
-            </Button>
-          </div>
+          <DocumentsList
+            documents={documents}
+            title="Документы досудебного этапа:"
+            onDocumentClick={openDocument}
+          />
         </CardContent>
       </Card>
     </TabsContent>

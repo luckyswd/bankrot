@@ -14,10 +14,7 @@ import {
   UserCircle,
   LogOut,
   Menu,
-  X,
   Database,
-  ChevronDown,
-  ChevronRight,
   Sun,
   Moon,
   FileBarChart,
@@ -28,7 +25,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
 import { useModalStore } from './Modals/ModalProvider'
 
-export default function Layout({ children }) {
+interface LayoutProps {
+  children: React.ReactNode
+}
+
+export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()

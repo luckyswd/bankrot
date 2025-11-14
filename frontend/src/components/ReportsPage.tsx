@@ -1,24 +1,26 @@
 import { useState } from 'react'
-import { useApp } from '../context/AppContext'
+import { useApp, type Report } from '../context/AppContext'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Badge } from './ui/badge'
 import { Upload, Download, FileText, Trash2, Eye } from 'lucide-react'
 
 export default function ReportsPage() {
   const { reports = [], addReport, deleteReport } = useApp()
   const [uploading, setUploading] = useState(false)
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0]
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0]
     if (!file) return
 
     setUploading(true)
     
     // Симулируем загрузку файла
     const reader = new FileReader()
-    reader.onload = (event) => {
+    reader.onload = (event: ProgressEvent<FileReader>) => {
+      const result = event.target?.result
+      if (!result) return
+      
       const newReport = {
         id: Date.now(),
         name: file.name,
@@ -27,7 +29,7 @@ export default function ReportsPage() {
         uploadedAt: new Date().toISOString(),
         uploadedBy: 'Текущий пользователь',
         // В реальности здесь был бы URL или данные файла
-        data: event.target.result
+        data: result as string | ArrayBuffer
       }
       
       addReport(newReport)
@@ -37,8 +39,9 @@ export default function ReportsPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleDownload = (report) => {
+  const handleDownload = (report: Report) => {
     // Создаем ссылку для скачивания
+    if (typeof report.data !== 'string') return
     const link = document.createElement('a')
     link.href = report.data
     link.download = report.name
@@ -47,12 +50,13 @@ export default function ReportsPage() {
     document.body.removeChild(link)
   }
 
-  const handleView = (report) => {
+  const handleView = (report: Report) => {
     // Открываем в новой вкладке
+    if (typeof report.data !== 'string') return
     window.open(report.data, '_blank')
   }
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
@@ -60,7 +64,7 @@ export default function ReportsPage() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  const getFileIcon = (type) => {
+  const getFileIcon = (type: string): string => {
     if (type.includes('pdf')) return '📄'
     if (type.includes('word') || type.includes('document')) return '📝'
     if (type.includes('excel') || type.includes('spreadsheet')) return '📊'

@@ -10,8 +10,16 @@ import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 
 
+interface MchsItem {
+  id: number
+  name: string
+  address: string
+  phone: string
+  [key: string]: unknown
+}
+
 export function MchsDatabase() {
-  const [mchs, setMchs] = useState([])
+  const [mchs, setMchs] = useState<MchsItem[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -86,7 +94,7 @@ export function MchsDatabase() {
     })
   }
 
-  const handleEditClick = (mchsItem) => {
+  const handleEditClick = (mchsItem: MchsItem) => {
     openModal('mchsForm', {
       branch: mchsItem,
       onSuccess: async (message: string) => {
@@ -97,7 +105,7 @@ export function MchsDatabase() {
     })
   }
 
-  const handleDeleteClick = (mchsItem) => {
+  const handleDeleteClick = (mchsItem: MchsItem) => {
     openModal('confirm', {
       title: 'Удаление отделения',
       description: `Вы уверены, что хотите удалить отделение "${mchsItem.name}"? Это действие нельзя отменить.`,

@@ -1,23 +1,14 @@
-import { useFormContext } from "react-hook-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { TabsContent } from "@/components/ui/tabs"
-import { FormValues } from "../types"
-
-
-interface ReferenceItem {
-  id: number | string
-  name: string
-}
+import { DocumentsList } from "../DocumentsList"
 
 interface RealizationTabProps {
-  openDocument: (docType: string) => void
-  databases?: {
-    fns?: ReferenceItem[]
-  }
+  openDocument: (document: { id: number; name: string }) => void
+  contractData?: Record<string, unknown> | null
 }
 
-export const RealizationTab = ({ openDocument, databases }: RealizationTabProps) => {
-  const { register } = useFormContext<FormValues>()
+export const RealizationTab = ({ openDocument, contractData }: RealizationTabProps): JSX.Element => {
+  const documents = (contractData?.realization as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
     <TabsContent value="realization" className="space-y-6">
@@ -32,6 +23,11 @@ export const RealizationTab = ({ openDocument, databases }: RealizationTabProps)
               Раздел в разработке
             </p>
           </div>
+          <DocumentsList
+            documents={documents}
+            title="Документы этапа реализации:"
+            onDocumentClick={openDocument}
+          />
         </CardContent>
       </Card>
     </TabsContent>

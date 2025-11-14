@@ -1,21 +1,22 @@
 import { useFormContext } from "react-hook-form"
-import { FileText } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { TabsContent } from "@/components/ui/tabs"
 import { FormValues } from "../types"
+import { DocumentsList } from "../DocumentsList"
 
 
 interface ProcedureTabProps {
-  openDocument: (docType: string) => void
+  openDocument: (document: { id: number; name: string }) => void
+  contractData?: Record<string, unknown> | null
 }
 
-export const ProcedureTab = ({ openDocument }: ProcedureTabProps) => {
+export const ProcedureTab = ({ openDocument, contractData }: ProcedureTabProps): JSX.Element => {
   const { register } = useFormContext<FormValues>()
+  
+  const documents = (contractData?.procedure as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
     <TabsContent value="procedure" className="space-y-6">
@@ -43,25 +44,11 @@ export const ProcedureTab = ({ openDocument }: ProcedureTabProps) => {
             </div>
           </div>
 
-          <Separator className="my-6" />
-
-          <div className="space-y-2">
-            <h4 className="font-semibold">Документы процедуры:</h4>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Button onClick={() => openDocument("receivedRequirement")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Публикация о получении требования
-              </Button>
-              <Button onClick={() => openDocument("includedRequirement")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Публикация о включении в реестр
-              </Button>
-              <Button onClick={() => openDocument("financialReport")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Отчет финансового управляющего
-              </Button>
-            </div>
-          </div>
+          <DocumentsList
+            documents={documents}
+            title="Документы процедуры:"
+            onDocumentClick={openDocument}
+          />
         </CardContent>
       </Card>
     </TabsContent>

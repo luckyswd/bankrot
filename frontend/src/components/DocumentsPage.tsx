@@ -22,11 +22,18 @@ const CATEGORIES = [
   { value: 'report', label: 'Отчет' },
 ]
 
+interface Template {
+  id: number
+  name: string
+  category: string
+  [key: string]: unknown
+}
+
 export default function DocumentsPage() {
-  const [templates, setTemplates] = useState([])
+  const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [templateName, setTemplateName] = useState('')
   const [templateCategory, setTemplateCategory] = useState('')
   const { openModal } = useModalStore()
@@ -102,8 +109,8 @@ export default function DocumentsPage() {
     setPage(1)
   }, [debouncedSearch, categoryFilter])
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0]
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) return
 
     if (!file.name.endsWith('.docx')) {
@@ -169,16 +176,16 @@ export default function DocumentsPage() {
         setTotal(data.total || 0)
         setPages(data.pages || 1)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Ошибка при загрузке шаблона:', error)
-      const errorMessage = error.body?.error || 'Не удалось загрузить шаблон'
+      const errorMessage = (error as { body?: { error?: string } })?.body?.error || 'Не удалось загрузить шаблон'
       notify({ message: errorMessage, type: 'error' })
     } finally {
       setUploading(false)
     }
   }
 
-  const handleDownload = async (template) => {
+  const handleDownload = async (template: Template) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}document-templates/${template.id}`,
@@ -208,7 +215,7 @@ export default function DocumentsPage() {
     }
   }
 
-  const handleDeleteClick = (template) => {
+  const handleDeleteClick = (template: Template) => {
     openModal('confirm', {
       title: 'Удаление шаблона',
       description: `Вы уверены, что хотите удалить шаблон "${template.name}"? Это действие нельзя отменить.`,
@@ -224,8 +231,8 @@ export default function DocumentsPage() {
     })
   }
 
-  const getCategoryColor = (category) => {
-    const colors = {
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
       'Основная информация': 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
       'Досудебка': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
       'Судебка': 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',

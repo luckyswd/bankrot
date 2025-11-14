@@ -39,10 +39,12 @@ type ModalComponentProps = {
   onClose: () => void
 } & Record<string, unknown>
 
-type ModalComponentMap = Record<ModalKey, ComponentType<ModalComponentProps>>
+type ModalComponentMap = {
+  [K in ModalKey]: ComponentType<ModalComponentProps>
+}
 
 const modalComponents: ModalComponentMap = {
-  confirm: ConfirmModal,
+  confirm: ConfirmModal as ComponentType<ModalComponentProps>,
   createContract: CreateContractModal,
   creditorForm: CreditorFormModal,
   bailiffForm: BailiffFormModal,

@@ -313,8 +313,8 @@ jobs:
             make composer-install
             make cc
             make db-migrate
-  deploy-frontend:
-    name: Деплой фронтенда
+  type-check:
+    name: TypeScript Type Check
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -327,10 +327,37 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.5'
+          cache: 'npm'
+          cache-dependency-path: ${{ secrets.LOCAL_FRONTEND_DIR }}/package-lock.json
 
       - name: Установка зависимостей npm
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
-        run: npm i
+        run: npm ci
+
+      - name: Проверка типов TypeScript
+        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        run: npx tsc --noEmit
+
+  deploy-frontend:
+    name: Деплой фронтенда
+    needs: [changes, type-check]
+    if: (needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && needs.type-check.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получение кода
+        uses: actions/checkout@v4
+
+      - name: Настройка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+          cache: 'npm'
+          cache-dependency-path: ${{ secrets.LOCAL_FRONTEND_DIR }}/package-lock.json
+
+      - name: Установка зависимостей npm
+        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        run: npm ci
 
       - name: Сборка фронтенда для staging
         working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}

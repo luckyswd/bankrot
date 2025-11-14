@@ -17,14 +17,21 @@ import {
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from '../shared/Loading'
 
+interface GostekhnadzorItem {
+  id: number
+  name: string
+  address: string
+  [key: string]: unknown
+}
+
 export default function GostekhnadzorDatabase() {
-  const [gostekhnadzor, setGostekhnadzor] = useState([])
+  const [gostekhnadzor, setGostekhnadzor] = useState<GostekhnadzorItem[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [gostekhnadzorToDelete, setGostekhnadzorToDelete] = useState(null)
-  const [editingGostekhnadzor, setEditingGostekhnadzor] = useState(null)
+  const [gostekhnadzorToDelete, setGostekhnadzorToDelete] = useState<GostekhnadzorItem | null>(null)
+  const [editingGostekhnadzor, setEditingGostekhnadzor] = useState<GostekhnadzorItem | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -105,7 +112,7 @@ export default function GostekhnadzorDatabase() {
     setEditDialogOpen(true)
   }
 
-  const handleEditClick = (item) => {
+  const handleEditClick = (item: GostekhnadzorItem) => {
     setEditingGostekhnadzor(item)
     setFormData({
       name: item.name || '',
@@ -165,16 +172,16 @@ export default function GostekhnadzorDatabase() {
         setTotal(response.total || 0)
         setPages(response.pages || 1)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Ошибка при сохранении отделения:', error)
-      const errorMessage = error.body?.error || 'Не удалось сохранить отделение'
+      const errorMessage = (error as { body?: { error?: string } })?.body?.error || 'Не удалось сохранить отделение'
       notify({ message: errorMessage, type: 'error' })
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDeleteClick = (item) => {
+  const handleDeleteClick = (item: GostekhnadzorItem) => {
     setGostekhnadzorToDelete(item)
     setDeleteDialogOpen(true)
   }

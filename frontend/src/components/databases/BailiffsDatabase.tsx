@@ -9,8 +9,16 @@ import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-re
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 
+interface Bailiff {
+  id: number
+  department: string
+  address: string
+  phone: string
+  [key: string]: unknown
+}
+
 export default function BailiffsDatabase() {
-  const [bailiffs, setBailiffs] = useState([])
+  const [bailiffs, setBailiffs] = useState<Bailiff[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -85,7 +93,7 @@ export default function BailiffsDatabase() {
     })
   }
 
-  const handleEditClick = (bailiff) => {
+  const handleEditClick = (bailiff: Bailiff) => {
     openModal('bailiffForm', {
       bailiff,
       onSuccess: async (message: string) => {
@@ -96,7 +104,7 @@ export default function BailiffsDatabase() {
     })
   }
 
-  const handleDeleteClick = (bailiff) => {
+  const handleDeleteClick = (bailiff: Bailiff) => {
     openModal('confirm', {
       title: 'Удаление отделения',
       description: `Вы уверены, что хотите удалить отделение "${bailiff.department}"? Это действие нельзя отменить.`,

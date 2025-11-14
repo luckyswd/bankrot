@@ -1,19 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
 import { apiRequest } from '../../config/api'
-import { useApp } from '../../context/AppContext'
 import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
 import { Input } from '@ui/input'
-import { Label } from '@ui/label'
 import { notify } from '@ui/toast'
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 
+interface RosgvardiaItem {
+  id: number
+  name: string
+  address: string
+  phone: string
+  [key: string]: unknown
+}
 
 export function RosgvardiaDatabase() {
-  const [rosgvardia, setRosgvardia] = useState([])
+  const [rosgvardia, setRosgvardia] = useState<RosgvardiaItem[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -88,7 +93,7 @@ export function RosgvardiaDatabase() {
     })
   }
 
-  const handleEditClick = (rosgvardiaItem) => {
+  const handleEditClick = (rosgvardiaItem: RosgvardiaItem) => {
     openModal('rosgvardiaForm', {
       branch: rosgvardiaItem,
       onSuccess: async (message: string) => {
@@ -99,7 +104,7 @@ export function RosgvardiaDatabase() {
     })
   }
 
-  const handleDeleteClick = (rosgvardiaItem) => {
+  const handleDeleteClick = (rosgvardiaItem: RosgvardiaItem) => {
     openModal('confirm', {
       title: 'Удаление отделения',
       description: `Вы уверены, что хотите удалить отделение "${rosgvardiaItem.name}"? Это действие нельзя отменить.`,

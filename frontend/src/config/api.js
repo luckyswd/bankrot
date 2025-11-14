@@ -11,11 +11,11 @@ const isProd = import.meta.env.PROD
 const envApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') ?? ''
 const ensurePathSuffix = (base, suffix) => (base.endsWith(suffix) ? base : `${base}${suffix}`)
 const prodBase = envApiUrl || ''
-const devBase = envApiUrl || '/api'
+const devBase = envApiUrl || ''
 
 export const API_URL = isProd
   ? ensurePathSuffix(prodBase, '/api/v1')
-  : devBase
+  : ensurePathSuffix(devBase, '/api/v1')
 
 // Базовые настройки для fetch запросов
 export const API_CONFIG = {
@@ -34,7 +34,7 @@ export const API_CONFIG = {
  */
 export async function apiRequest(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
-  const { auth = true, headers: customHeaders = {}, ...restOptions } = options;
+  const { auth = true, headers: customHeaders = {}, responseType, ...restOptions } = options;
   const token = auth ? localStorage.getItem('token') : null;
   const isFormData =
     typeof FormData !== 'undefined' && restOptions.body instanceof FormData;
@@ -58,7 +58,9 @@ export async function apiRequest(endpoint, options = {}) {
     const isJson = contentType.includes('application/json');
     let responseBody = null;
 
-    if (isJson) {
+    if (responseType === 'blob') {
+      responseBody = await response.blob();
+    } else if (isJson) {
       try {
         responseBody = await response.json();
       } catch {
@@ -78,12 +80,25 @@ export async function apiRequest(endpoint, options = {}) {
         }
       }
       
+      let errorData = responseBody;
+
+      if (responseType === 'blob' && responseBody instanceof Blob) {
+        try {
+          errorData = await responseBody.json();
+        } catch {
+          errorData = { error: 'Ошибка при выполнении запроса' };
+        }
+      }
+      
       const errorMessage =
-        (responseBody && typeof responseBody === 'object' && responseBody.message) ||
+        (errorData && typeof errorData === 'object' && errorData.error) ||
+        (errorData && typeof errorData === 'object' && errorData.message) ||
         `HTTP error! status: ${response.status}`;
       const error = new Error(errorMessage);
+
       error.status = response.status;
-      error.body = responseBody;
+      error.body = errorData;
+
       throw error;
     }
     
@@ -104,4 +119,11 @@ export async function apiRequest(endpoint, options = {}) {
 // const newUser = await apiRequest('/api/users', {
 //   method: 'POST',
 //   body: JSON.stringify({ name: 'John' })
+// });
+//
+// // Скачивание файла (blob)
+// const blob = await apiRequest('/document-templates/1/generate', {
+//   method: 'POST',
+//   body: JSON.stringify({ contractId: 1 }),
+//   responseType: 'blob'
 // });

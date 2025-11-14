@@ -5,7 +5,7 @@ interface Props {
   status: string;
 }
 export const StatusBadge: FC<Props> = ({ status }) => {
-  const STATUSES = {
+  const STATUSES: Record<string, { label: string; variant: string }> = {
     completed: {
       label: "Завершено",
       variant: "green",
@@ -16,12 +16,14 @@ export const StatusBadge: FC<Props> = ({ status }) => {
     },
   };
 
+  const statusConfig = STATUSES[status] || { label: status, variant: "secondary" };
+
   return (
     <Badge
-      variant={STATUSES[status as string].variant}
+      variant={statusConfig.variant as "default" | "secondary" | "destructive" | "outline"}
       className="py-2"
     >
-      {STATUSES[status].label}
+      {statusConfig.label}
     </Badge>
   );
 };

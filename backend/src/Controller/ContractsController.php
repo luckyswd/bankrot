@@ -9,6 +9,7 @@ use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
 use App\Repository\ContractsRepository;
+use App\Repository\DocumentTemplateRepository;
 use App\Service\Serializer;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
@@ -25,6 +26,7 @@ class ContractsController extends AbstractController
     public function __construct(
         private readonly ContractsRepository $contractsRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentTemplateRepository $documentTemplateRepository,
     ) {
     }
 
@@ -347,48 +349,146 @@ class ContractsController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Данные контракта, сгруппированные по группам сериализации',
+                description: 'Данные контракта, сгруппированные по группам сериализации. Каждая группа содержит поле documents - массив доступных документов для данной стадии.',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'basic_info',
-                            description: 'Основная информация о контракте',
+                            description: 'Основная информация о контракте. Содержит поле documents - массив документов для стадии "Основная информация".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Основная информация"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'pre_court',
-                            description: 'Досудебка',
+                            description: 'Досудебка. Содержит поле documents - массив документов для стадии "Досудебка".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Досудебка"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'judicial',
-                            description: 'Судебка',
+                            description: 'Судебка. Содержит поле documents - массив документов для стадии "Судебка".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Судебка"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'realization',
-                            description: 'Реализация',
+                            description: 'Реализация. Содержит поле documents - массив документов для стадии "Реализация".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Реализация"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'procedure_initiation',
-                            description: 'Введение процедуры',
+                            description: 'Введение процедуры. Содержит поле documents - массив документов для стадии "Введение процедуры".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Введение процедуры"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'procedure',
-                            description: 'Процедура',
+                            description: 'Процедура. Содержит поле documents - массив документов для стадии "Процедура".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Процедура"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'report',
-                            description: 'Отчет',
+                            description: 'Отчет. Содержит поле documents - массив документов для стадии "Отчет".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Отчет"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
@@ -402,13 +502,37 @@ class ContractsController extends AbstractController
                             'lastName' => 'Иванов',
                             'middleName' => 'Иванович',
                             'status' => 'В работе',
+                            'documents' => [
+                                ['id' => 1, 'name' => 'Заявление о признании банкротом'],
+                                ['id' => 2, 'name' => 'Документ 2'],
+                            ],
                         ],
-                        'pre_court' => [],
+                        'pre_court' => [
+                            'documents' => [
+                                ['id' => 3, 'name' => 'Досудебное уведомление'],
+                            ],
+                        ],
                         'judicial' => [],
-                        'realization' => [],
-                        'procedure_initiation' => [],
-                        'procedure' => [],
-                        'report' => [],
+                        'realization' => [
+                            'documents' => [
+                                ['id' => 4, 'name' => 'Документ реализации'],
+                            ],
+                        ],
+                        'procedure_initiation' => [
+                            'documents' => [
+                                ['id' => 5, 'name' => 'Документ введения процедуры'],
+                            ],
+                        ],
+                        'procedure' => [
+                            'documents' => [
+                                ['id' => 6, 'name' => 'Документ процедуры'],
+                            ],
+                        ],
+                        'report' => [
+                            'documents' => [
+                                ['id' => 7, 'name' => 'Отчет'],
+                            ],
+                        ],
                     ]
                 )
             ),
@@ -509,48 +633,146 @@ class ContractsController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Контракт успешно обновлен',
+                description: 'Контракт успешно обновлен. Возвращаются данные контракта, сгруппированные по группам сериализации. Каждая группа содержит поле documents - массив доступных документов для данной стадии.',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'basic_info',
-                            description: 'Основная информация о контракте',
+                            description: 'Основная информация о контракте. Содержит поле documents - массив документов для стадии "Основная информация".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Основная информация"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'pre_court',
-                            description: 'Досудебка',
+                            description: 'Досудебка. Содержит поле documents - массив документов для стадии "Досудебка".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Досудебка"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'judicial',
-                            description: 'Судебка',
+                            description: 'Судебка. Содержит поле documents - массив документов для стадии "Судебка".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Судебка"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'realization',
-                            description: 'Реализация',
+                            description: 'Реализация. Содержит поле documents - массив документов для стадии "Реализация".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Реализация"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'procedure_initiation',
-                            description: 'Введение процедуры',
+                            description: 'Введение процедуры. Содержит поле documents - массив документов для стадии "Введение процедуры".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Введение процедуры"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'procedure',
-                            description: 'Процедура',
+                            description: 'Процедура. Содержит поле documents - массив документов для стадии "Процедура".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Процедура"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', type: 'integer', description: 'ID шаблона документа'),
+                                            new OA\Property(property: 'name', type: 'string', description: 'Название документа'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
                         new OA\Property(
                             property: 'report',
-                            description: 'Отчет',
+                            description: 'Отчет. Содержит поле documents - массив документов для стадии "Отчет".',
+                            properties: [
+                                new OA\Property(
+                                    property: 'documents',
+                                    description: 'Массив документов для стадии "Отчет"',
+                                    type: 'array',
+                                    items: new OA\Items(
+                                        properties: [
+                                            new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                        ],
+                                        type: 'object'
+                                    )
+                                ),
+                            ],
                             type: 'object',
                             additionalProperties: true
                         ),
@@ -564,13 +786,37 @@ class ContractsController extends AbstractController
                             'lastName' => 'Иванов',
                             'middleName' => 'Иванович',
                             'status' => 'В работе',
+                            'documents' => [
+                                ['id' => 1, 'name' => 'Заявление о признании банкротом'],
+                                ['id' => 2, 'name' => 'Документ 2'],
+                            ],
                         ],
-                        'pre_court' => [],
+                        'pre_court' => [
+                            'documents' => [
+                                ['id' => 3, 'name' => 'Досудебное уведомление'],
+                            ],
+                        ],
                         'judicial' => [],
-                        'realization' => [],
-                        'procedure_initiation' => [],
-                        'procedure' => [],
-                        'report' => [],
+                        'realization' => [
+                            'documents' => [
+                                ['id' => 4, 'name' => 'Документ реализации'],
+                            ],
+                        ],
+                        'procedure_initiation' => [
+                            'documents' => [
+                                ['id' => 5, 'name' => 'Документ введения процедуры'],
+                            ],
+                        ],
+                        'procedure' => [
+                            'documents' => [
+                                ['id' => 6, 'name' => 'Документ процедуры'],
+                            ],
+                        ],
+                        'report' => [
+                            'documents' => [
+                                ['id' => 7, 'name' => 'Отчет'],
+                            ],
+                        ],
                     ]
                 )
             ),
@@ -666,6 +912,23 @@ class ContractsController extends AbstractController
      */
     private function serializeContractByStages(Contracts $contract): array
     {
+        $allTemplates = $this->documentTemplateRepository->findAll();
+
+        $documentsByStage = [];
+
+        foreach ($allTemplates as $template) {
+            $stageValue = $template->getCategory()->value;
+
+            if (!isset($documentsByStage[$stageValue])) {
+                $documentsByStage[$stageValue] = [];
+            }
+
+            $documentsByStage[$stageValue][] = [
+                'id' => $template->getId(),
+                'name' => $template->getName(),
+            ];
+        }
+
         $result = [];
 
         foreach (BankruptcyStage::cases() as $stage) {
@@ -677,6 +940,8 @@ class ContractsController extends AbstractController
             } else {
                 $result[$stage->value] = [];
             }
+
+            $result[$stage->value]['documents'] = $documentsByStage[$stage->value] ?? [];
         }
 
         return $result;

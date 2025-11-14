@@ -9,9 +9,16 @@ import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search} from 'lucide-rea
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
 
+interface FnsItem {
+  id: number
+  name: string
+  address: string
+  code: string
+  [key: string]: unknown
+}
 
 export function FnsDatabase() {
-  const [fns, setFns] = useState([])
+  const [fns, setFns] = useState<FnsItem[]>([])
   const [loading, setLoading] = useState(true)
   const { openModal } = useModalStore()
 
@@ -86,7 +93,7 @@ export function FnsDatabase() {
     })
   }
 
-  const handleEditClick = (fnsItem) => {
+  const handleEditClick = (fnsItem: FnsItem) => {
     openModal('fnsForm', {
       branch: fnsItem,
       onSuccess: async (message: string) => {
@@ -97,7 +104,7 @@ export function FnsDatabase() {
     })
   }
 
-  const handleDeleteClick = (fnsItem) => {
+  const handleDeleteClick = (fnsItem: FnsItem) => {
     openModal('confirm', {
       title: 'Удаление отделения',
       description: `Вы уверены, что хотите удалить отделение "${fnsItem.name}"? Это действие нельзя отменить.`,

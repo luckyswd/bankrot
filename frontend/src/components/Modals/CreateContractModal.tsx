@@ -95,7 +95,6 @@ export const CreateContractModal = ({ isOpen, onClose, onSuccess, onError }: Cre
 
       if (Object.keys(serverFieldErrors).length > 0) {
         setFieldErrors(serverFieldErrors)
-        const firstErrorMessage = serverFieldErrors[Object.keys(serverFieldErrors)[0] as FieldName]
       } else {
         setFieldErrors({})
       }

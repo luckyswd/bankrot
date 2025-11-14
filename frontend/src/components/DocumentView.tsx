@@ -11,7 +11,9 @@ function DocumentView() {
   const { contracts } = useApp()
   
   const contract = contracts.find(c => c.id === parseInt(contractId || ''))
-  const template = documentTemplates[docType]
+  const template = docType && docType in documentTemplates 
+    ? (documentTemplates as Record<string, { name: string; template: (data: unknown) => string }>)[docType]
+    : undefined
 
   if (!contract || !template) {
     return (

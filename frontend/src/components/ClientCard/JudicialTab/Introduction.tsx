@@ -1,30 +1,26 @@
 import { Controller, useFormContext } from "react-hook-form"
-import { FileText } from "lucide-react"
 
 import { DatePickerInput } from "@/components/ui/DatePickerInput"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { TabsContent } from "@/components/ui/tabs"
 import { FormValues } from "../types"
+import { DocumentsList } from "../DocumentsList"
 
 
-interface ReferenceItem {
-  id: number | string
-  name: string
-}
+import { ReferenceData } from "@/context/AppContext"
 
 interface IntroductionTabProps {
-  openDocument: (docType: string) => void
-  databases?: {
-    fns?: ReferenceItem[]
-  }
+  openDocument: (document: { id: number; name: string }) => void
+  referenceData?: ReferenceData
+  contractData?: Record<string, unknown> | null
 }
 
-export const IntroductionTab = ({ openDocument, databases }: IntroductionTabProps) => {
+export const IntroductionTab = ({ openDocument, referenceData, contractData }: IntroductionTabProps): JSX.Element => {
   const { register, control } = useFormContext<FormValues>()
+  
+  const documents = (contractData?.procedure_initiation as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
     <TabsContent value="introduction" className="space-y-6">
@@ -62,7 +58,7 @@ export const IntroductionTab = ({ openDocument, databases }: IntroductionTabProp
               <Label htmlFor="introduction.fns">4. ФНС</Label>
               <Input id="introduction.fns" placeholder="Выбор из списка" list="fns-list" {...register("introduction.fns")} />
               <datalist id="fns-list">
-                {databases?.fns?.map((item) => (
+                {referenceData?.fns?.map((item) => (
                   <option key={item.id} value={item.name} />
                 ))}
               </datalist>
@@ -118,25 +114,11 @@ export const IntroductionTab = ({ openDocument, databases }: IntroductionTabProp
             </div>
           </div>
 
-          <Separator className="my-6" />
-
-          <div className="space-y-2">
-            <h4 className="font-semibold">Документы этапа введения:</h4>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Button onClick={() => openDocument("efrsbPublication")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Публикация ЕФРСБ
-              </Button>
-              <Button onClick={() => openDocument("kommersantPublication")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Заявка Коммерсантъ
-              </Button>
-              <Button onClick={() => openDocument("spouseNotification")} variant="outline" className="justify-start" size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Уведомление супругу
-              </Button>
-            </div>
-          </div>
+          <DocumentsList
+            documents={documents}
+            title="Документы этапа введения:"
+            onDocumentClick={openDocument}
+          />
         </CardContent>
       </Card>
     </TabsContent>

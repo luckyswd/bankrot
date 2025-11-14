@@ -24,7 +24,7 @@ import { StatusBadge } from "@shared/StatusBadge"
 function ClientCard() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { databases } = useApp()
+  const { referenceData } = useApp()
   const [contract, setContract] = useState<{ id: number; contractNumber: string; status: string } | null>(null)
   const [contractData, setContractData] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -146,8 +146,37 @@ function ClientCard() {
     )
   }
 
-  const openDocument = (docType: string) => {
-    navigate(`/document/${contract.id}/${docType}`)
+  const openDocument = async (doc: { id: number; name: string }): Promise<void> => {
+    if (!contract) {
+      return
+    }
+
+    try {
+      const blob = await apiRequest(
+        `/document-templates/${doc.id}/generate`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ contractId: contract.id }),
+          responseType: 'blob',
+        }
+      )
+
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = window.document.createElement('a')
+
+      link.href = downloadUrl
+      link.download = `${doc.name}.docx`
+      window.document.body.appendChild(link)
+      link.click()
+      window.document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      notify({
+        message: error instanceof Error ? error.message : 'Ошибка при генерации документа',
+        type: 'error',
+        duration: 5000,
+      })
+    }
   }
 
   const primaryInfo = (watchedValues.primaryInfo ?? {}) as Partial<PrimaryInfoFields>
@@ -190,9 +219,9 @@ function ClientCard() {
         </div>
 
         <div className="mt-6 pb-24">
-          <GeneralTab />
-          <PretrialTab openDocument={openDocument} databases={databases} />
-          <JudicialTab openDocument={openDocument} databases={databases} />
+          <GeneralTab contractData={contractData} openDocument={openDocument} />
+          <PretrialTab openDocument={openDocument} referenceData={referenceData} contractData={contractData} />
+          <JudicialTab openDocument={openDocument} referenceData={referenceData} contractData={contractData} />
         </div>
       </Tabs>
 

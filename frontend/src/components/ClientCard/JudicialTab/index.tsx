@@ -4,14 +4,15 @@ import { ProcedureTab } from "./Procedure";
 import { RealizationTab } from "./Realization";
 import { ReportTab } from "./Report";
 
+import { ReferenceData } from "@/context/AppContext"
+
 interface JudicialTabProps {
-  openDocument: (docType: string) => void;
-  databases?: {
-    fns?: Array<{ id: number | string; name: string }>;
-  };
+  openDocument: (document: { id: number; name: string }) => void
+  referenceData?: ReferenceData
+  contractData?: Record<string, unknown> | null
 }
 
-export const JudicialTab = ({ openDocument, databases }: JudicialTabProps) => {
+export const JudicialTab = ({ openDocument, referenceData, contractData }: JudicialTabProps): JSX.Element => {
   return (
     <TabsContent value="judicial" className="mt-0 p-0 border-0">
       <Tabs defaultValue="realization">
@@ -23,10 +24,10 @@ export const JudicialTab = ({ openDocument, databases }: JudicialTabProps) => {
         </TabsList>
 
         <div className="mt-6">
-          <RealizationTab openDocument={openDocument} databases={databases} />
-          <IntroductionTab openDocument={openDocument} databases={databases} />
-          <ProcedureTab openDocument={openDocument} />
-          <ReportTab openDocument={openDocument} />
+          <RealizationTab openDocument={openDocument} contractData={contractData} />
+          <IntroductionTab openDocument={openDocument} referenceData={referenceData} contractData={contractData} />
+          <ProcedureTab openDocument={openDocument} contractData={contractData} />
+          <ReportTab openDocument={openDocument} contractData={contractData} />
         </div>
       </Tabs>
     </TabsContent>

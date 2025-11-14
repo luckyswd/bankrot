@@ -11,9 +11,19 @@ import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-re
 import Loading from './shared/Loading'
 import { useModalStore } from './Modals/ModalProvider'
 
+interface Contract {
+  id: number
+  contractNumber?: string
+  fullName?: string
+  contractDate?: string
+  manager?: string
+  author?: string
+  status?: string
+}
+
 function Dashboard() {
   const navigate = useNavigate()
-  const [contracts, setContracts] = useState([])
+  const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
