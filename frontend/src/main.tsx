@@ -1,4 +1,3 @@
-import React from "react"
 import ReactDOM from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
@@ -22,11 +21,9 @@ if (!rootElement) {
 }
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ModalProvider>
         <App />
       </ModalProvider>
     </QueryClientProvider>
-  </React.StrictMode>,
 )

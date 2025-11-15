@@ -10,7 +10,15 @@ export const StatusBadge: FC<Props> = ({ status }) => {
       label: "Завершено",
       variant: "green",
     },
+    'Завершено': {
+      label: "Завершено",
+      variant: "green",
+    },
     in_progress: {
+      label: "В работе",
+      variant: "blue",
+    },
+    'В работе': {
       label: "В работе",
       variant: "blue",
     },
@@ -21,7 +29,7 @@ export const StatusBadge: FC<Props> = ({ status }) => {
   return (
     <Badge
       variant={statusConfig.variant as "default" | "secondary" | "destructive" | "outline"}
-      className="py-2"
+      className="py-1 text-nowrap"
     >
       {statusConfig.label}
     </Badge>

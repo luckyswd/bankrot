@@ -96,13 +96,13 @@ export const IntroductionTab = ({ openDocument, referenceData, contractData }: I
 
             <div className="space-y-2 md:col-span-2">
               <Label>12. Окончание исполнительных производств</Label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Input placeholder="Номер" {...register("introduction.executionNumber")} />
                 <Controller
                   name="introduction.executionDate"
                   control={control}
                   render={({ field }) => (
-                    <DatePickerInput label="Дата" value={(field.value as string) ?? ""} onChange={field.onChange} className="space-y-1 flex-1" />
+                    <DatePickerInput value={(field.value as string) ?? ""} onChange={field.onChange} className="space-y-1 flex-1" />
                   )}
                 />
               </div>

@@ -10,6 +10,7 @@ import { notify } from './ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from './shared/Loading'
 import { useModalStore } from './Modals/ModalProvider'
+import { StatusBadge } from './shared/StatusBadge'
 
 interface Contract {
   id: number
@@ -184,8 +185,8 @@ function Dashboard() {
             Все договоры для управления
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mb-4 space-y-4">
+        <CardContent className=''>
+          <div className="space-y-4">
             <div className="flex gap-4 items-center">
               {/* Search */}
               <div className="flex-1">
@@ -293,9 +294,10 @@ function Dashboard() {
                         <TableCell>{contract.manager || '-'}</TableCell>
                         <TableCell>{contract.author || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant={contract.status === 'В работе' ? 'blue' : contract.status === 'Завершено' ? 'green' : 'secondary'}>
+                          {/* <Badge variant={contract.status === 'В работе' ? 'blue' : contract.status === 'Завершено' ? 'green' : 'secondary'}>
                             {contract.status || '-'}
-                          </Badge>
+                          </Badge> */}
+                          <StatusBadge status={contract.status as string} />
                         </TableCell>
                         <TableCell>
                           <div className="flex" onClick={(e) => e.stopPropagation()}>
