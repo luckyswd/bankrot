@@ -17,6 +17,7 @@ import { JudicialTab } from "./JudicialTab"
 import { FormValues, PrimaryInfoFields } from "./types"
 import { convertApiDataToFormValues, createDefaultFormValues } from "./helpers"
 import { StatusBadge } from "@shared/StatusBadge"
+import { useModalStore } from "../Modals/ModalProvider"
 
 
 
@@ -29,7 +30,7 @@ function ClientCard() {
   const [contractData, setContractData] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
+  const { openModal } = useModalStore();
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: createDefaultFormValues(),
@@ -150,33 +151,13 @@ function ClientCard() {
     if (!contract) {
       return
     }
-
-    try {
-      const blob = await apiRequest(
-        `/document-templates/${doc.id}/generate`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ contractId: contract.id }),
-          responseType: 'blob',
-        }
-      )
-
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = window.document.createElement('a')
-
-      link.href = downloadUrl
-      link.download = `${doc.name}.docx`
-      window.document.body.appendChild(link)
-      link.click()
-      window.document.body.removeChild(link)
-      window.URL.revokeObjectURL(downloadUrl)
-    } catch (error) {
-      notify({
-        message: error instanceof Error ? error.message : 'Ошибка при генерации документа',
-        type: 'error',
-        duration: 5000,
-      })
-    }
+     openModal('previewDocumentModal', { 
+      document: {
+      documentId: doc.id,
+      contractId: contract.id,
+      documentName: doc.name 
+      }
+})
   }
 
   const primaryInfo = (watchedValues.primaryInfo ?? {}) as Partial<PrimaryInfoFields>

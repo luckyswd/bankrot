@@ -8,6 +8,7 @@ import { CourtFormModal } from "./CourtFormModal"
 import { FnsBranchModal } from "./FnsBranchModal"
 import { MchsBranchModal } from "./MchsBranchModal"
 import { RosgvardiaBranchModal } from "./RosgvardiaBranchModal"
+import { PreviewDocumentModal } from "./PreviewDocumentModal"
 
 export type ModalKey =
   | "confirm"
@@ -18,6 +19,7 @@ export type ModalKey =
   | "fnsForm"
   | "mchsForm"
   | "rosgvardiaForm"
+  | "previewDocumentModal"
 
 type ModalState = {
   isOpen: boolean
@@ -52,6 +54,7 @@ const modalComponents: ModalComponentMap = {
   fnsForm: FnsBranchModal,
   mchsForm: MchsBranchModal,
   rosgvardiaForm: RosgvardiaBranchModal,
+  previewDocumentModal: PreviewDocumentModal,
 }
 
 interface ModalRendererProps {
