@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Contracts;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 readonly class EntityDataResolver
@@ -22,7 +23,7 @@ readonly class EntityDataResolver
      *
      * @return mixed Значение свойства или null
      */
-    public function resolveValue(object $contract, string $path): mixed
+    public function resolveValue(Contracts $contract, string $path): mixed
     {
         $parts = explode('.', $path);
 
@@ -30,35 +31,22 @@ readonly class EntityDataResolver
             return null;
         }
 
-        if ($parts[0] !== 'contracts') {
-            return null;
-        }
+        $value = null;
 
-        $current = $contract;
-        $remainingParts = array_slice($parts, 1);
-
-        foreach ($remainingParts as $part) {
-            if ($current === null) {
-                return null;
-            }
-
-            if (!is_object($current)) {
-                return null;
-            }
-
-            $camelCasePart = $this->snakeToCamel($part);
+        foreach ($parts as $part) {
+            $camelCasePart = $this->snakeToCamel(string: $part);
             $getter = 'get' . ucfirst($camelCasePart);
 
-            if (method_exists($current, $getter)) {
-                $current = $current->$getter();
-            } elseif ($this->propertyAccessor->isReadable($current, $camelCasePart)) {
-                $current = $this->propertyAccessor->getValue($current, $camelCasePart);
+            if (method_exists($contract, $getter)) {
+                $value = $contract->$getter();
+            } elseif ($this->propertyAccessor->isReadable(objectOrArray: $contract, propertyPath: $camelCasePart)) {
+                $value = $this->propertyAccessor->getValue(objectOrArray: $contract, propertyPath: $camelCasePart);
             } else {
                 return null;
             }
         }
 
-        return $this->formatValue($current);
+        return $this->formatValue(value: $value);
     }
 
     /**
