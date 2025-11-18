@@ -4,15 +4,21 @@ import { ProcedureTab } from "./Procedure";
 import { RealizationTab } from "./Realization";
 import { ReportTab } from "./Report";
 
-import { ReferenceData } from "@/context/AppContext"
+import { ReferenceData } from "@/context/AppContext";
 
 interface JudicialTabProps {
-  openDocument: (document: { id: number; name: string }) => void
-  referenceData?: ReferenceData
-  contractData?: Record<string, unknown> | null
+  openDocument: (document: { id: number; name: string }) => void;
+  onDownload: (document: { id: number; name: string }) => void;
+  referenceData?: ReferenceData;
+  contractData?: Record<string, unknown> | null;
 }
 
-export const JudicialTab = ({ openDocument, referenceData, contractData }: JudicialTabProps): JSX.Element => {
+export const JudicialTab = ({
+  openDocument,
+  onDownload,
+  referenceData,
+  contractData,
+}: JudicialTabProps): JSX.Element => {
   return (
     <TabsContent value="judicial" className="mt-0 p-0 border-0">
       <Tabs defaultValue="realization">
@@ -24,10 +30,27 @@ export const JudicialTab = ({ openDocument, referenceData, contractData }: Judic
         </TabsList>
 
         <div className="mt-6">
-          <RealizationTab openDocument={openDocument} contractData={contractData} />
-          <IntroductionTab openDocument={openDocument} referenceData={referenceData} contractData={contractData} />
-          <ProcedureTab openDocument={openDocument} contractData={contractData} />
-          <ReportTab openDocument={openDocument} contractData={contractData} />
+          <RealizationTab
+            openDocument={openDocument}
+            onDownload={onDownload}
+            contractData={contractData}
+          />
+          <IntroductionTab
+            openDocument={openDocument}
+            onDownload={onDownload}
+            referenceData={referenceData}
+            contractData={contractData}
+          />
+          <ProcedureTab
+            openDocument={openDocument}
+            onDownload={onDownload}
+            contractData={contractData}
+          />
+          <ReportTab
+            openDocument={openDocument}
+            onDownload={onDownload}
+            contractData={contractData}
+          />
         </div>
       </Tabs>
     </TabsContent>

@@ -1,14 +1,30 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TabsContent } from "@/components/ui/tabs"
-import { DocumentsList } from "../DocumentsList"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { TabsContent } from "@/components/ui/tabs";
+import { DocumentsList } from "../DocumentsList";
 
 interface RealizationTabProps {
-  openDocument: (document: { id: number; name: string }) => void
-  contractData?: Record<string, unknown> | null
+  openDocument: (document: { id: number; name: string }) => void;
+  onDownload: (document: { id: number; name: string }) => void;
+  contractData?: Record<string, unknown> | null;
 }
 
-export const RealizationTab = ({ openDocument, contractData }: RealizationTabProps): JSX.Element => {
-  const documents = (contractData?.realization as { documents?: Array<{ id: number; name: string }> })?.documents || []
+export const RealizationTab = ({
+  openDocument,
+  onDownload,
+  contractData,
+}: RealizationTabProps): JSX.Element => {
+  const documents =
+    (
+      contractData?.realization as {
+        documents?: Array<{ id: number; name: string }>;
+      }
+    )?.documents || [];
 
   return (
     <TabsContent value="realization" className="space-y-6">
@@ -19,17 +35,16 @@ export const RealizationTab = ({ openDocument, contractData }: RealizationTabPro
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Раздел в разработке
-            </p>
+            <p className="text-sm text-muted-foreground">Раздел в разработке</p>
           </div>
           <DocumentsList
             documents={documents}
             title="Документы этапа реализации:"
             onDocumentClick={openDocument}
+            onDownload={onDownload}
           />
         </CardContent>
       </Card>
     </TabsContent>
-  )
-}
+  );
+};

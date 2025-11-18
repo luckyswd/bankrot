@@ -13,11 +13,12 @@ import { ReferenceData } from "@/context/AppContext"
 
 interface PretrialTabProps {
   openDocument: (document: { id: number; name: string }) => void
+  onDownload: (document: { id: number; name: string }) => void
   referenceData?: ReferenceData
   contractData?: Record<string, unknown> | null
 }
 
-export const PretrialTab = ({ openDocument, referenceData, contractData }: PretrialTabProps): JSX.Element => {
+export const PretrialTab = ({ openDocument, onDownload, referenceData, contractData }: PretrialTabProps): JSX.Element => {
   const { register, control } = useFormContext<FormValues>()
   
   const documents = (contractData?.pre_court as { documents?: Array<{ id: number; name: string }> })?.documents || []
@@ -104,6 +105,7 @@ export const PretrialTab = ({ openDocument, referenceData, contractData }: Pretr
             documents={documents}
             title="Документы досудебного этапа:"
             onDocumentClick={openDocument}
+            onDownload={onDownload}
           />
         </CardContent>
       </Card>

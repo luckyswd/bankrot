@@ -28,13 +28,15 @@ export const useSaveContract = () => useContext(SaveContext);
 
 interface GeneralTabProps {
   contractData?: Record<string, unknown> | null;
-  openDocument?: (document: { id: number; name: string }) => void;
+  openDocument: (document: { id: number; name: string }) => void;
+  onDownload: (document: { id: number; name: string }) => void;
 }
 
 export const GeneralTab = ({
   contractData,
   openDocument,
-}: GeneralTabProps = {}): JSX.Element => {
+  onDownload,
+}: GeneralTabProps): JSX.Element => {
   const { register, control } = useFormContext<FormValues>();
 
   const documents =
@@ -74,13 +76,12 @@ export const GeneralTab = ({
               <DeptsInfo register={register} control={control} />
             </Accordion>
           </div>
-          {openDocument && (
             <DocumentsList
               documents={documents}
               title="Документы основной информации:"
               onDocumentClick={openDocument}
+              onDownload={onDownload}
             />
-          )}
         </CardContent>
       </Card>
     </TabsContent>

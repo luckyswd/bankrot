@@ -4,10 +4,11 @@ import { DocumentsList } from "../DocumentsList"
 
 interface ReportTabProps {
   openDocument: (document: { id: number; name: string }) => void
+  onDownload: (document: { id: number; name: string }) => void
   contractData?: Record<string, unknown> | null
 }
 
-export const ReportTab = ({ openDocument, contractData }: ReportTabProps): JSX.Element => {
+export const ReportTab = ({ openDocument, onDownload, contractData }: ReportTabProps): JSX.Element => {
   const documents = (contractData?.report as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
@@ -27,6 +28,7 @@ export const ReportTab = ({ openDocument, contractData }: ReportTabProps): JSX.E
             documents={documents}
             title="Документы отчетов:"
             onDocumentClick={openDocument}
+            onDownload={onDownload}
           />
         </CardContent>
       </Card>

@@ -1,40 +1,66 @@
-import {FileText} from "lucide-react"
-import {Button} from "@/components/ui/button"
-import {Separator} from "@/components/ui/separator"
+import { FileText, Eye, Download } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/tooltip";
 
 interface Document {
-    id: number
-    name: string
+  id: number;
+  name: string;
 }
 
 interface DocumentsListProps {
-    documents: Document[]
-    title: string
-    onDocumentClick: (document: Document) => void
+  documents: Document[];
+  title: string;
+  onDocumentClick: (document: Document) => void;
+  onDownload: (document: Document) => void;
 }
 
-export const DocumentsList = ({documents, title, onDocumentClick}: DocumentsListProps): JSX.Element | null => {
-    if (!documents || documents.length === 0) {
-        return null
-    }
+export const DocumentsList = ({
+  documents,
+  title,
+  onDocumentClick,
+  onDownload,
+}: DocumentsListProps): JSX.Element | null => {
+  if (!documents || documents.length === 0) {
+    return null;
+  }
 
-    return (
-        <>
-            <Separator className="my-6"/>
-            <div className="space-y-3">
-                <h4 className="font-semibold">{title}</h4>
-                {documents.map((document) => (
-                    <Button
-                        key={document.id}
-                        onClick={() => onDocumentClick(document)}
-                        variant="outline"
-                        className="w-full justify-start"
-                    >
-                        <FileText className="mr-2 h-4 w-4"/>
-                        {document.name}
-                    </Button>
-                ))}
+  return (
+    <>
+      <Separator className="my-6" />
+      <div className="space-y-3">
+        <h4 className="font-semibold">{title}</h4>
+        {documents.map((document) => (
+          <div
+            key={document.id}
+            className="w-full justify-between flex items-center p-2"
+          >
+            <div className="flex items-center">
+              <FileText className="mr-2 h-4 w-4" />
+              {document.name}
             </div>
-        </>
-    )
-}
+            <div className="flex gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Eye
+                    className="h-5 w-5"
+                    onClick={() => onDocumentClick(document)}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Просмотр документа</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Download
+                    className="h-5 w-5"
+                    onClick={() => onDownload(document)}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Скачать документ</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};
