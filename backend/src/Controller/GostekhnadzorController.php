@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Gostekhnadzor;
 use App\Repository\GostekhnadzorRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class GostekhnadzorController extends AbstractController
     public function __construct(
         private readonly GostekhnadzorRepository $gostekhnadzorRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class GostekhnadzorController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -91,33 +93,70 @@ class GostekhnadzorController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->gostekhnadzorRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getGostekhnadzorListKey($page, $limitParam, $search);
+
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->gostekhnadzorRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $gostekhnadzor) {
+                        $result[] = [
+                            'id' => $gostekhnadzor->getId(),
+                            'name' => $gostekhnadzor->getName(),
+                            'address' => $gostekhnadzor->getAddress(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->gostekhnadzorRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $gostekhnadzor) {
+                    $data[] = [
+                        'id' => $gostekhnadzor->getId(),
+                        'name' => $gostekhnadzor->getName(),
+                        'address' => $gostekhnadzor->getAddress(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'gostekhnadzor'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $gostekhnadzor) {
-            $data[] = [
-                'id' => $gostekhnadzor->getId(),
-                'name' => $gostekhnadzor->getName(),
-                'address' => $gostekhnadzor->getAddress(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_gostekhnadzor_show', methods: ['GET'])]
@@ -237,6 +276,8 @@ class GostekhnadzorController extends AbstractController
         $this->entityManager->persist($gostekhnadzor);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateGostekhnadzorLists();
+
         return $this->json(
             data: [
                 'id' => $gostekhnadzor->getId(),
@@ -324,6 +365,9 @@ class GostekhnadzorController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateGostekhnadzor($id);
+        $this->cacheService->invalidateGostekhnadzorLists();
+
         return $this->json(data: [
             'id' => $gostekhnadzor->getId(),
             'name' => $gostekhnadzor->getName(),
@@ -375,6 +419,9 @@ class GostekhnadzorController extends AbstractController
 
         $this->entityManager->remove($gostekhnadzor);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateGostekhnadzor($id);
+        $this->cacheService->invalidateGostekhnadzorLists();
 
         return $this->json(data: [], status: 204);
     }

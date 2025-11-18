@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Fns;
 use App\Repository\FnsRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class FnsController extends AbstractController
     public function __construct(
         private readonly FnsRepository $fnsRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class FnsController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -92,34 +94,72 @@ class FnsController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->fnsRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getFnsListKey($page, $limitParam, $search);
+
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->fnsRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $fns) {
+                        $result[] = [
+                            'id' => $fns->getId(),
+                            'name' => $fns->getName(),
+                            'address' => $fns->getAddress(),
+                            'code' => $fns->getCode(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->fnsRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $fns) {
+                    $data[] = [
+                        'id' => $fns->getId(),
+                        'name' => $fns->getName(),
+                        'address' => $fns->getAddress(),
+                        'code' => $fns->getCode(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'fns'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $fns) {
-            $data[] = [
-                'id' => $fns->getId(),
-                'name' => $fns->getName(),
-                'address' => $fns->getAddress(),
-                'code' => $fns->getCode(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_fns_show', methods: ['GET'])]
@@ -244,6 +284,8 @@ class FnsController extends AbstractController
         $this->entityManager->persist($fns);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateFnsLists();
+
         return $this->json(
             data: [
                 'id' => $fns->getId(),
@@ -335,6 +377,9 @@ class FnsController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateFns($id);
+        $this->cacheService->invalidateFnsLists();
+
         return $this->json(data: [
             'id' => $fns->getId(),
             'name' => $fns->getName(),
@@ -387,6 +432,9 @@ class FnsController extends AbstractController
 
         $this->entityManager->remove($fns);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateFns($id);
+        $this->cacheService->invalidateFnsLists();
 
         return $this->json(data: [], status: 204);
     }

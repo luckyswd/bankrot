@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Court;
 use App\Repository\CourtRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class CourtController extends AbstractController
     public function __construct(
         private readonly CourtRepository $courtRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class CourtController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -91,33 +93,69 @@ class CourtController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->courtRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getCourtsListKey($page, $limitParam, $search);
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->courtRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $court) {
+                        $result[] = [
+                            'id' => $court->getId(),
+                            'name' => $court->getName(),
+                            'address' => $court->getAddress(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->courtRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $court) {
+                    $data[] = [
+                        'id' => $court->getId(),
+                        'name' => $court->getName(),
+                        'address' => $court->getAddress(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'courts'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $court) {
-            $data[] = [
-                'id' => $court->getId(),
-                'name' => $court->getName(),
-                'address' => $court->getAddress(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_courts_show', methods: ['GET'])]
@@ -239,6 +277,8 @@ class CourtController extends AbstractController
         $this->entityManager->persist($court);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateCourtsLists();
+
         return $this->json(
             data: [
                 'id' => $court->getId(),
@@ -327,6 +367,9 @@ class CourtController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateCourt($id);
+        $this->cacheService->invalidateCourtsLists();
+
         return $this->json(data: [
             'id' => $court->getId(),
             'name' => $court->getName(),
@@ -378,6 +421,9 @@ class CourtController extends AbstractController
 
         $this->entityManager->remove($court);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateCourt($id);
+        $this->cacheService->invalidateCourtsLists();
 
         return $this->json(data: [], status: 204);
     }

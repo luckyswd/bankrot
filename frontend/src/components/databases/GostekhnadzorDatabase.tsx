@@ -69,7 +69,7 @@ export default function GostekhnadzorDatabase() {
           params.append('search', debouncedSearch)
         }
 
-        const data = await apiRequest(`/api/v1/gostekhnadzor?${params.toString()}`)
+        const data = await apiRequest(`/gostekhnadzor?${params.toString()}`)
 
         if (data && typeof data === 'object' && Array.isArray(data.items)) {
           setGostekhnadzor(data.items)
@@ -136,7 +136,7 @@ export default function GostekhnadzorDatabase() {
       }
 
       if (editingGostekhnadzor) {
-        await apiRequest(`/api/v1/gostekhnadzor/${editingGostekhnadzor.id}`, {
+        await apiRequest(`/gostekhnadzor/${editingGostekhnadzor.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export default function GostekhnadzorDatabase() {
         })
         notify({ message: 'Отделение успешно обновлено', type: 'success' })
       } else {
-        await apiRequest('/api/v1/gostekhnadzor', {
+        await apiRequest('/gostekhnadzor', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export default function GostekhnadzorDatabase() {
       if (debouncedSearch && debouncedSearch.length >= 3) {
         params.append('search', debouncedSearch)
       }
-      const response = await apiRequest(`/api/v1/gostekhnadzor?${params.toString()}`)
+      const response = await apiRequest(`/gostekhnadzor?${params.toString()}`)
       if (response && typeof response === 'object') {
         setGostekhnadzor(response.items || [])
         setTotal(response.total || 0)
@@ -190,7 +190,7 @@ export default function GostekhnadzorDatabase() {
     if (!gostekhnadzorToDelete) return
 
     try {
-      await apiRequest(`/api/v1/gostekhnadzor/${gostekhnadzorToDelete.id}`, {
+      await apiRequest(`/gostekhnadzor/${gostekhnadzorToDelete.id}`, {
         method: 'DELETE',
       })
 
@@ -206,7 +206,7 @@ export default function GostekhnadzorDatabase() {
       if (debouncedSearch && debouncedSearch.length >= 3) {
         params.append('search', debouncedSearch)
       }
-      const data = await apiRequest(`/api/v1/gostekhnadzor?${params.toString()}`)
+      const data = await apiRequest(`/gostekhnadzor?${params.toString()}`)
       if (data && typeof data === 'object') {
         setGostekhnadzor(data.items || [])
         setTotal(data.total || 0)

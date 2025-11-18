@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Creditor;
 use App\Repository\CreditorRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class CreditorController extends AbstractController
     public function __construct(
         private readonly CreditorRepository $creditorRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class CreditorController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -94,36 +96,76 @@ class CreditorController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->creditorRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getCreditorsListKey($page, $limitParam, $search);
+
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->creditorRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $creditor) {
+                        $result[] = [
+                            'id' => $creditor->getId(),
+                            'name' => $creditor->getName(),
+                            'inn' => $creditor->getInn(),
+                            'ogrn' => $creditor->getOgrn(),
+                            'type' => $creditor->getType(),
+                            'address' => $creditor->getAddress(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->creditorRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $creditor) {
+                    $data[] = [
+                        'id' => $creditor->getId(),
+                        'name' => $creditor->getName(),
+                        'inn' => $creditor->getInn(),
+                        'ogrn' => $creditor->getOgrn(),
+                        'type' => $creditor->getType(),
+                        'address' => $creditor->getAddress(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'creditors'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $creditor) {
-            $data[] = [
-                'id' => $creditor->getId(),
-                'name' => $creditor->getName(),
-                'inn' => $creditor->getInn(),
-                'ogrn' => $creditor->getOgrn(),
-                'type' => $creditor->getType(),
-                'address' => $creditor->getAddress(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_creditors_show', methods: ['GET'])]
@@ -258,6 +300,8 @@ class CreditorController extends AbstractController
         $this->entityManager->persist($creditor);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateCreditorsLists();
+
         return $this->json(
             data: [
                 'id' => $creditor->getId(),
@@ -357,6 +401,9 @@ class CreditorController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateCreditor($id);
+        $this->cacheService->invalidateCreditorsLists();
+
         return $this->json(data: [
             'id' => $creditor->getId(),
             'name' => $creditor->getName(),
@@ -411,6 +458,9 @@ class CreditorController extends AbstractController
 
         $this->entityManager->remove($creditor);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateCreditor($id);
+        $this->cacheService->invalidateCreditorsLists();
 
         return $this->json(data: [], status: 204);
     }

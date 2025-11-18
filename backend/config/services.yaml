@@ -22,3 +22,42 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Cache pools for directories
+    cache.creditors:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.courts:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.bailiffs:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.fns:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.mchs:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.rosgvardia:
+        parent: cache.adapter.filesystem
+        public: false
+
+    cache.gostekhnadzor:
+        parent: cache.adapter.filesystem
+        public: false
+
+    App\Service\CacheService:
+        arguments:
+            $creditorsCache: '@cache.creditors'
+            $courtsCache: '@cache.courts'
+            $bailiffsCache: '@cache.bailiffs'
+            $fnsCache: '@cache.fns'
+            $mchsCache: '@cache.mchs'
+            $rosgvardiaCache: '@cache.rosgvardia'
+            $gostekhnadzorCache: '@cache.gostekhnadzor'

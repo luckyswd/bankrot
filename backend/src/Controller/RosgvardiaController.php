@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Rosgvardia;
 use App\Repository\RosgvardiaRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class RosgvardiaController extends AbstractController
     public function __construct(
         private readonly RosgvardiaRepository $rosgvardiaRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class RosgvardiaController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -92,34 +94,72 @@ class RosgvardiaController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->rosgvardiaRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getRosgvardiaListKey($page, $limitParam, $search);
+
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->rosgvardiaRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $rosgvardia) {
+                        $result[] = [
+                            'id' => $rosgvardia->getId(),
+                            'name' => $rosgvardia->getName(),
+                            'address' => $rosgvardia->getAddress(),
+                            'phone' => $rosgvardia->getPhone(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->rosgvardiaRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $rosgvardia) {
+                    $data[] = [
+                        'id' => $rosgvardia->getId(),
+                        'name' => $rosgvardia->getName(),
+                        'address' => $rosgvardia->getAddress(),
+                        'phone' => $rosgvardia->getPhone(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'rosgvardia'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $rosgvardia) {
-            $data[] = [
-                'id' => $rosgvardia->getId(),
-                'name' => $rosgvardia->getName(),
-                'address' => $rosgvardia->getAddress(),
-                'phone' => $rosgvardia->getPhone(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_rosgvardia_show', methods: ['GET'])]
@@ -244,6 +284,8 @@ class RosgvardiaController extends AbstractController
         $this->entityManager->persist($rosgvardia);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateRosgvardiaLists();
+
         return $this->json(
             data: [
                 'id' => $rosgvardia->getId(),
@@ -335,6 +377,9 @@ class RosgvardiaController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateRosgvardia($id);
+        $this->cacheService->invalidateRosgvardiaLists();
+
         return $this->json(data: [
             'id' => $rosgvardia->getId(),
             'name' => $rosgvardia->getName(),
@@ -387,6 +432,9 @@ class RosgvardiaController extends AbstractController
 
         $this->entityManager->remove($rosgvardia);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateRosgvardia($id);
+        $this->cacheService->invalidateRosgvardiaLists();
 
         return $this->json(data: [], status: 204);
     }

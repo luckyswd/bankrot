@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Mchs;
 use App\Repository\MchsRepository;
+use App\Service\CacheService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class MchsController extends AbstractController
     public function __construct(
         private readonly MchsRepository $mchsRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CacheService $cacheService,
     ) {
     }
 
@@ -47,10 +49,10 @@ class MchsController extends AbstractController
             ),
             new OA\Parameter(
                 name: 'limit',
-                description: 'Количество элементов на странице',
+                description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'integer', example: 10, default: 10)
+                schema: new OA\Schema(type: 'string', example: 10, default: 10)
             ),
         ],
         responses: [
@@ -93,35 +95,74 @@ class MchsController extends AbstractController
     )]
     public function list(Request $request): JsonResponse
     {
-        $search = $request->query->get('search');
+        $search = $request->query->get('search') ?? '';
+        $limitParam = $request->query->get('limit') ?? '10';
         $page = max(1, (int)($request->query->get('page') ?? 1));
-        $limit = max(1, min(100, (int)($request->query->get('limit') ?? 10)));
 
-        $result = $this->mchsRepository->findPaginated(
-            page: $page,
-            limit: $limit,
-            search: $search
+        $cacheKey = $this->cacheService->getMchsListKey($page, $limitParam, $search);
+
+        $data = $this->cacheService->get(
+            key: $cacheKey,
+            callback: function () use ($limitParam, $page, $search) {
+                if ($limitParam === 'all') {
+                    $qb = $this->mchsRepository->createSearchQueryBuilder($search);
+                    $items = $qb->getQuery()->getResult();
+                    $total = count($items);
+
+                    $result = [];
+
+                    foreach ($items as $mchs) {
+                        $result[] = [
+                            'id' => $mchs->getId(),
+                            'name' => $mchs->getName(),
+                            'address' => $mchs->getAddress(),
+                            'phone' => $mchs->getPhone(),
+                            'code' => $mchs->getCode(),
+                        ];
+                    }
+
+                    return [
+                        'items' => $result,
+                        'total' => $total,
+                        'page' => 1,
+                        'limit' => 'all',
+                        'pages' => 1,
+                    ];
+                }
+
+                $limit = max(1, min(100, (int)$limitParam));
+
+                $result = $this->mchsRepository->findPaginated(
+                    page: $page,
+                    limit: $limit,
+                    search: $search
+                );
+
+                $data = [];
+
+                foreach ($result['items'] as $mchs) {
+                    $data[] = [
+                        'id' => $mchs->getId(),
+                        'name' => $mchs->getName(),
+                        'address' => $mchs->getAddress(),
+                        'phone' => $mchs->getPhone(),
+                        'code' => $mchs->getCode(),
+                    ];
+                }
+
+                return [
+                    'items' => $data,
+                    'total' => $result['total'],
+                    'page' => $result['page'],
+                    'limit' => $result['limit'],
+                    'pages' => $result['pages'],
+                ];
+            },
+            ttl: CacheService::TTL_ONE_HOUR,
+            pool: 'mchs'
         );
 
-        $data = [];
-
-        foreach ($result['items'] as $mchs) {
-            $data[] = [
-                'id' => $mchs->getId(),
-                'name' => $mchs->getName(),
-                'address' => $mchs->getAddress(),
-                'phone' => $mchs->getPhone(),
-                'code' => $mchs->getCode(),
-            ];
-        }
-
-        return $this->json(data: [
-            'items' => $data,
-            'total' => $result['total'],
-            'page' => $result['page'],
-            'limit' => $result['limit'],
-            'pages' => $result['pages'],
-        ]);
+        return $this->json(data: $data);
     }
 
     #[Route('/{id}', name: 'api_mchs_show', methods: ['GET'])]
@@ -249,6 +290,8 @@ class MchsController extends AbstractController
         $this->entityManager->persist($mchs);
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateMchsLists();
+
         return $this->json(
             data: [
                 'id' => $mchs->getId(),
@@ -342,6 +385,9 @@ class MchsController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->cacheService->invalidateMchs($id);
+        $this->cacheService->invalidateMchsLists();
+
         return $this->json(data: [
             'id' => $mchs->getId(),
             'name' => $mchs->getName(),
@@ -395,6 +441,9 @@ class MchsController extends AbstractController
 
         $this->entityManager->remove($mchs);
         $this->entityManager->flush();
+
+        $this->cacheService->invalidateMchs($id);
+        $this->cacheService->invalidateMchsLists();
 
         return $this->json(data: [], status: 204);
     }
