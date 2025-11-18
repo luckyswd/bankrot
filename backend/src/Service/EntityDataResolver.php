@@ -18,7 +18,7 @@ readonly class EntityDataResolver
      * Получает значение из контракта по пути вида "contracts.property.subProperty"
      * Первый элемент пути всегда "contracts", остальные - цепочка геттеров.
      *
-     * @param object $contract Контракт для использования как базовая сущность
+     * @param Contracts $contract Контракт для использования как базовая сущность
      * @param string $path Путь к свойству (например, "contracts.contractNumber" или "contracts.author.fio")
      *
      * @return mixed Значение свойства или null
