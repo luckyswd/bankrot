@@ -59,6 +59,14 @@
   }
 }
 
+@layer utilities {
+  .writing-unset {
+    td {
+      writing-mode: unset!important;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
