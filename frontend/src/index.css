@@ -60,10 +60,8 @@
 }
 
 @layer utilities {
-  .writing-unset {
-    td {
+  .writing-unset td {
       writing-mode: unset!important;
-    }
   }
 }
 
