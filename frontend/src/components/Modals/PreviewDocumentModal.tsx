@@ -79,7 +79,7 @@ export const PreviewDocumentModal = ({
           <DialogTitle>Просмотр документа</DialogTitle>
           <DialogDescription>{document?.documentName}</DialogDescription>
         </DialogHeader>
-        <div className="max-h-[50vw] overflow-scroll" ref={documentContainer}>
+        <div className="max-h-[50vh] overflow-scroll" ref={documentContainer}>
 
         </div>
         <DialogFooter>
