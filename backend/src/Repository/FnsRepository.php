@@ -22,7 +22,7 @@ class FnsRepository extends ServiceEntityRepository
     /**
      * Создаёт QueryBuilder с фильтрами по поиску.
      *
-     * @param string|null $search Поиск по наименованию, адресу, коду
+     * @param string|null $search Поиск по наименованию, адресу, ФИО руководителя
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
@@ -33,7 +33,7 @@ class FnsRepository extends ServiceEntityRepository
                 $qb->expr()->orX(
                     $qb->expr()->like('f.name', ':search'),
                     $qb->expr()->like('f.address', ':search'),
-                    $qb->expr()->like('f.code', ':search')
+                    $qb->expr()->like('f.directorName', ':search')
                 )
             )
                 ->setParameter('search', '%' . $search . '%');
@@ -49,7 +49,7 @@ class FnsRepository extends ServiceEntityRepository
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
-     * @param string|null $search Поиск по наименованию, адресу, коду
+     * @param string|null $search Поиск по наименованию, адресу, ФИО руководителя
      *
      * @return array{items: Fns[], total: int, page: int, limit: int, pages: int}
      */

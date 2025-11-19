@@ -23,8 +23,11 @@ class Fns extends BaseEntity
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
 
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $code = null;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $directorName = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $bankDetails = null;
 
     public function getId(): ?int
     {
@@ -55,14 +58,26 @@ class Fns extends BaseEntity
         return $this;
     }
 
-    public function getCode(): ?string
+    public function getDirectorName(): ?string
     {
-        return $this->code;
+        return $this->directorName;
     }
 
-    public function setCode(?string $code): self
+    public function setDirectorName(?string $directorName): self
     {
-        $this->code = $code;
+        $this->directorName = $directorName;
+
+        return $this;
+    }
+
+    public function getBankDetails(): ?string
+    {
+        return $this->bankDetails;
+    }
+
+    public function setBankDetails(?string $bankDetails): self
+    {
+        $this->bankDetails = $bankDetails;
 
         return $this;
     }

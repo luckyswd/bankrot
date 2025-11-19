@@ -10,7 +10,8 @@ type FnsBranch = {
   id: number
   name?: string
   address?: string
-  code?: string
+  directorName?: string
+  bankDetails?: string
 }
 
 type FnsBranchModalProps = {
@@ -24,7 +25,8 @@ type FnsBranchModalProps = {
 const emptyForm = {
   name: "",
   address: "",
-  code: "",
+  directorName: "",
+  bankDetails: "",
 }
 
 export const FnsBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }: FnsBranchModalProps) => {
@@ -37,7 +39,8 @@ export const FnsBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }: 
       setFormData({
         name: branch?.name ?? "",
         address: branch?.address ?? "",
-        code: branch?.code ?? "",
+        directorName: branch?.directorName ?? "",
+        bankDetails: branch?.bankDetails ?? "",
       })
       setError(null)
       setSubmitting(false)
@@ -55,7 +58,8 @@ export const FnsBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }: 
     const payload = {
       name: formData.name.trim(),
       address: formData.address.trim() || null,
-      code: formData.code.trim() || null,
+      directorName: formData.directorName.trim() || null,
+      bankDetails: formData.bankDetails.trim() || null,
     }
 
     try {
@@ -129,13 +133,25 @@ export const FnsBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }: 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fns-code">Код</Label>
+            <Label htmlFor="fns-directorName">ФИО руководителя</Label>
             <Input
-              id="fns-code"
-              value={formData.code}
-              onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
-              placeholder="Введите код"
+              id="fns-directorName"
+              value={formData.directorName}
+              onChange={(e) => setFormData((prev) => ({ ...prev, directorName: e.target.value }))}
+              placeholder="Введите ФИО руководителя"
               disabled={submitting}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="fns-bankDetails">Банковские реквизиты</Label>
+            <textarea
+              id="fns-bankDetails"
+              value={formData.bankDetails}
+              onChange={(e) => setFormData((prev) => ({ ...prev, bankDetails: e.target.value }))}
+              placeholder="Введите банковские реквизиты"
+              disabled={submitting}
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              rows={4}
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}

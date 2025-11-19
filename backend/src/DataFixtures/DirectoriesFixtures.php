@@ -219,7 +219,6 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
             $fns = new Fns();
             $fns->setName($name);
             $fns->setAddress($this->generateAddress());
-            $fns->setCode($this->generateFnsCode());
 
             $manager->persist($fns);
             $this->addReference('fns_' . ($index + 1), $fns);

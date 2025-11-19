@@ -13,7 +13,8 @@ interface FnsItem {
   id: number
   name: string
   address: string
-  code: string
+  directorName: string
+  bankDetails: string
   [key: string]: unknown
 }
 
@@ -144,7 +145,7 @@ export function FnsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, адресу, коду"
+                placeholder="Поиск по наименованию, адресу, ФИО руководителя"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -163,14 +164,15 @@ export function FnsDatabase() {
                   <TableRow>
                     <TableHead>Наименование</TableHead>
                     <TableHead>Адрес</TableHead>
-                    <TableHead>Код</TableHead>
+                    <TableHead>ФИО руководителя</TableHead>
+                    <TableHead>Банковские реквизиты</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {fns.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
                           ? 'Отделения не найдены'
                           : 'Нет отделений. Добавьте первое отделение!'}
@@ -181,7 +183,10 @@ export function FnsDatabase() {
                       <TableRow key={fnsItem.id}>
                         <TableCell className="font-medium">{fnsItem.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{fnsItem.address || '-'}</TableCell>
-                        <TableCell className="text-sm font-mono">{fnsItem.code || '-'}</TableCell>
+                        <TableCell className="text-sm">{fnsItem.directorName || '-'}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-xs truncate" title={fnsItem.bankDetails || ''}>
+                          {fnsItem.bankDetails || '-'}
+                        </TableCell>
                         <TableCell>
                           <div className="flex">
                             <Button

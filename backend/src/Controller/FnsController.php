@@ -35,7 +35,7 @@ class FnsController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по наименованию, адресу, коду',
+                description: 'Поиск по наименованию, адресу, ФИО руководителя',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -69,7 +69,8 @@ class FnsController extends AbstractController
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
                                     new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
+                                    new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                                    new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -115,7 +116,8 @@ class FnsController extends AbstractController
                             'id' => $fns->getId(),
                             'name' => $fns->getName(),
                             'address' => $fns->getAddress(),
-                            'code' => $fns->getCode(),
+                            'directorName' => $fns->getDirectorName(),
+                            'bankDetails' => $fns->getBankDetails(),
                         ];
                     }
 
@@ -143,7 +145,8 @@ class FnsController extends AbstractController
                         'id' => $fns->getId(),
                         'name' => $fns->getName(),
                         'address' => $fns->getAddress(),
-                        'code' => $fns->getCode(),
+                        'directorName' => $fns->getDirectorName(),
+                        'bankDetails' => $fns->getBankDetails(),
                     ];
                 }
 
@@ -186,7 +189,8 @@ class FnsController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
+                        new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -217,7 +221,8 @@ class FnsController extends AbstractController
             'id' => $fns->getId(),
             'name' => $fns->getName(),
             'address' => $fns->getAddress(),
-            'code' => $fns->getCode(),
+            'directorName' => $fns->getDirectorName(),
+            'bankDetails' => $fns->getBankDetails(),
         ]);
     }
 
@@ -279,7 +284,8 @@ class FnsController extends AbstractController
         $fns = new Fns();
         $fns->setName(trim($data['name']));
         $fns->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $fns->setCode(isset($data['code']) ? trim($data['code']) : null);
+        $fns->setDirectorName(isset($data['directorName']) ? trim($data['directorName']) : null);
+        $fns->setBankDetails(isset($data['bankDetails']) ? trim($data['bankDetails']) : null);
 
         $this->entityManager->persist($fns);
         $this->entityManager->flush();
@@ -291,7 +297,8 @@ class FnsController extends AbstractController
                 'id' => $fns->getId(),
                 'name' => $fns->getName(),
                 'address' => $fns->getAddress(),
-                'code' => $fns->getCode(),
+                'directorName' => $fns->getDirectorName(),
+                'bankDetails' => $fns->getBankDetails(),
             ],
             status: 201
         );
@@ -310,7 +317,8 @@ class FnsController extends AbstractController
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
+                    new OA\Property(property: 'directorName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                 ],
                 type: 'object'
             )
@@ -334,7 +342,8 @@ class FnsController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
+                        new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -373,7 +382,8 @@ class FnsController extends AbstractController
 
         $fns->setName(trim($data['name']));
         $fns->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $fns->setCode(isset($data['code']) ? trim($data['code']) : null);
+        $fns->setDirectorName(isset($data['directorName']) ? trim($data['directorName']) : null);
+        $fns->setBankDetails(isset($data['bankDetails']) ? trim($data['bankDetails']) : null);
 
         $this->entityManager->flush();
 
@@ -384,7 +394,8 @@ class FnsController extends AbstractController
             'id' => $fns->getId(),
             'name' => $fns->getName(),
             'address' => $fns->getAddress(),
-            'code' => $fns->getCode(),
+            'directorName' => $fns->getDirectorName(),
+            'bankDetails' => $fns->getBankDetails(),
         ]);
     }
 
