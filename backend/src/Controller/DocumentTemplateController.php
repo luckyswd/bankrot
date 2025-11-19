@@ -13,6 +13,7 @@ use App\Service\DocumentTemplateProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -564,6 +565,7 @@ class DocumentTemplateController extends AbstractController
     )]
     public function generate(int $id, Request $request): Response|JsonResponse
     {
+        Debug::enable();
         $template = $this->documentTemplateRepository->find($id);
 
         if (!$template instanceof DocumentTemplate) {
