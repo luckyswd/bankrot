@@ -20,17 +20,14 @@ class Creditor extends BaseEntity
     #[ORM\Column(type: Types::STRING, length: 500)]
     private string $name;
 
-    #[ORM\Column(type: Types::STRING, length: 12, nullable: true)]
-    private ?string $inn = null;
-
-    #[ORM\Column(type: Types::STRING, length: 15, nullable: true)]
-    private ?string $ogrn = null;
-
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $type = null;
-
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $headFullName = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $bankDetails = null;
 
     public function getId(): ?int
     {
@@ -49,42 +46,6 @@ class Creditor extends BaseEntity
         return $this;
     }
 
-    public function getInn(): ?string
-    {
-        return $this->inn;
-    }
-
-    public function setInn(?string $inn): self
-    {
-        $this->inn = $inn;
-
-        return $this;
-    }
-
-    public function getOgrn(): ?string
-    {
-        return $this->ogrn;
-    }
-
-    public function setOgrn(?string $ogrn): self
-    {
-        $this->ogrn = $ogrn;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(?string $type): self
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
     public function getAddress(): ?string
     {
         return $this->address;
@@ -93,6 +54,30 @@ class Creditor extends BaseEntity
     public function setAddress(?string $address): self
     {
         $this->address = $address;
+
+        return $this;
+    }
+
+    public function getHeadFullName(): ?string
+    {
+        return $this->headFullName;
+    }
+
+    public function setHeadFullName(?string $headFullName): self
+    {
+        $this->headFullName = $headFullName;
+
+        return $this;
+    }
+
+    public function getBankDetails(): ?string
+    {
+        return $this->bankDetails;
+    }
+
+    public function setBankDetails(?string $bankDetails): self
+    {
+        $this->bankDetails = $bankDetails;
 
         return $this;
     }

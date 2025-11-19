@@ -35,7 +35,7 @@ class CreditorController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по наименованию, ИНН, ОГРН',
+                description: 'Поиск по наименованию',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Сбербанк')
@@ -68,10 +68,9 @@ class CreditorController extends AbstractController
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
                                     new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                                    new OA\Property(property: 'inn', type: 'string', example: '7707083893', nullable: true),
-                                    new OA\Property(property: 'ogrn', type: 'string', example: '1027700132195', nullable: true),
-                                    new OA\Property(property: 'type', type: 'string', example: 'bank', nullable: true),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                                    new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                                    new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -116,10 +115,9 @@ class CreditorController extends AbstractController
                         $result[] = [
                             'id' => $creditor->getId(),
                             'name' => $creditor->getName(),
-                            'inn' => $creditor->getInn(),
-                            'ogrn' => $creditor->getOgrn(),
-                            'type' => $creditor->getType(),
                             'address' => $creditor->getAddress(),
+                            'headFullName' => $creditor->getHeadFullName(),
+                            'bankDetails' => $creditor->getBankDetails(),
                         ];
                     }
 
@@ -146,10 +144,9 @@ class CreditorController extends AbstractController
                     $data[] = [
                         'id' => $creditor->getId(),
                         'name' => $creditor->getName(),
-                        'inn' => $creditor->getInn(),
-                        'ogrn' => $creditor->getOgrn(),
-                        'type' => $creditor->getType(),
                         'address' => $creditor->getAddress(),
+                        'headFullName' => $creditor->getHeadFullName(),
+                        'bankDetails' => $creditor->getBankDetails(),
                     ];
                 }
 
@@ -191,10 +188,9 @@ class CreditorController extends AbstractController
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'inn', type: 'string', example: '7707083893', nullable: true),
-                        new OA\Property(property: 'ogrn', type: 'string', example: '1027700132195', nullable: true),
-                        new OA\Property(property: 'type', type: 'string', example: 'bank', nullable: true),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -224,10 +220,9 @@ class CreditorController extends AbstractController
         return $this->json(data: [
             'id' => $creditor->getId(),
             'name' => $creditor->getName(),
-            'inn' => $creditor->getInn(),
-            'ogrn' => $creditor->getOgrn(),
-            'type' => $creditor->getType(),
             'address' => $creditor->getAddress(),
+            'headFullName' => $creditor->getHeadFullName(),
+            'bankDetails' => $creditor->getBankDetails(),
         ]);
     }
 
@@ -243,10 +238,9 @@ class CreditorController extends AbstractController
                 required: ['name'],
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ПАО Сбербанк'),
-                    new OA\Property(property: 'inn', description: 'ИНН', type: 'string', example: '7707083893', nullable: true),
-                    new OA\Property(property: 'ogrn', description: 'ОГРН', type: 'string', example: '1027700132195', nullable: true),
-                    new OA\Property(property: 'type', description: 'Тип', type: 'string', example: 'bank', nullable: true),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                 ],
                 type: 'object'
             )
@@ -260,10 +254,9 @@ class CreditorController extends AbstractController
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'inn', type: 'string', example: '7707083893', nullable: true),
-                        new OA\Property(property: 'ogrn', type: 'string', example: '1027700132195', nullable: true),
-                        new OA\Property(property: 'type', type: 'string', example: 'bank', nullable: true),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -292,10 +285,9 @@ class CreditorController extends AbstractController
 
         $creditor = new Creditor();
         $creditor->setName(trim($data['name']));
-        $creditor->setInn(isset($data['inn']) ? trim($data['inn']) : null);
-        $creditor->setOgrn(isset($data['ogrn']) ? trim($data['ogrn']) : null);
-        $creditor->setType(isset($data['type']) ? trim($data['type']) : null);
         $creditor->setAddress(isset($data['address']) ? trim($data['address']) : null);
+        $creditor->setHeadFullName(isset($data['headFullName']) ? trim($data['headFullName']) : null);
+        $creditor->setBankDetails(isset($data['bankDetails']) ? trim($data['bankDetails']) : null);
 
         $this->entityManager->persist($creditor);
         $this->entityManager->flush();
@@ -306,10 +298,9 @@ class CreditorController extends AbstractController
             data: [
                 'id' => $creditor->getId(),
                 'name' => $creditor->getName(),
-                'inn' => $creditor->getInn(),
-                'ogrn' => $creditor->getOgrn(),
-                'type' => $creditor->getType(),
                 'address' => $creditor->getAddress(),
+                'headFullName' => $creditor->getHeadFullName(),
+                'bankDetails' => $creditor->getBankDetails(),
             ],
             status: 201
         );
@@ -327,10 +318,9 @@ class CreditorController extends AbstractController
                 required: ['name'],
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ПАО Сбербанк'),
-                    new OA\Property(property: 'inn', description: 'ИНН', type: 'string', example: '7707083893', nullable: true),
-                    new OA\Property(property: 'ogrn', description: 'ОГРН', type: 'string', example: '1027700132195', nullable: true),
-                    new OA\Property(property: 'type', description: 'Тип', type: 'string', example: 'bank', nullable: true),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                 ],
                 type: 'object'
             )
@@ -353,10 +343,9 @@ class CreditorController extends AbstractController
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'inn', type: 'string', example: '7707083893', nullable: true),
-                        new OA\Property(property: 'ogrn', type: 'string', example: '1027700132195', nullable: true),
-                        new OA\Property(property: 'type', type: 'string', example: 'bank', nullable: true),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -394,10 +383,9 @@ class CreditorController extends AbstractController
         }
 
         $creditor->setName(trim($data['name']));
-        $creditor->setInn(isset($data['inn']) ? trim($data['inn']) : null);
-        $creditor->setOgrn(isset($data['ogrn']) ? trim($data['ogrn']) : null);
-        $creditor->setType(isset($data['type']) ? trim($data['type']) : null);
         $creditor->setAddress(isset($data['address']) ? trim($data['address']) : null);
+        $creditor->setHeadFullName(isset($data['headFullName']) ? trim($data['headFullName']) : null);
+        $creditor->setBankDetails(isset($data['bankDetails']) ? trim($data['bankDetails']) : null);
 
         $this->entityManager->flush();
 
@@ -407,10 +395,9 @@ class CreditorController extends AbstractController
         return $this->json(data: [
             'id' => $creditor->getId(),
             'name' => $creditor->getName(),
-            'inn' => $creditor->getInn(),
-            'ogrn' => $creditor->getOgrn(),
-            'type' => $creditor->getType(),
             'address' => $creditor->getAddress(),
+            'headFullName' => $creditor->getHeadFullName(),
+            'bankDetails' => $creditor->getBankDetails(),
         ]);
     }
 

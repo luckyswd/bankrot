@@ -5,16 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CREDITOR_TYPES } from "@/components/databases/constants"
+import { Textarea } from "@/components/ui/textarea"
 
 type Creditor = {
   id: number
   name?: string
-  inn?: string
-  ogrn?: string
-  type?: string
-  address?: string
+  address?: string | null
+  headFullName?: string | null
+  bankDetails?: string | null
 }
 
 type CreditorFormModalProps = {
@@ -27,10 +25,9 @@ type CreditorFormModalProps = {
 
 const emptyForm = {
   name: "",
-  inn: "",
-  ogrn: "",
-  type: "",
   address: "",
+  headFullName: "",
+  bankDetails: "",
 }
 
 export const CreditorFormModal = ({ isOpen, onClose, creditor, onSuccess, onError }: CreditorFormModalProps) => {
@@ -42,10 +39,9 @@ export const CreditorFormModal = ({ isOpen, onClose, creditor, onSuccess, onErro
     if (isOpen) {
       setFormData({
         name: creditor?.name ?? "",
-        inn: creditor?.inn ?? "",
-        ogrn: creditor?.ogrn ?? "",
-        type: creditor?.type ?? "",
         address: creditor?.address ?? "",
+        headFullName: creditor?.headFullName ?? "",
+        bankDetails: creditor?.bankDetails ?? "",
       })
       setError(null)
       setSubmitting(false)
@@ -62,10 +58,9 @@ export const CreditorFormModal = ({ isOpen, onClose, creditor, onSuccess, onErro
 
     const payload = {
       name: formData.name.trim(),
-      inn: formData.inn.trim() || null,
-      ogrn: formData.ogrn.trim() || null,
-      type: formData.type || null,
       address: formData.address.trim() || null,
+      headFullName: formData.headFullName.trim() || null,
+      bankDetails: formData.bankDetails.trim() || null,
     }
 
     try {
@@ -128,47 +123,6 @@ export const CreditorFormModal = ({ isOpen, onClose, creditor, onSuccess, onErro
               disabled={submitting}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="creditor-inn">ИНН</Label>
-              <Input
-                id="creditor-inn"
-                value={formData.inn}
-                onChange={(e) => setFormData((prev) => ({ ...prev, inn: e.target.value }))}
-                placeholder="Введите ИНН"
-                disabled={submitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="creditor-ogrn">ОГРН</Label>
-              <Input
-                id="creditor-ogrn"
-                value={formData.ogrn}
-                onChange={(e) => setFormData((prev) => ({ ...prev, ogrn: e.target.value }))}
-                placeholder="Введите ОГРН"
-                disabled={submitting}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="creditor-type">Тип</Label>
-            <Select
-              value={formData.type || undefined}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
-              disabled={submitting}
-            >
-              <SelectTrigger id="creditor-type">
-                <SelectValue placeholder="Выберите тип" />
-              </SelectTrigger>
-              <SelectContent>
-                {CREDITOR_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="creditor-address">Адрес</Label>
             <Input
@@ -177,6 +131,27 @@ export const CreditorFormModal = ({ isOpen, onClose, creditor, onSuccess, onErro
               onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
               placeholder="Введите адрес"
               disabled={submitting}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="creditor-headFullName">ФИО руководителя</Label>
+            <Input
+              id="creditor-headFullName"
+              value={formData.headFullName}
+              onChange={(e) => setFormData((prev) => ({ ...prev, headFullName: e.target.value }))}
+              placeholder="Введите ФИО руководителя"
+              disabled={submitting}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="creditor-bankDetails">Банковские реквизиты</Label>
+            <Textarea
+              id="creditor-bankDetails"
+              value={formData.bankDetails}
+              onChange={(e) => setFormData((prev) => ({ ...prev, bankDetails: e.target.value }))}
+              placeholder="Введите банковские реквизиты (БИК, ИНН, КПП, КОРР.СЧЕТ, РАСЧЕТНЫЙ СЧЕТ)"
+              disabled={submitting}
+              rows={4}
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}

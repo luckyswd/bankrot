@@ -8,15 +8,12 @@ import { notify } from '../ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
-import { CREDITOR_TYPES } from './constants'
-
 interface Creditor {
   id: number
   name: string
-  inn: string
-  ogrn: string
-  type: string
-  address: string
+  address: string | null
+  headFullName: string | null
+  bankDetails: string | null
   [key: string]: unknown
 }
 
@@ -127,10 +124,6 @@ export default function CreditorsDatabase() {
     })
   }
 
-  const getTypeLabel = (type: string) => {
-    const found = CREDITOR_TYPES.find((t) => t.value === type)
-    return found ? found.label : type || '-'
-  }
 
   return (
     <div className="space-y-6 p-6">
@@ -156,7 +149,7 @@ export default function CreditorsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, ИНН, ОГРН"
+                placeholder="Поиск по наименованию"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -174,17 +167,16 @@ export default function CreditorsDatabase() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Наименование</TableHead>
-                    <TableHead>ИНН</TableHead>
-                    <TableHead>ОГРН</TableHead>
-                    <TableHead>Тип</TableHead>
                     <TableHead>Адрес</TableHead>
+                    <TableHead>ФИО руководителя</TableHead>
+                    <TableHead>Банковские реквизиты</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {creditors.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
                           ? 'Кредиторы не найдены'
                           : 'Нет кредиторов. Добавьте первого кредитора!'}
@@ -194,10 +186,11 @@ export default function CreditorsDatabase() {
                     creditors.map((creditor) => (
                       <TableRow key={creditor.id}>
                         <TableCell className="font-medium">{creditor.name}</TableCell>
-                        <TableCell className="font-mono text-sm">{creditor.inn || '-'}</TableCell>
-                        <TableCell className="font-mono text-sm">{creditor.ogrn || '-'}</TableCell>
-                        <TableCell>{getTypeLabel(creditor.type)}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{creditor.address || '-'}</TableCell>
+                        <TableCell className="text-sm">{creditor.headFullName || '-'}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-md truncate" title={creditor.bankDetails || undefined}>
+                          {creditor.bankDetails || '-'}
+                        </TableCell>
                         <TableCell>
                           <div className="flex">
                             <Button

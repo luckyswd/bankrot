@@ -22,7 +22,7 @@ class CreditorRepository extends ServiceEntityRepository
     /**
      * Создаёт QueryBuilder с фильтрами по поиску.
      *
-     * @param string|null $search Поиск по наименованию, ИНН, ОГРН
+     * @param string|null $search Поиск по наименованию
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
@@ -30,11 +30,7 @@ class CreditorRepository extends ServiceEntityRepository
 
         if ($search !== null && $search !== '') {
             $qb->andWhere(
-                $qb->expr()->orX(
-                    $qb->expr()->like('c.name', ':search'),
-                    $qb->expr()->like('c.inn', ':search'),
-                    $qb->expr()->like('c.ogrn', ':search')
-                )
+                $qb->expr()->like('c.name', ':search')
             )
                 ->setParameter('search', '%' . $search . '%');
         }
@@ -49,7 +45,7 @@ class CreditorRepository extends ServiceEntityRepository
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
-     * @param string|null $search Поиск по наименованию, ИНН, ОГРН
+     * @param string|null $search Поиск по наименованию
      *
      * @return array{items: Creditor[], total: int, page: int, limit: int, pages: int}
      */

@@ -141,7 +141,18 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
         'Пушкина', 'Чехова', 'Горького', 'Толстого', 'Достоевского', 'Некрасова', 'Тургенева',
     ];
 
-    private const array CREDITOR_TYPES = ['bank', 'tax', 'other'];
+    private const array HEAD_NAMES = [
+        'ИВАНОВ ИВАН ИВАНОВИЧ',
+        'ПЕТРОВ ПЕТР ПЕТРОВИЧ',
+        'СИДОРОВ СИДОР СИДОРОВИЧ',
+        'КОЗЛОВ АЛЕКСАНДР АЛЕКСАНДРОВИЧ',
+        'СМИРНОВ ДМИТРИЙ ВЛАДИМИРОВИЧ',
+        'ПОПОВ СЕРГЕЙ НИКОЛАЕВИЧ',
+        'НОВИКОВ АНДРЕЙ БОРИСОВИЧ',
+        'МОРОЗОВ ВЛАДИМИР СЕРГЕЕВИЧ',
+        'ВОЛКОВ АЛЕКСЕЙ ИГОРЕВИЧ',
+        'СОКОЛОВ МАКСИМ ВИКТОРОВИЧ',
+    ];
 
     public function load(ObjectManager $manager): void
     {
@@ -168,10 +179,9 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
         foreach (self::CREDITOR_NAMES as $index => $name) {
             $creditor = new Creditor();
             $creditor->setName($name);
-            $creditor->setInn($this->generateInn());
-            $creditor->setOgrn($this->generateOgrn());
-            $creditor->setType(self::CREDITOR_TYPES[array_rand(self::CREDITOR_TYPES)]);
             $creditor->setAddress($this->generateAddress());
+            $creditor->setHeadFullName(self::HEAD_NAMES[array_rand(self::HEAD_NAMES)]);
+            $creditor->setBankDetails($this->generateBankDetails());
 
             $manager->persist($creditor);
             $this->addReference('creditor_' . ($index + 1), $creditor);
@@ -243,14 +253,15 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
         }
     }
 
-    private function generateInn(): string
+    private function generateBankDetails(): string
     {
-        return str_pad((string)rand(1000000000, 9999999999), 10, '0', STR_PAD_LEFT);
-    }
+        $bik = str_pad((string)rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        $inn = str_pad((string)rand(1000000000, 9999999999), 10, '0', STR_PAD_LEFT);
+        $kpp = str_pad((string)rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        $corrAccount = '30101810' . str_pad((string)rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        $settlementAccount = '40702810' . str_pad((string)rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);
 
-    private function generateOgrn(): string
-    {
-        return str_pad((string)rand(1000000000000, 9999999999999), 13, '0', STR_PAD_LEFT);
+        return "БИК: {$bik}, ИНН: {$inn}, КПП: {$kpp}, КОРР.СЧЕТ: {$corrAccount}, РАСЧЕТНЫЙ СЧЕТ: {$settlementAccount}";
     }
 
     private function generateFnsCode(): string
