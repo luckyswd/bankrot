@@ -35,7 +35,7 @@ class RosgvardiaController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по наименованию, адресу, телефону',
+                description: 'Поиск по наименованию, адресу',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -69,7 +69,6 @@ class RosgvardiaController extends AbstractController
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
                                     new OA\Property(property: 'name', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -115,7 +114,6 @@ class RosgvardiaController extends AbstractController
                             'id' => $rosgvardia->getId(),
                             'name' => $rosgvardia->getName(),
                             'address' => $rosgvardia->getAddress(),
-                            'phone' => $rosgvardia->getPhone(),
                         ];
                     }
 
@@ -143,7 +141,6 @@ class RosgvardiaController extends AbstractController
                         'id' => $rosgvardia->getId(),
                         'name' => $rosgvardia->getName(),
                         'address' => $rosgvardia->getAddress(),
-                        'phone' => $rosgvardia->getPhone(),
                     ];
                 }
 
@@ -186,7 +183,6 @@ class RosgvardiaController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -217,7 +213,6 @@ class RosgvardiaController extends AbstractController
             'id' => $rosgvardia->getId(),
             'name' => $rosgvardia->getName(),
             'address' => $rosgvardia->getAddress(),
-            'phone' => $rosgvardia->getPhone(),
         ]);
     }
 
@@ -234,7 +229,6 @@ class RosgvardiaController extends AbstractController
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                 ],
                 type: 'object'
             )
@@ -249,7 +243,6 @@ class RosgvardiaController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -279,7 +272,6 @@ class RosgvardiaController extends AbstractController
         $rosgvardia = new Rosgvardia();
         $rosgvardia->setName(trim($data['name']));
         $rosgvardia->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $rosgvardia->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
 
         $this->entityManager->persist($rosgvardia);
         $this->entityManager->flush();
@@ -291,7 +283,6 @@ class RosgvardiaController extends AbstractController
                 'id' => $rosgvardia->getId(),
                 'name' => $rosgvardia->getName(),
                 'address' => $rosgvardia->getAddress(),
-                'phone' => $rosgvardia->getPhone(),
             ],
             status: 201
         );
@@ -310,7 +301,6 @@ class RosgvardiaController extends AbstractController
                 properties: [
                     new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                 ],
                 type: 'object'
             )
@@ -334,7 +324,6 @@ class RosgvardiaController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'name', type: 'string', example: 'Управление Росгвардии по г. Москве'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -373,7 +362,6 @@ class RosgvardiaController extends AbstractController
 
         $rosgvardia->setName(trim($data['name']));
         $rosgvardia->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $rosgvardia->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
 
         $this->entityManager->flush();
 
@@ -384,7 +372,6 @@ class RosgvardiaController extends AbstractController
             'id' => $rosgvardia->getId(),
             'name' => $rosgvardia->getName(),
             'address' => $rosgvardia->getAddress(),
-            'phone' => $rosgvardia->getPhone(),
         ]);
     }
 

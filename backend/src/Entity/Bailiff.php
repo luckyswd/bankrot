@@ -23,8 +23,8 @@ class Bailiff extends BaseEntity
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
 
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $phone = null;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $headFullName = null;
 
     public function getId(): ?int
     {
@@ -55,14 +55,14 @@ class Bailiff extends BaseEntity
         return $this;
     }
 
-    public function getPhone(): ?string
+    public function getHeadFullName(): ?string
     {
-        return $this->phone;
+        return $this->headFullName;
     }
 
-    public function setPhone(?string $phone): self
+    public function setHeadFullName(?string $headFullName): self
     {
-        $this->phone = $phone;
+        $this->headFullName = $headFullName;
 
         return $this;
     }

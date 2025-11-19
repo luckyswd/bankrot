@@ -206,7 +206,7 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
             $bailiff = new Bailiff();
             $bailiff->setDepartment($department);
             $bailiff->setAddress($this->generateAddress());
-            $bailiff->setPhone($this->generatePhone());
+            $bailiff->setHeadFullName(self::HEAD_NAMES[array_rand(self::HEAD_NAMES)]);
 
             $manager->persist($bailiff);
             $this->addReference('bailiff_' . ($index + 1), $bailiff);
@@ -246,7 +246,6 @@ class DirectoriesFixtures extends Fixture implements FixtureGroupInterface
             $rosgvardia = new Rosgvardia();
             $rosgvardia->setName($name);
             $rosgvardia->setAddress($this->generateAddress());
-            $rosgvardia->setPhone($this->generatePhone());
 
             $manager->persist($rosgvardia);
             $this->addReference('rosgvardia_' . ($index + 1), $rosgvardia);

@@ -23,9 +23,6 @@ class Rosgvardia extends BaseEntity
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
 
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $phone = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -51,18 +48,6 @@ class Rosgvardia extends BaseEntity
     public function setAddress(?string $address): self
     {
         $this->address = $address;
-
-        return $this;
-    }
-
-    public function getPhone(): ?string
-    {
-        return $this->phone;
-    }
-
-    public function setPhone(?string $phone): self
-    {
-        $this->phone = $phone;
 
         return $this;
     }

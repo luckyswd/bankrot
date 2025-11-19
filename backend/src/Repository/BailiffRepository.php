@@ -22,7 +22,7 @@ class BailiffRepository extends ServiceEntityRepository
     /**
      * Создаёт QueryBuilder с фильтрами по поиску.
      *
-     * @param string|null $search Поиск по отделению, адресу, телефону
+     * @param string|null $search Поиск по отделению, адресу
      */
     public function createSearchQueryBuilder(?string $search = null): QueryBuilder
     {
@@ -32,8 +32,7 @@ class BailiffRepository extends ServiceEntityRepository
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->like('b.department', ':search'),
-                    $qb->expr()->like('b.address', ':search'),
-                    $qb->expr()->like('b.phone', ':search')
+                    $qb->expr()->like('b.address', ':search')
                 )
             )
                 ->setParameter('search', '%' . $search . '%');
@@ -49,7 +48,7 @@ class BailiffRepository extends ServiceEntityRepository
      *
      * @param int $page Номер страницы (начиная с 1)
      * @param int $limit Количество элементов на странице
-     * @param string|null $search Поиск по отделению, адресу, телефону
+     * @param string|null $search Поиск по отделению, адресу
      *
      * @return array{items: Bailiff[], total: int, page: int, limit: int, pages: int}
      */

@@ -12,8 +12,8 @@ import { useModalStore } from '../Modals/ModalProvider'
 interface Bailiff {
   id: number
   department: string
-  address: string
-  phone: string
+  address: string | null
+  headFullName: string | null
   [key: string]: unknown
 }
 
@@ -144,7 +144,7 @@ export default function BailiffsDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по отделению, адресу, телефону"
+                placeholder="Поиск по отделению, адресу"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -163,7 +163,7 @@ export default function BailiffsDatabase() {
                   <TableRow>
                     <TableHead>Отделение</TableHead>
                     <TableHead>Адрес</TableHead>
-                    <TableHead>Телефон</TableHead>
+                    <TableHead>Старший пристав</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -181,7 +181,7 @@ export default function BailiffsDatabase() {
                       <TableRow key={bailiff.id}>
                         <TableCell className="font-medium">{bailiff.department}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{bailiff.address || '-'}</TableCell>
-                        <TableCell className="text-sm">{bailiff.phone || '-'}</TableCell>
+                        <TableCell className="text-sm">{bailiff.headFullName || '-'}</TableCell>
                         <TableCell>
                           <div className="flex">
                             <Button

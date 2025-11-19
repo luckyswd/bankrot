@@ -35,7 +35,7 @@ class BailiffController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'search',
-                description: 'Поиск по отделению, адресу, телефону',
+                description: 'Поиск по отделению, адресу',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Московский')
@@ -69,7 +69,7 @@ class BailiffController extends AbstractController
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
                                     new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
                                     new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                                    new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -115,7 +115,7 @@ class BailiffController extends AbstractController
                             'id' => $bailiff->getId(),
                             'department' => $bailiff->getDepartment(),
                             'address' => $bailiff->getAddress(),
-                            'phone' => $bailiff->getPhone(),
+                            'headFullName' => $bailiff->getHeadFullName(),
                         ];
                     }
 
@@ -143,7 +143,7 @@ class BailiffController extends AbstractController
                         'id' => $bailiff->getId(),
                         'department' => $bailiff->getDepartment(),
                         'address' => $bailiff->getAddress(),
-                        'phone' => $bailiff->getPhone(),
+                        'headFullName' => $bailiff->getHeadFullName(),
                     ];
                 }
 
@@ -186,7 +186,7 @@ class BailiffController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -217,7 +217,7 @@ class BailiffController extends AbstractController
             'id' => $bailiff->getId(),
             'department' => $bailiff->getDepartment(),
             'address' => $bailiff->getAddress(),
-            'phone' => $bailiff->getPhone(),
+            'headFullName' => $bailiff->getHeadFullName(),
         ]);
     }
 
@@ -279,7 +279,7 @@ class BailiffController extends AbstractController
         $bailiff = new Bailiff();
         $bailiff->setDepartment(trim($data['department']));
         $bailiff->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $bailiff->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
+        $bailiff->setHeadFullName(isset($data['headFullName']) ? trim($data['headFullName']) : null);
 
         $this->entityManager->persist($bailiff);
         $this->entityManager->flush();
@@ -291,7 +291,7 @@ class BailiffController extends AbstractController
                 'id' => $bailiff->getId(),
                 'department' => $bailiff->getDepartment(),
                 'address' => $bailiff->getAddress(),
-                'phone' => $bailiff->getPhone(),
+                'headFullName' => $bailiff->getHeadFullName(),
             ],
             status: 201
         );
@@ -310,7 +310,7 @@ class BailiffController extends AbstractController
                 properties: [
                     new OA\Property(property: 'department', description: 'Отделение', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
                     new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'phone', description: 'Телефон', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                    new OA\Property(property: 'headFullName', description: 'Старший пристав', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
                 ],
                 type: 'object'
             )
@@ -334,7 +334,7 @@ class BailiffController extends AbstractController
                         new OA\Property(property: 'id', type: 'integer', example: 1),
                         new OA\Property(property: 'department', type: 'string', example: 'Отделение судебных приставов по Московскому району'),
                         new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -373,7 +373,7 @@ class BailiffController extends AbstractController
 
         $bailiff->setDepartment(trim($data['department']));
         $bailiff->setAddress(isset($data['address']) ? trim($data['address']) : null);
-        $bailiff->setPhone(isset($data['phone']) ? trim($data['phone']) : null);
+        $bailiff->setHeadFullName(isset($data['headFullName']) ? trim($data['headFullName']) : null);
 
         $this->entityManager->flush();
 
@@ -384,7 +384,7 @@ class BailiffController extends AbstractController
             'id' => $bailiff->getId(),
             'department' => $bailiff->getDepartment(),
             'address' => $bailiff->getAddress(),
-            'phone' => $bailiff->getPhone(),
+            'headFullName' => $bailiff->getHeadFullName(),
         ]);
     }
 

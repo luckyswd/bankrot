@@ -9,8 +9,7 @@ import { Label } from "@/components/ui/label"
 type RosgvardiaBranch = {
   id: number
   name?: string
-  address?: string
-  phone?: string
+  address?: string | null
 }
 
 type RosgvardiaBranchModalProps = {
@@ -24,7 +23,6 @@ type RosgvardiaBranchModalProps = {
 const emptyForm = {
   name: "",
   address: "",
-  phone: "",
 }
 
 export const RosgvardiaBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }: RosgvardiaBranchModalProps) => {
@@ -37,7 +35,6 @@ export const RosgvardiaBranchModal = ({ isOpen, onClose, branch, onSuccess, onEr
       setFormData({
         name: branch?.name ?? "",
         address: branch?.address ?? "",
-        phone: branch?.phone ?? "",
       })
       setError(null)
       setSubmitting(false)
@@ -55,7 +52,6 @@ export const RosgvardiaBranchModal = ({ isOpen, onClose, branch, onSuccess, onEr
     const payload = {
       name: formData.name.trim(),
       address: formData.address.trim() || null,
-      phone: formData.phone.trim() || null,
     }
 
     try {
@@ -125,16 +121,6 @@ export const RosgvardiaBranchModal = ({ isOpen, onClose, branch, onSuccess, onEr
               value={formData.address}
               onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
               placeholder="Введите адрес"
-              disabled={submitting}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rosgvardia-phone">Телефон</Label>
-            <Input
-              id="rosgvardia-phone"
-              value={formData.phone}
-              onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-              placeholder="Введите телефон"
               disabled={submitting}
             />
           </div>

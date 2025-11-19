@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 type Bailiff = {
   id: number
   department?: string
-  address?: string
-  phone?: string
+  address?: string | null
+  headFullName?: string | null
 }
 
 type BailiffFormModalProps = {
@@ -24,7 +24,7 @@ type BailiffFormModalProps = {
 const emptyForm = {
   department: "",
   address: "",
-  phone: "",
+  headFullName: "",
 }
 
 export const BailiffFormModal = ({ isOpen, onClose, bailiff, onSuccess, onError }: BailiffFormModalProps) => {
@@ -37,7 +37,7 @@ export const BailiffFormModal = ({ isOpen, onClose, bailiff, onSuccess, onError 
       setFormData({
         department: bailiff?.department ?? "",
         address: bailiff?.address ?? "",
-        phone: bailiff?.phone ?? "",
+        headFullName: bailiff?.headFullName ?? "",
       })
       setError(null)
       setSubmitting(false)
@@ -55,7 +55,7 @@ export const BailiffFormModal = ({ isOpen, onClose, bailiff, onSuccess, onError 
     const payload = {
       department: formData.department.trim(),
       address: formData.address.trim() || null,
-      phone: formData.phone.trim() || null,
+      headFullName: formData.headFullName.trim() || null,
     }
 
     try {
@@ -129,12 +129,12 @@ export const BailiffFormModal = ({ isOpen, onClose, bailiff, onSuccess, onError 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bailiff-phone">Телефон</Label>
+            <Label htmlFor="bailiff-headFullName">Старший пристав</Label>
             <Input
-              id="bailiff-phone"
-              value={formData.phone}
-              onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-              placeholder="Введите телефон"
+              id="bailiff-headFullName"
+              value={formData.headFullName}
+              onChange={(e) => setFormData((prev) => ({ ...prev, headFullName: e.target.value }))}
+              placeholder="Введите ФИО старшего пристава"
               disabled={submitting}
             />
           </div>

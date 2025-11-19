@@ -12,8 +12,7 @@ import { useModalStore } from '../Modals/ModalProvider'
 interface RosgvardiaItem {
   id: number
   name: string
-  address: string
-  phone: string
+  address: string | null
   [key: string]: unknown
 }
 
@@ -144,7 +143,7 @@ export function RosgvardiaDatabase() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по наименованию, адресу, телефону"
+                placeholder="Поиск по наименованию, адресу"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -163,14 +162,13 @@ export function RosgvardiaDatabase() {
                   <TableRow>
                     <TableHead>Наименование</TableHead>
                     <TableHead>Адрес</TableHead>
-                    <TableHead>Телефон</TableHead>
                     <TableHead className="w-28">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rosgvardia.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3)
                           ? 'Отделения не найдены'
                           : 'Нет отделений. Добавьте первое отделение!'}
@@ -181,7 +179,6 @@ export function RosgvardiaDatabase() {
                       <TableRow key={rosgvardiaItem.id}>
                         <TableCell className="font-medium">{rosgvardiaItem.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{rosgvardiaItem.address || '-'}</TableCell>
-                        <TableCell className="text-sm">{rosgvardiaItem.phone || '-'}</TableCell>
                         <TableCell>
                           <div className="flex">
                             <Button
