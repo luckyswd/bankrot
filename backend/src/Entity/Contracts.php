@@ -257,6 +257,16 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Арбитражный суд', type: 'object', nullable: true)]
     private ?Court $court = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Номер доверенности', type: 'string', example: 'Д-123/2024', nullable: true)]
+    private ?string $powerOfAttorneyNumber = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Дата составления доверенности', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
+    private ?\DateTimeInterface $powerOfAttorneyDate = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -825,6 +835,30 @@ class Contracts extends BaseEntity
     public function setCourt(?Court $court): self
     {
         $this->court = $court;
+
+        return $this;
+    }
+
+    public function getPowerOfAttorneyNumber(): ?string
+    {
+        return $this->powerOfAttorneyNumber;
+    }
+
+    public function setPowerOfAttorneyNumber(?string $powerOfAttorneyNumber): self
+    {
+        $this->powerOfAttorneyNumber = $powerOfAttorneyNumber;
+
+        return $this;
+    }
+
+    public function getPowerOfAttorneyDate(): ?\DateTimeInterface
+    {
+        return $this->powerOfAttorneyDate;
+    }
+
+    public function setPowerOfAttorneyDate(?\DateTimeInterface $powerOfAttorneyDate): self
+    {
+        $this->powerOfAttorneyDate = $powerOfAttorneyDate;
 
         return $this;
     }
