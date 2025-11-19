@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     schema: 'Contracts',
     type: 'object'
 )]
-class Contracts
+class Contracts extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -250,6 +250,12 @@ class Contracts
     #[Groups(['basic_info'])]
     #[OA\Property(description: 'Дата договора', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $contractDate = null;
+
+    #[ORM\OneToOne(targetEntity: Court::class)]
+    #[ORM\JoinColumn(name: 'court_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Арбитражный суд', type: 'object', nullable: true)]
+    private ?Court $court = null;
 
     public function getId(): ?int
     {
@@ -807,6 +813,18 @@ class Contracts
     public function setContractDate(?\DateTimeInterface $contractDate): self
     {
         $this->contractDate = $contractDate;
+
+        return $this;
+    }
+
+    public function getCourt(): ?Court
+    {
+        return $this->court;
+    }
+
+    public function setCourt(?Court $court): self
+    {
+        $this->court = $court;
 
         return $this;
     }
