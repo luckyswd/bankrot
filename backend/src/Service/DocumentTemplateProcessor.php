@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
 use App\Service\Templates\CustomFunction;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 readonly class DocumentTemplateProcessor
 {
@@ -38,146 +39,35 @@ readonly class DocumentTemplateProcessor
 
         copy($templatePath, $outputPath);
 
-        $zip = new \ZipArchive();
+        $templateProcessor = new TemplateProcessor($outputPath);
+        $templateProcessor->setMacroChars('{{', '}}');
 
-        if ($zip->open($outputPath) !== true) {
-            throw new \RuntimeException('Не удалось открыть DOCX файл');
-        }
+        $variables = [];
+        $functions = [];
 
-        $variables = $this->extractVariables(zip: $zip);
-        $functions = $this->extractFunctions(zip: $zip);
+        foreach ($templateProcessor->getVariables() as $variable) {
+            $variable = trim(strip_tags($variable));
 
-        foreach ($variables as $variable) {
-            $value = $this->entityDataResolver->resolveValue(contract: $contract, path: $variable);
-            $this->replaceVariableInZip(zip: $zip, variable: $variable, value: $value);
+            if ($this->isFunctionCall(match: $variable)) {
+                $functions[] = $variable;
+            } else {
+                $variables[] = $variable;
+            }
         }
 
         foreach ($functions as $functionCall) {
             $value = $this->processFunction(functionCall: $functionCall);
-            $this->replaceVariableInZip(zip: $zip, variable: $functionCall, value: $value);
+            $templateProcessor->setValue(search: $functionCall, replace: $value);
         }
 
-        $zip->close();
+        foreach ($variables as $variable) {
+            $value = $this->entityDataResolver->resolveValue(contract: $contract, path: $variable);
+            $templateProcessor->setValue(search: $variable, replace: $value);
+        }
+
+        $templateProcessor->saveAs($outputPath);
 
         return $outputPath;
-    }
-
-    /**
-     * Извлекает все переменные из DOCX файла.
-     *
-     * @param \ZipArchive $zip ZIP архив DOCX файла
-     *
-     * @return array<string> Массив переменных
-     */
-    private function extractVariables(\ZipArchive $zip): array
-    {
-        $variables = [];
-        $xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml'];
-
-        for ($i = 0; $i < $zip->numFiles; ++$i) {
-            $filename = $zip->getNameIndex($i);
-
-            if ($filename === false) {
-                continue;
-            }
-
-            $isRelevantFile = false;
-
-            foreach ($xmlFiles as $xmlFile) {
-                if (str_contains($filename, $xmlFile) || (str_ends_with($filename, '.xml') && str_starts_with($filename, 'word/'))) {
-                    $isRelevantFile = true;
-
-                    break;
-                }
-            }
-
-            if (!$isRelevantFile) {
-                continue;
-            }
-
-            $content = $zip->getFromIndex($i);
-
-            if ($content === false) {
-                continue;
-            }
-
-            preg_match_all('/\{\{([^}]+)\}\}/', $content, $matches);
-
-            if (!empty($matches[1])) {
-                foreach ($matches[1] as $match) {
-                    $varName = trim($match);
-                    $normalized = html_entity_decode($varName, ENT_QUOTES | ENT_XML1, 'UTF-8');
-
-                    if ($this->isFunctionCall(match: $normalized)) {
-                        continue;
-                    }
-
-                    if (!in_array($normalized, $variables, true)) {
-                        $variables[] = $normalized;
-                    }
-                }
-            }
-        }
-
-        return $variables;
-    }
-
-    /**
-     * Извлекает все функции из DOCX файла.
-     *
-     * @param \ZipArchive $zip ZIP архив DOCX файла
-     *
-     * @return array<string> Массив вызовов функций
-     */
-    private function extractFunctions(\ZipArchive $zip): array
-    {
-        $functions = [];
-        $xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml'];
-
-        for ($i = 0; $i < $zip->numFiles; ++$i) {
-            $filename = $zip->getNameIndex($i);
-
-            if ($filename === false) {
-                continue;
-            }
-
-            $isRelevantFile = false;
-
-            foreach ($xmlFiles as $xmlFile) {
-                if (str_contains($filename, $xmlFile) || (str_ends_with($filename, '.xml') && str_starts_with($filename, 'word/'))) {
-                    $isRelevantFile = true;
-
-                    break;
-                }
-            }
-
-            if (!$isRelevantFile) {
-                continue;
-            }
-
-            $content = $zip->getFromIndex($i);
-
-            if ($content === false) {
-                continue;
-            }
-
-            preg_match_all('/\{\{([^}]+)\}\}/', $content, $matches);
-
-            if (!empty($matches[1])) {
-                foreach ($matches[1] as $match) {
-                    $match = trim($match);
-                    $normalized = html_entity_decode($match, ENT_QUOTES | ENT_XML1, 'UTF-8');
-
-                    if ($this->isFunctionCall(match: $normalized)) {
-                        if (!in_array($normalized, $functions, true)) {
-                            $functions[] = $normalized;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $functions;
     }
 
     /**
@@ -280,55 +170,5 @@ readonly class DocumentTemplateProcessor
         }
 
         return $parameters;
-    }
-
-    /**
-     * Заменяет переменную в DOCX файле, сохраняя стили.
-     *
-     * @param \ZipArchive $zip ZIP архив DOCX файла
-     * @param string $variable Имя переменной
-     * @param string $value Значение для замены
-     */
-    private function replaceVariableInZip(\ZipArchive $zip, string $variable, string $value): void
-    {
-        $xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml'];
-
-        for ($i = 0; $i < $zip->numFiles; ++$i) {
-            $filename = $zip->getNameIndex($i);
-
-            if ($filename === false) {
-                continue;
-            }
-
-            $isRelevantFile = false;
-
-            foreach ($xmlFiles as $xmlFile) {
-                if (str_contains($filename, $xmlFile) || (str_ends_with($filename, '.xml') && str_starts_with($filename, 'word/'))) {
-                    $isRelevantFile = true;
-                    break;
-                }
-            }
-
-            if (!$isRelevantFile) {
-                continue;
-            }
-
-            $content = $zip->getFromIndex($i);
-
-            if ($content === false) {
-                continue;
-            }
-
-            $escapedVariable = preg_quote($variable, '/');
-            $escapedVariableHtml = preg_quote(htmlspecialchars($variable, ENT_QUOTES | ENT_XML1, 'UTF-8'), '/');
-            $pattern = '/\{\{(' . $escapedVariable . '|' . $escapedVariableHtml . ')\}\}/';
-
-            if (preg_match($pattern, $content)) {
-                $escapedValue = htmlspecialchars($value, ENT_XML1, 'UTF-8');
-                $newContent = preg_replace($pattern, $escapedValue, $content);
-                $zip->deleteIndex($i);
-                $zip->addFromString($filename, $newContent);
-            }
-        }
     }
 }
