@@ -9,6 +9,8 @@ use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
 use App\Repository\ContractsRepository;
+use App\Repository\CourtRepository;
+use App\Repository\CreditorRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Service\Serializer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,8 @@ class ContractsController extends AbstractController
         private readonly ContractsRepository $contractsRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly DocumentTemplateRepository $documentTemplateRepository,
+        private readonly CourtRepository $courtRepository,
+        private readonly CreditorRepository $creditorRepository,
     ) {
     }
 
@@ -958,7 +962,7 @@ class ContractsController extends AbstractController
     {
         $flatData = [];
 
-        foreach ($groupedData as $group => $fields) {
+        foreach ($groupedData as $fields) {
             if (is_array($fields)) {
                 foreach ($fields as $key => $value) {
                     $flatData[$key] = $value;
@@ -977,9 +981,42 @@ class ContractsController extends AbstractController
     private function updateContractFields(Contracts $contract, array $data): void
     {
         $reflection = new \ReflectionClass($contract);
-        $dateFields = ['birthDate', 'passportIssuedDate', 'spouseBirthDate', 'contractDate'];
+        $dateFields = ['birthDate', 'passportIssuedDate', 'spouseBirthDate', 'contractDate', 'powerOfAttorneyDate'];
+        $dateTimeFields = ['hearingDateTime', 'efrsbDateTime'];
 
         foreach ($data as $key => $value) {
+            if ($key === 'court') {
+                if ($value === null) {
+                    $contract->setCourt(null);
+                } elseif (is_numeric($value)) {
+                    $court = $this->courtRepository->find((int)$value);
+
+                    if ($court !== null) {
+                        $contract->setCourt($court);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'creditors') {
+                $contract->getCreditors()->clear();
+
+                if (is_array($value)) {
+                    foreach ($value as $creditorId) {
+                        if (is_numeric($creditorId)) {
+                            $creditor = $this->creditorRepository->find((int)$creditorId);
+
+                            if ($creditor !== null) {
+                                $contract->addCreditor($creditor);
+                            }
+                        }
+                    }
+                }
+
+                continue;
+            }
+
             $setterName = 'set' . ucfirst($key);
 
             if (!$reflection->hasMethod($setterName)) {
@@ -992,12 +1029,21 @@ class ContractsController extends AbstractController
                 continue;
             }
 
+            // Обработка полей типа date
             if (in_array($key, $dateFields, true) && is_string($value)) {
                 $method->invoke($contract, new \DateTime($value));
 
                 continue;
             }
 
+            // Обработка полей типа datetime
+            if (in_array($key, $dateTimeFields, true) && is_string($value)) {
+                $method->invoke($contract, new \DateTime($value));
+
+                continue;
+            }
+
+            // Обработка статуса
             if ($key === 'status' && $value !== null) {
                 $method->invoke($contract, ContractStatus::from($value));
 

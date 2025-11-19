@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Repository\CreditorRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CreditorRepository::class)]
 #[ORM\Table(name: 'creditors')]
@@ -15,9 +16,11 @@ class Creditor extends BaseEntity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
+    #[Groups(['pre_court'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 500)]
+    #[Groups(['pre_court'])]
     private string $name;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

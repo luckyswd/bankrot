@@ -6,6 +6,8 @@ namespace App\Entity;
 
 use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -266,6 +268,41 @@ class Contracts extends BaseEntity
     #[Groups(['pre_court'])]
     #[OA\Property(description: 'Дата составления доверенности', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $powerOfAttorneyDate = null;
+
+    /**
+     * @var Collection<int, Creditor>
+     */
+    #[ORM\ManyToMany(targetEntity: Creditor::class)]
+    #[ORM\JoinTable(name: 'contracts_creditors')]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Кредиторы', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
+    private Collection $creditors;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: '№ Дела', type: 'string', example: 'А56-75258/2025', nullable: true)]
+    private ?string $caseNumber = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Дата и время заседания', type: 'string', format: 'date-time', example: '2025-01-15T10:00:00', nullable: true)]
+    private ?\DateTimeInterface $hearingDateTime = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Дата и время ЕФРСБ', type: 'string', format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
+    private ?\DateTimeInterface $efrsbDateTime = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pre_court'])]
+    #[OA\Property(description: 'Кабинет ЕФРСБ', type: 'string', example: 'Кабинет 101', nullable: true)]
+    private ?string $efrsbCabinet = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->creditors = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -859,6 +896,78 @@ class Contracts extends BaseEntity
     public function setPowerOfAttorneyDate(?\DateTimeInterface $powerOfAttorneyDate): self
     {
         $this->powerOfAttorneyDate = $powerOfAttorneyDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Creditor>
+     */
+    public function getCreditors(): Collection
+    {
+        return $this->creditors;
+    }
+
+    public function addCreditor(Creditor $creditor): self
+    {
+        if (!$this->creditors->contains($creditor)) {
+            $this->creditors->add($creditor);
+        }
+
+        return $this;
+    }
+
+    public function removeCreditor(Creditor $creditor): self
+    {
+        $this->creditors->removeElement($creditor);
+
+        return $this;
+    }
+
+    public function getCaseNumber(): ?string
+    {
+        return $this->caseNumber;
+    }
+
+    public function setCaseNumber(?string $caseNumber): self
+    {
+        $this->caseNumber = $caseNumber;
+
+        return $this;
+    }
+
+    public function getHearingDateTime(): ?\DateTimeInterface
+    {
+        return $this->hearingDateTime;
+    }
+
+    public function setHearingDateTime(?\DateTimeInterface $hearingDateTime): self
+    {
+        $this->hearingDateTime = $hearingDateTime;
+
+        return $this;
+    }
+
+    public function getEfrsbDateTime(): ?\DateTimeInterface
+    {
+        return $this->efrsbDateTime;
+    }
+
+    public function setEfrsbDateTime(?\DateTimeInterface $efrsbDateTime): self
+    {
+        $this->efrsbDateTime = $efrsbDateTime;
+
+        return $this;
+    }
+
+    public function getEfrsbCabinet(): ?string
+    {
+        return $this->efrsbCabinet;
+    }
+
+    public function setEfrsbCabinet(?string $efrsbCabinet): self
+    {
+        $this->efrsbCabinet = $efrsbCabinet;
 
         return $this;
     }
