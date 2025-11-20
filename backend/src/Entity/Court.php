@@ -20,7 +20,6 @@ class Court extends BaseEntity
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 500)]
-    #[Groups(['pre_court'])]
     private string $name;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
