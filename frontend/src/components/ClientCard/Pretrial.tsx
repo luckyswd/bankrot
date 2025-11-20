@@ -34,6 +34,11 @@ export const PretrialTab = ({ openDocument, onDownload, referenceData, contractD
     referenceData?.creditors?.forEach((c) => map.set(String(c.id), c.name))
     return map
   }, [referenceData?.creditors])
+  const toIdString = (value: unknown) => {
+    if (typeof value === "string" || typeof value === "number") return String(value)
+    if (value && typeof value === "object" && "id" in (value as any)) return String((value as any).id)
+    return ""
+  }
   
   const documents = (contractData?.pre_court as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
@@ -52,7 +57,7 @@ export const PretrialTab = ({ openDocument, onDownload, referenceData, contractD
                 name="pretrial.court"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
+                  <Select value={toIdString(field.value)} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите суд" />
                     </SelectTrigger>
@@ -77,7 +82,7 @@ export const PretrialTab = ({ openDocument, onDownload, referenceData, contractD
                   const selectedIds = useMemo(
                     () =>
                       Array.isArray(field.value)
-                        ? field.value.map((v) => String(v))
+                        ? field.value.map((v) => toIdString(v)).filter(Boolean)
                         : field.value
                           ? String(field.value).split(',').map((v) => v.trim()).filter(Boolean)
                           : [],
@@ -154,7 +159,7 @@ export const PretrialTab = ({ openDocument, onDownload, referenceData, contractD
                 name="pretrial.creditor"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value ? String(field.value) : ""} onValueChange={field.onChange}>
+                  <Select value={toIdString(field.value)} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите кредитора" />
                     </SelectTrigger>

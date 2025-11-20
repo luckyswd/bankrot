@@ -88,7 +88,7 @@ export function GenericDatabase({ dbKey, title, description, fields }: GenericDa
       )}
 
       <Card className="overflow-hidden">
-        <div className="relative max-h-[58vh] overflow-auto">
+        <div className="relative max-h-[60vh] overflow-auto">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-card">
               <TableRow className="bg-card">
@@ -126,8 +126,7 @@ export function GenericDatabase({ dbKey, title, description, fields }: GenericDa
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
-              )}
+                )))}
             </TableBody>
           </Table>
         </div>
