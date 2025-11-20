@@ -28,7 +28,7 @@ export function MchsDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const mchs = referenceData.mchs ?? []
+  const mchs = referenceData.mchs as MchsItem[] ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 200)

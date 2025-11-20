@@ -15,6 +15,7 @@ interface RosgvardiaItem {
   id: number
   name: string
   address: string | null
+  phone: string | null
   [key: string]: unknown
 }
 
@@ -27,7 +28,7 @@ export function RosgvardiaDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const rosgvardia = referenceData.rosgvardia ?? []
+  const rosgvardia = referenceData.rosgvardia as RosgvardiaItem[] ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 200)

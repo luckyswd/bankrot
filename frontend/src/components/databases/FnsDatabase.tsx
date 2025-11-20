@@ -10,6 +10,7 @@ import { Input } from '@ui/input'
 import { notify } from '@ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search} from 'lucide-react'
 import { useModalStore } from '../Modals/ModalProvider'
+import type { ReferenceItem } from '@/types/reference'
 
 interface FnsItem {
   id: number
@@ -17,6 +18,7 @@ interface FnsItem {
   address: string
   directorName: string
   bankDetails: string
+  code?: string | null
   [key: string]: unknown
 }
 
@@ -29,7 +31,17 @@ export function FnsDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const fns = referenceData.fns ?? []
+  const fns = useMemo<FnsItem[]>(() => {
+    const list = (referenceData.fns as Array<ReferenceItem | FnsItem> | undefined) ?? []
+    return list.map((item) => ({
+      id: Number(item.id ?? Date.now()),
+      name: item.name ?? '',
+      address: (item as any).address ?? '',
+      directorName: (item as any).directorName ?? '',
+      bankDetails: (item as any).bankDetails ?? '',
+      code: (item as any).code ?? null,
+    }))
+  }, [referenceData.fns])
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -9,13 +9,22 @@ import { Input } from '../ui/input'
 import { notify } from '../ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useModalStore } from '../Modals/ModalProvider'
+import { CREDITOR_TYPES } from './constants'
 interface Creditor {
   id: number
   name: string
   address: string | null
   headFullName: string | null
   bankDetails: string | null
+  inn?: string | null
+  ogrn?: string | null
+  type?: string | null
   [key: string]: unknown
+}
+
+const getTypeLabel = (type?: string | null) => {
+  const found = CREDITOR_TYPES.find((t) => t.value === type)
+  return found ? found.label : type || '-'
 }
 
 export default function CreditorsDatabase() {
@@ -28,7 +37,7 @@ export default function CreditorsDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const creditors = referenceData.creditors ?? []
+  const creditors = (referenceData.creditors as Creditor[] | undefined) ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => {

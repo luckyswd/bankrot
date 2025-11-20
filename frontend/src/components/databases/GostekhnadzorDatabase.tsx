@@ -40,7 +40,7 @@ export default function GostekhnadzorDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const gostekhnadzor = referenceData.gostekhnadzor ?? []
+  const gostekhnadzor = referenceData.gostekhnadzor as GostekhnadzorItem[] ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 200)

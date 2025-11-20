@@ -27,7 +27,7 @@ export default function CourtsDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const courts = referenceData.courts ?? []
+  const courts = referenceData.courts as Court[] ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => {

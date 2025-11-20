@@ -16,6 +16,7 @@ interface Bailiff {
   department: string
   address: string | null
   headFullName: string | null
+  phone?: string | null
   [key: string]: unknown
 }
 
@@ -28,7 +29,7 @@ export default function BailiffsDatabase() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const limit = 10
-  const bailiffs = referenceData.bailiffs ?? []
+  const bailiffs = (referenceData.bailiffs as Bailiff[] | undefined) ?? []
 
   useEffect(() => {
     const timer = setTimeout(() => {
