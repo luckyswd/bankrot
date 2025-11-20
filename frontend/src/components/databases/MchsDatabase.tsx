@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+
 import { apiRequest } from '../../config/api'
+import { useApp } from '@/context/AppContext'
 import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
 import { Input } from '@ui/input'
 import { notify } from '@ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from '../shared/Loading'
 import { useModalStore } from '../Modals/ModalProvider'
-
 
 interface MchsItem {
   id: number
@@ -19,76 +20,57 @@ interface MchsItem {
 }
 
 export function MchsDatabase() {
-  const [mchs, setMchs] = useState<MchsItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { referenceData } = useApp()
+  const queryClient = useQueryClient()
   const { openModal } = useModalStore()
 
-  // Поиск и пагинация
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [pages, setPages] = useState(1)
   const limit = 10
+  const mchs = referenceData.mchs ?? []
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (search.length >= 3 || search.length === 0) {
-        setDebouncedSearch(search)
-      }
-    }, 200)
-
+    const timer = setTimeout(() => setDebouncedSearch(search), 200)
     return () => clearTimeout(timer)
   }, [search])
 
-  const fetchMchs = useCallback(async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
+  const filteredMchs = useMemo(() => {
+    const term = debouncedSearch.trim().toLowerCase()
+    if (!term) return mchs
 
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
+    return mchs.filter((item) =>
+      [item.name, item.address, item.phone]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(term))
+    )
+  }, [mchs, debouncedSearch])
 
-      const data = await apiRequest(`/mchs?${params.toString()}`)
+  const total = filteredMchs.length
+  const pages = Math.max(1, Math.ceil(total / limit))
+  const pageSafe = Math.min(page, pages)
+  const paginated = useMemo(
+    () => filteredMchs.slice((pageSafe - 1) * limit, pageSafe * limit),
+    [filteredMchs, pageSafe, limit]
+  )
 
-      if (data && typeof data === 'object' && Array.isArray(data.items)) {
-        setMchs(data.items)
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      } else {
-        setMchs([])
-        setTotal(0)
-        setPages(1)
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке отделений ГИМС МЧС:', error)
-      notify({ message: 'Не удалось загрузить список отделений', type: 'error' })
-      setMchs([])
-      setTotal(0)
-      setPages(1)
-    } finally {
-      setLoading(false)
-    }
-  }, [page, debouncedSearch, limit])
-
-  useEffect(() => {
-    fetchMchs()
-  }, [fetchMchs])
-
-  // Сброс на первую страницу при изменении поиска
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch])
+
+  useEffect(() => {
+    if (page > pages) setPage(pages)
+  }, [page, pages])
+
+  const refreshReferences = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["references", "all"] })
+  }
 
   const handleCreateClick = () => {
     openModal('mchsForm', {
       onSuccess: async (message: string) => {
         notify({ message, type: 'success' })
-        await fetchMchs()
+        await refreshReferences()
       },
       onError: (message: string) => notify({ message, type: 'error' }),
     })
@@ -99,7 +81,7 @@ export function MchsDatabase() {
       branch: mchsItem,
       onSuccess: async (message: string) => {
         notify({ message, type: 'success' })
-        await fetchMchs()
+        await refreshReferences()
       },
       onError: (message: string) => notify({ message, type: 'error' }),
     })
@@ -112,11 +94,9 @@ export function MchsDatabase() {
       confirmLabel: 'Удалить',
       confirmVariant: 'destructive',
       onConfirm: async () => {
-        await apiRequest(`/mchs/${mchsItem.id}`, {
-          method: 'DELETE',
-        })
+        await apiRequest(`/mchs/${mchsItem.id}`, { method: 'DELETE' })
         notify({ message: 'Отделение успешно удалено', type: 'success' })
-        await fetchMchs()
+        await refreshReferences()
       },
     })
   }
@@ -140,7 +120,6 @@ export function MchsDatabase() {
           <CardDescription>Все отделения ГИМС МЧС в базе данных</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Поиск */}
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -153,146 +132,95 @@ export function MchsDatabase() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="py-8">
-              <Loading text="Загрузка отделений..." />
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
+          <div className="relative max-h-[58vh] overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-card">
+                <TableRow className="bg-card">
+                  <TableHead className="sticky top-0 bg-card">Наименование</TableHead>
+                  <TableHead className="sticky top-0 bg-card">Адрес</TableHead>
+                  <TableHead className="sticky top-0 bg-card">Телефон</TableHead>
+                  <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginated.length === 0 ? (
                   <TableRow>
-                    <TableHead>Наименование</TableHead>
-                    <TableHead>Адрес</TableHead>
-                    <TableHead>Телефон</TableHead>
-                    <TableHead className="w-28">Действия</TableHead>
+                    <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                      {debouncedSearch ? 'Отделения не найдены' : 'Нет отделений. Добавьте первое отделение!'}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mchs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
-                        {(debouncedSearch && debouncedSearch.length >= 3)
-                          ? 'Отделения не найдены'
-                          : 'Нет отделений. Добавьте первое отделение!'}
+                ) : (
+                  paginated.map((mchsItem) => (
+                    <TableRow key={mchsItem.id}>
+                      <TableCell className="font-medium">{mchsItem.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{mchsItem.address || '-'}</TableCell>
+                      <TableCell className="text-sm">{mchsItem.phone || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(mchsItem)} title="Редактировать">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(mchsItem)} title="Удалить">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    mchs.map((mchsItem) => (
-                      <TableRow key={mchsItem.id}>
-                        <TableCell className="font-medium">{mchsItem.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{mchsItem.address || '-'}</TableCell>
-                        <TableCell className="text-sm">{mchsItem.phone || '-'}</TableCell>
-                        <TableCell>
-                          <div className="flex">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditClick(mchsItem)}
-                              title="Редактировать"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(mchsItem)}
-                              title="Удалить"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-              {/* Пагинация */}
-              {pages > 1 && (
-                <div className="flex items-center justify-between mt-4 p-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Показано {(page - 1) * limit + 1} - {Math.min(page * limit, total)} из {total}
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(page - 1)}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Назад
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {(() => {
-                        const pageNumbers: (number | string)[] = []
-
-                        if (pages <= 7) {
-                          for (let i = 1; i <= pages; i++) {
-                            pageNumbers.push(i)
-                          }
-                        } else {
-                          pageNumbers.push(1)
-
-                          if (page > 3) {
-                            pageNumbers.push('...')
-                          }
-
-                          const start = Math.max(2, page - 1)
-                          const end = Math.min(pages - 1, page + 1)
-
-                          for (let i = start; i <= end; i++) {
-                            if (i !== 1 && i !== pages) {
-                              pageNumbers.push(i)
-                            }
-                          }
-
-                          if (page < pages - 2) {
-                            pageNumbers.push('...')
-                          }
-
-                          if (pages > 1) {
-                            pageNumbers.push(pages)
-                          }
-                        }
-
-                        return pageNumbers.map((pageNum, idx) => {
-                          if (pageNum === '...') {
-                            return (
-                              <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-                                ...
-                              </span>
-                            )
-                          }
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={page === pageNum ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setPage(pageNum as number)}
-                              className="w-10"
-                            >
-                              {pageNum}
-                            </Button>
-                          )
-                        })
-                      })()}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(page + 1)}
-                      disabled={page === pages}
-                    >
-                      Вперёд
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+          {pages > 1 && (
+            <div className="flex items-center justify-between mt-4 p-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Показано {(pageSafe - 1) * limit + 1} - {Math.min(pageSafe * limit, total)} из {total}
+              </div>
+              <div className="flex gap-2 items-center">
+                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe - 1)} disabled={pageSafe === 1}>
+                  <ChevronLeft className="h-4 w-4" />
+                  Назад
+                </Button>
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const pageNumbers: (number | string)[] = []
+                    if (pages <= 7) {
+                      for (let i = 1; i <= pages; i++) pageNumbers.push(i)
+                    } else {
+                      pageNumbers.push(1)
+                      if (pageSafe > 3) pageNumbers.push('...')
+                      const start = Math.max(2, pageSafe - 1)
+                      const end = Math.min(pages - 1, pageSafe + 1)
+                      for (let i = start; i <= end; i++) {
+                        if (i !== 1 && i !== pages) pageNumbers.push(i)
+                      }
+                      if (pageSafe < pages - 2) pageNumbers.push('...')
+                      if (pages > 1) pageNumbers.push(pages)
+                    }
+                    return pageNumbers.map((pageNum, idx) =>
+                      pageNum === '...'
+                        ? <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+                        : (
+                          <Button
+                            key={pageNum}
+                            variant={pageSafe === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPage(pageNum as number)}
+                            className="w-10"
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                    )
+                  })()}
                 </div>
-              )}
-            </>
+                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe + 1)} disabled={pageSafe === pages}>
+                  Вперёд
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

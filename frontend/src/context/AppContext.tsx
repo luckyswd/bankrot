@@ -1,17 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useRecoilState } from "recoil"
 
-export interface ReferenceItem {
-  id: number | string
-  name: string
-}
-
-export interface ReferenceData {
-  courts?: ReferenceItem[]
-  creditors?: ReferenceItem[]
-  fns?: ReferenceItem[]
-  bailiffs?: ReferenceItem[]
-  [key: string]: ReferenceItem[] | undefined
-}
+import { useAuth } from "./AuthContext"
+import { apiRequest } from "../config/api"
+import { referenceDataAtom } from "@/state/referenceData"
+import type { ReferenceData, ReferenceItem } from "@/types/reference"
 
 interface User {
   id: number
@@ -130,44 +124,80 @@ const defaultClientData: ClientData = {
 }
 
 export const AppProvider = ({ children }: AppProviderProps) => {
+  const { token } = useAuth()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [contracts, setContracts] = useState<Contract[]>([])
-  const [referenceData, setReferenceData] = useState<ReferenceData>({})
+  const [referenceData, setReferenceData] = useRecoilState(referenceDataAtom)
   const [templates, setTemplates] = useState<Template[]>([])
   const [actionLog, setActionLog] = useState<any[]>([])
   const [reports, setReports] = useState<Report[]>([])
 
-  // Автосохранение в localStorage
   useEffect(() => {
-    const savedContracts = localStorage.getItem('contracts')
-    const savedTemplates = localStorage.getItem('templates')
-    const savedReports = localStorage.getItem('reports')
-    if (savedContracts) {
-      setContracts(JSON.parse(savedContracts) as Contract[])
+    if (!token) {
+      setReferenceData({})
     }
-    if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates) as Template[])
-    }
-    if (savedReports) {
-      setReports(JSON.parse(savedReports) as Report[])
-    }
-  }, [])
+  }, [token, setReferenceData])
+
+  const { data: loadedReferences } = useQuery<ReferenceData>({
+    queryKey: ["references", "all"],
+    enabled: Boolean(token),
+    queryFn: async (): Promise<ReferenceData> => {
+      const params = new URLSearchParams({ page: "1", limit: "1000" })
+      const fetchList = async (endpoint: string) => {
+        const data = await apiRequest(`${endpoint}?${params.toString()}`)
+
+        if (Array.isArray((data as any)?.items)) return (data as any).items
+        if (Array.isArray((data as any)?.data)) return (data as any).data
+        if (Array.isArray(data)) return data as any[]
+        return []
+      }
+
+      const normalizeItem = (item: any) => {
+        const base = item && typeof item === "object" ? item : { value: item }
+
+        return {
+          name:
+            (base as any).name ||
+            (base as any).department ||
+            (base as any).title ||
+            (base as any).code ||
+            String((base as any).value ?? "Без названия"),
+          ...base,
+        }
+      }
+
+      const endpoints = [
+        { key: "courts", path: "/courts" },
+        { key: "creditors", path: "/creditors" },
+        { key: "fns", path: "/fns" },
+        { key: "bailiffs", path: "/bailiffs" },
+        { key: "mchs", path: "/mchs" },
+        { key: "rosgvardia", path: "/rosgvardia" },
+        { key: "gostekhnadzor", path: "/gostekhnadzor" },
+      ] as const
+
+      const responses = await Promise.allSettled(endpoints.map(({ path }) => fetchList(path)))
+      const loaded: ReferenceData = {}
+
+      responses.forEach((result, index) => {
+        const { key } = endpoints[index]
+
+        if (result.status === "fulfilled") {
+          loaded[key] = result.value.map(normalizeItem)
+        } else {
+          console.error(`Не удалось загрузить справочник ${key}:`, result.reason)
+        }
+      })
+
+      return loaded
+    },
+  })
 
   useEffect(() => {
-    if (contracts.length > 0) {
-      localStorage.setItem('contracts', JSON.stringify(contracts))
+    if (loadedReferences) {
+      setReferenceData(loadedReferences)
     }
-  }, [contracts])
-
-  useEffect(() => {
-    if (templates.length > 0) {
-      localStorage.setItem('templates', JSON.stringify(templates))
-    }
-  }, [templates])
-
-  useEffect(() => {
-    localStorage.setItem('reports', JSON.stringify(reports))
-  }, [reports])
+  }, [loadedReferences, setReferenceData])
 
   const login = (_username: string, _password: string): boolean => {
     // TODO: Реализовать реальную авторизацию через API

@@ -28,7 +28,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
   
   return (
     <AccordionItem value="mainInfo">
-      <AccordionTrigger><h3 className="text-sm font-semibold">Личные данные</h3></AccordionTrigger>
+      <AccordionTrigger><h3 className="text-xl font-semibold">Личные данные</h3></AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.lastName">Фамилия *</Label>

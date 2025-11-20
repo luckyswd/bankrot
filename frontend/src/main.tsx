@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { RecoilRoot } from "recoil"
 
 import App from "./App"
 import { ModalProvider } from "./components/Modals/ModalProvider"
@@ -21,9 +22,11 @@ if (!rootElement) {
 }
 
 ReactDOM.createRoot(rootElement).render(
+  <RecoilRoot>
     <QueryClientProvider client={queryClient}>
       <ModalProvider>
         <App />
       </ModalProvider>
     </QueryClientProvider>
+  </RecoilRoot>
 )
