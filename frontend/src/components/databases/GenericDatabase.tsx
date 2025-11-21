@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useApp, type ReferenceData } from '../../context/AppContext'
+import { useApp } from '../../context/AppContext'
+import type { ReferenceData } from '@/types/reference'
 import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
@@ -86,48 +87,49 @@ export function GenericDatabase({ dbKey, title, description, fields }: GenericDa
         </Card>
       )}
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>№</TableHead>
-              {fields.map((field) => (
-                <TableHead key={field.key}>{field.label}</TableHead>
-              ))}
-              <TableHead className="w-20">Действия</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {!referenceData[dbKey] || referenceData[dbKey]?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={fields.length + 2} className="text-center py-12 text-muted-foreground">
-                  Нет записей
-                </TableCell>
+      <Card className="overflow-hidden">
+        <div className="relative max-h-[60vh] overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-card">
+              <TableRow className="bg-card">
+                <TableHead className="sticky top-0 bg-card">№</TableHead>
+                {fields.map((field) => (
+                  <TableHead key={field.key} className="sticky top-0 bg-card">{field.label}</TableHead>
+                ))}
+                <TableHead className="sticky top-0 w-20 bg-card">Действия</TableHead>
               </TableRow>
-            ) : (
-              referenceData[dbKey]?.map((item, index: number) => (
-                <TableRow key={item.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  {fields.map((field: Field) => (
-                    <TableCell key={field.key} className={field.key === fields[0]?.key ? 'font-medium' : 'text-sm text-muted-foreground'}>
-                      {String((item as unknown as Record<string, unknown>)[field.key] || '')}
-                    </TableCell>
-                  ))}
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {!referenceData[dbKey] || referenceData[dbKey]?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={fields.length + 2} className="text-center py-12 text-muted-foreground">
+                    Нет записей
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                referenceData[dbKey]?.map((item, index: number) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    {fields.map((field: Field) => (
+                      <TableCell key={field.key} className={field.key === fields[0]?.key ? 'font-medium' : 'text-sm text-muted-foreground'}>
+                        {String((item as unknown as Record<string, unknown>)[field.key] || '')}
+                      </TableCell>
+                    ))}
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )))}
+            </TableBody>
+          </Table>
+        </div>
       </Card>
     </div>
   )

@@ -75,7 +75,7 @@ export const FamilyInfo: FC<Props> = ({
 
   return (
     <AccordionItem value="familyInfo">
-      <AccordionTrigger><h3 className="text-sm font-semibold">Семейное положение</h3></AccordionTrigger>
+      <AccordionTrigger><h3 className="text-xl font-semibold">Семейное положение</h3></AccordionTrigger>
       <AccordionContent>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">

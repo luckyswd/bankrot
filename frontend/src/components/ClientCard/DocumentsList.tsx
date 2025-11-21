@@ -1,6 +1,7 @@
 import { FileText, Eye, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/tooltip";
+import { Button } from "@ui/button";
 
 interface Document {
   id: number;
@@ -41,19 +42,17 @@ export const DocumentsList = ({
             <div className="flex gap-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Eye
-                    className="h-5 w-5"
-                    onClick={() => onDocumentClick(document)}
-                  />
+                  <Button onClick={() => onDocumentClick(document)} variant="secondary">
+                    <Eye className="h-5 w-5" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Просмотр документа</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Download
-                    className="h-5 w-5"
-                    onClick={() => onDownload(document)}
-                  />
+                  <Button onClick={() => onDownload(document)} variant="secondary">
+                    <Download className="h-5 w-5" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Скачать документ</TooltipContent>
               </Tooltip>

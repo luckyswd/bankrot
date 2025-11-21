@@ -4,7 +4,7 @@ import { ProcedureTab } from "./Procedure";
 import { RealizationTab } from "./Realization";
 import { ReportTab } from "./Report";
 
-import { ReferenceData } from "@/context/AppContext";
+import type { ReferenceData } from "@/types/reference";
 
 interface JudicialTabProps {
   openDocument: (document: { id: number; name: string }) => void;

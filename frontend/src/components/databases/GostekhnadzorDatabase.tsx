@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+
 import { apiRequest } from '../../config/api'
+import { useApp } from '@/context/AppContext'
 import { Button } from '@ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
@@ -15,7 +18,6 @@ import {
   DialogTitle,
 } from '../ui/dialog'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import Loading from '../shared/Loading'
 
 interface GostekhnadzorItem {
   id: number
@@ -25,85 +27,56 @@ interface GostekhnadzorItem {
 }
 
 export default function GostekhnadzorDatabase() {
-  const [gostekhnadzor, setGostekhnadzor] = useState<GostekhnadzorItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { referenceData } = useApp()
+  const queryClient = useQueryClient()
   const [saving, setSaving] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [gostekhnadzorToDelete, setGostekhnadzorToDelete] = useState<GostekhnadzorItem | null>(null)
   const [editingGostekhnadzor, setEditingGostekhnadzor] = useState<GostekhnadzorItem | null>(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-  })
+  const [formData, setFormData] = useState({ name: '', address: '' })
 
-  // Поиск и пагинация
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [pages, setPages] = useState(1)
   const limit = 10
+  const gostekhnadzor = referenceData.gostekhnadzor as GostekhnadzorItem[] ?? []
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (search.length >= 3 || search.length === 0) {
-        setDebouncedSearch(search)
-      }
-    }, 200)
-
+    const timer = setTimeout(() => setDebouncedSearch(search), 200)
     return () => clearTimeout(timer)
   }, [search])
 
-  // Загрузка данных при изменении страницы или поиска
+  const filteredItems = useMemo(() => {
+    const term = debouncedSearch.trim().toLowerCase()
+    if (!term) return gostekhnadzor
+
+    return gostekhnadzor.filter((item) =>
+      [item.name, item.address]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(term))
+    )
+  }, [gostekhnadzor, debouncedSearch])
+
+  const total = filteredItems.length
+  const pages = Math.max(1, Math.ceil(total / limit))
+  const pageSafe = Math.min(page, pages)
+  const paginated = useMemo(
+    () => filteredItems.slice((pageSafe - 1) * limit, pageSafe * limit),
+    [filteredItems, pageSafe, limit]
+  )
+
+  useEffect(() => setPage(1), [debouncedSearch])
   useEffect(() => {
-    const loadGostekhnadzor = async () => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        })
+    if (page > pages) setPage(pages)
+  }, [page, pages])
 
-        if (debouncedSearch && debouncedSearch.length >= 3) {
-          params.append('search', debouncedSearch)
-        }
-
-        const data = await apiRequest(`/gostekhnadzor?${params.toString()}`)
-
-        if (data && typeof data === 'object' && Array.isArray(data.items)) {
-          setGostekhnadzor(data.items)
-          setTotal(data.total || 0)
-          setPages(data.pages || 1)
-        } else {
-          setGostekhnadzor([])
-          setTotal(0)
-          setPages(1)
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке отделений Гостехнадзора:', error)
-        notify({ message: 'Не удалось загрузить список отделений', type: 'error' })
-        setGostekhnadzor([])
-        setTotal(0)
-        setPages(1)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadGostekhnadzor()
-  }, [page, debouncedSearch, limit])
-
-  // Сброс на первую страницу при изменении поиска
-  useEffect(() => {
-    setPage(1)
-  }, [debouncedSearch])
+  const refreshReferences = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["references", "all"] })
+  }
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      address: '',
-    })
+    setFormData({ name: '', address: '' })
     setEditingGostekhnadzor(null)
   }
 
@@ -114,10 +87,7 @@ export default function GostekhnadzorDatabase() {
 
   const handleEditClick = (item: GostekhnadzorItem) => {
     setEditingGostekhnadzor(item)
-    setFormData({
-      name: item.name || '',
-      address: item.address || '',
-    })
+    setFormData({ name: item.name || '', address: item.address || '' })
     setEditDialogOpen(true)
   }
 
@@ -129,27 +99,19 @@ export default function GostekhnadzorDatabase() {
 
     try {
       setSaving(true)
-
-      const data = {
-        name: formData.name.trim(),
-        address: formData.address.trim() || null,
-      }
+      const data = { name: formData.name.trim(), address: formData.address.trim() || null }
 
       if (editingGostekhnadzor) {
         await apiRequest(`/gostekhnadzor/${editingGostekhnadzor.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         })
         notify({ message: 'Отделение успешно обновлено', type: 'success' })
       } else {
         await apiRequest('/gostekhnadzor', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         })
         notify({ message: 'Отделение успешно создано', type: 'success' })
@@ -157,21 +119,7 @@ export default function GostekhnadzorDatabase() {
 
       setEditDialogOpen(false)
       resetForm()
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const response = await apiRequest(`/gostekhnadzor?${params.toString()}`)
-      if (response && typeof response === 'object') {
-        setGostekhnadzor(response.items || [])
-        setTotal(response.total || 0)
-        setPages(response.pages || 1)
-      }
+      await refreshReferences()
     } catch (error: unknown) {
       console.error('Ошибка при сохранении отделения:', error)
       const errorMessage = (error as { body?: { error?: string } })?.body?.error || 'Не удалось сохранить отделение'
@@ -190,28 +138,11 @@ export default function GostekhnadzorDatabase() {
     if (!gostekhnadzorToDelete) return
 
     try {
-      await apiRequest(`/gostekhnadzor/${gostekhnadzorToDelete.id}`, {
-        method: 'DELETE',
-      })
-
+      await apiRequest(`/gostekhnadzor/${gostekhnadzorToDelete.id}`, { method: 'DELETE' })
       notify({ message: 'Отделение успешно удалено', type: 'success' })
       setDeleteDialogOpen(false)
       setGostekhnadzorToDelete(null)
-
-      // Перезагружаем список
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      const data = await apiRequest(`/gostekhnadzor?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setGostekhnadzor(data.items || [])
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      }
+      await refreshReferences()
     } catch (error) {
       console.error('Ошибка при удалении отделения:', error)
       notify({ message: 'Не удалось удалить отделение', type: 'error' })
@@ -249,9 +180,7 @@ export default function GostekhnadzorDatabase() {
 
       <Dialog open={editDialogOpen} onOpenChange={(open) => {
         setEditDialogOpen(open)
-        if (!open) {
-          resetForm()
-        }
+        if (!open) resetForm()
       }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -281,13 +210,7 @@ export default function GostekhnadzorDatabase() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditDialogOpen(false)
-                resetForm()
-              }}
-            >
+            <Button variant="outline" onClick={() => { setEditDialogOpen(false); resetForm() }}>
               Отмена
             </Button>
             <Button onClick={handleSave} disabled={saving}>
@@ -314,7 +237,6 @@ export default function GostekhnadzorDatabase() {
           <CardDescription>Все отделения Гостехнадзора в базе данных</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Поиск */}
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -327,144 +249,93 @@ export default function GostekhnadzorDatabase() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="py-8">
-              <Loading text="Загрузка отделений..." />
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
+          <div className="relative max-h-[58vh] overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-card">
+                <TableRow className="bg-card">
+                  <TableHead className="sticky top-0 bg-card">Наименование</TableHead>
+                  <TableHead className="sticky top-0 bg-card">Адрес</TableHead>
+                  <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginated.length === 0 ? (
                   <TableRow>
-                    <TableHead>Наименование</TableHead>
-                    <TableHead>Адрес</TableHead>
-                    <TableHead className="w-28">Действия</TableHead>
+                    <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
+                      {debouncedSearch ? 'Отделения не найдены' : 'Нет отделений. Добавьте первое отделение!'}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {gostekhnadzor.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
-                        {(debouncedSearch && debouncedSearch.length >= 3)
-                          ? 'Отделения не найдены'
-                          : 'Нет отделений. Добавьте первое отделение!'}
+                ) : (
+                  paginated.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.address || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} title="Редактировать">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(item)} title="Удалить">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    gostekhnadzor.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{item.address || '-'}</TableCell>
-                        <TableCell>
-                          <div className="flex">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditClick(item)}
-                              title="Редактировать"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(item)}
-                              title="Удалить"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-              {/* Пагинация */}
-              {pages > 1 && (
-                <div className="flex items-center justify-between mt-4 p-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Показано {(page - 1) * limit + 1} - {Math.min(page * limit, total)} из {total}
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(page - 1)}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Назад
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {(() => {
-                        const pageNumbers: (number | string)[] = []
-
-                        if (pages <= 7) {
-                          for (let i = 1; i <= pages; i++) {
-                            pageNumbers.push(i)
-                          }
-                        } else {
-                          pageNumbers.push(1)
-
-                          if (page > 3) {
-                            pageNumbers.push('...')
-                          }
-
-                          const start = Math.max(2, page - 1)
-                          const end = Math.min(pages - 1, page + 1)
-
-                          for (let i = start; i <= end; i++) {
-                            if (i !== 1 && i !== pages) {
-                              pageNumbers.push(i)
-                            }
-                          }
-
-                          if (page < pages - 2) {
-                            pageNumbers.push('...')
-                          }
-
-                          if (pages > 1) {
-                            pageNumbers.push(pages)
-                          }
-                        }
-
-                        return pageNumbers.map((pageNum, idx) => {
-                          if (pageNum === '...') {
-                            return (
-                              <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-                                ...
-                              </span>
-                            )
-                          }
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={page === pageNum ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setPage(pageNum as number)}
-                              className="w-10"
-                            >
-                              {pageNum}
-                            </Button>
-                          )
-                        })
-                      })()}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(page + 1)}
-                      disabled={page === pages}
-                    >
-                      Вперёд
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+          {pages > 1 && (
+            <div className="flex items-center justify-between mt-4 p-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Показано {(pageSafe - 1) * limit + 1} - {Math.min(pageSafe * limit, total)} из {total}
+              </div>
+              <div className="flex gap-2 items-center">
+                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe - 1)} disabled={pageSafe === 1}>
+                  <ChevronLeft className="h-4 w-4" />
+                  Назад
+                </Button>
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const pageNumbers: (number | string)[] = []
+                    if (pages <= 7) {
+                      for (let i = 1; i <= pages; i++) pageNumbers.push(i)
+                    } else {
+                      pageNumbers.push(1)
+                      if (pageSafe > 3) pageNumbers.push('...')
+                      const start = Math.max(2, pageSafe - 1)
+                      const end = Math.min(pages - 1, pageSafe + 1)
+                      for (let i = start; i <= end; i++) {
+                        if (i !== 1 && i !== pages) pageNumbers.push(i)
+                      }
+                      if (pageSafe < pages - 2) pageNumbers.push('...')
+                      if (pages > 1) pageNumbers.push(pages)
+                    }
+                    return pageNumbers.map((pageNum, idx) =>
+                      pageNum === '...'
+                        ? <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+                        : (
+                          <Button
+                            key={pageNum}
+                            variant={pageSafe === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPage(pageNum as number)}
+                            className="w-10"
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                    )
+                  })()}
                 </div>
-              )}
-            </>
+                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe + 1)} disabled={pageSafe === pages}>
+                  Вперёд
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

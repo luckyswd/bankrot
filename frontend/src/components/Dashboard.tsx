@@ -175,7 +175,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Controls */}
       <Card>
         <CardHeader>
@@ -243,7 +243,7 @@ function Dashboard() {
       </Card>
 
       {/* Table */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <div className="py-8">
@@ -251,78 +251,77 @@ function Dashboard() {
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">№</TableHead>
-                    <TableHead>Номер договора</TableHead>
-                    <TableHead>ФИО клиента</TableHead>
-                    <TableHead>Дата договора</TableHead>
-                    <TableHead>Управляющий</TableHead>
-                    <TableHead>Создал</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead className="w-28">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contracts.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                        {(debouncedSearch && debouncedSearch.length >= 3) || filterStatus !== 'all'
-                          ? 'Контракты не найдены'
-                          : 'Нет контрактов'}
-                      </TableCell>
+              <div className="relative max-h-[64vh] overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-card">
+                    <TableRow className="bg-card">
+                      <TableHead className="sticky top-0 w-12 bg-card">№</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Номер договора</TableHead>
+                      <TableHead className="sticky top-0 bg-card">ФИО клиента</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Дата договора</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Управляющий</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Создал</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Статус</TableHead>
+                      <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
                     </TableRow>
-                  ) : (
-                    contracts.map((contract, index) => (
-                      <TableRow
-                        key={contract.id}
-                        onClick={() => handleRowClick(contract.id)}
-                        className="cursor-pointer"
-                      >
-                        <TableCell className="font-medium">{(page - 1) * limit + index + 1}</TableCell>
-                        <TableCell>
-                          <span className="font-mono text-sm">{contract.contractNumber || '-'}</span>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {contract.fullName || '-'}
-                        </TableCell>
-                        <TableCell>
-                          {contract.contractDate ? new Date(contract.contractDate).toLocaleDateString('ru-RU') : '-'}
-                        </TableCell>
-                        <TableCell>{contract.manager || '-'}</TableCell>
-                        <TableCell>{contract.author || '-'}</TableCell>
-                        <TableCell>
-                          {/* <Badge variant={contract.status === 'В работе' ? 'blue' : contract.status === 'Завершено' ? 'green' : 'secondary'}>
-                            {contract.status || '-'}
-                          </Badge> */}
-                          <StatusBadge status={contract.status as string} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => handleEdit(contract.id, e)}
-                              title="Редактировать"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => handleDeleteClick(contract, e)}
-                              title="Удалить"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {contracts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                          {(debouncedSearch && debouncedSearch.length >= 3) || filterStatus !== 'all'
+                            ? 'Контракты не найдены'
+                            : 'Нет контрактов'}
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      contracts.map((contract, index) => (
+                        <TableRow
+                          key={contract.id}
+                          onClick={() => handleRowClick(contract.id)}
+                          className="cursor-pointer"
+                        >
+                          <TableCell className="font-medium">{(page - 1) * limit + index + 1}</TableCell>
+                          <TableCell>
+                            <span className="font-mono text-sm">{contract.contractNumber || '-'}</span>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {contract.fullName || '-'}
+                          </TableCell>
+                          <TableCell>
+                            {contract.contractDate ? new Date(contract.contractDate).toLocaleDateString('ru-RU') : '-'}
+                          </TableCell>
+                          <TableCell>{contract.manager || '-'}</TableCell>
+                          <TableCell>{contract.author || '-'}</TableCell>
+                          <TableCell>
+                            <StatusBadge status={contract.status as string} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => handleEdit(contract.id, e)}
+                                title="Редактировать"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => handleDeleteClick(contract, e)}
+                                title="Удалить"
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
 
               {/* Пагинация */}
               {pages > 1 && (

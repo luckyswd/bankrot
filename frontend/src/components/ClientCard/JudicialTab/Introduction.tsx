@@ -14,7 +14,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
 
-import { ReferenceData } from "@/context/AppContext";
+import type { ReferenceData } from "@/types/reference";
 
 interface IntroductionTabProps {
   openDocument: (document: { id: number; name: string }) => void;
