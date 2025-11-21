@@ -41,6 +41,21 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Отчество должника', type: 'string', example: 'Иванович', nullable: true)]
     private ?string $middleName = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Имя должника в родительном падеже', type: 'string', example: 'Ивана', nullable: true)]
+    private ?string $firstNameGenitive = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Фамилия должника в родительном падеже', type: 'string', example: 'Иванова', nullable: true)]
+    private ?string $lastNameGenitive = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Отчество должника в родительном падеже', type: 'string', example: 'Ивановича', nullable: true)]
+    private ?string $middleNameGenitive = null;
+
     #[ORM\Column(type: 'boolean', nullable: true)]
     #[Groups(['basic_info'])]
     #[OA\Property(description: 'Изменялось ли ФИО должника', type: 'boolean', example: false, nullable: true)]
@@ -345,6 +360,42 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    public function getFirstNameGenitive(): ?string
+    {
+        return $this->firstNameGenitive;
+    }
+
+    public function setFirstNameGenitive(?string $firstNameGenitive): self
+    {
+        $this->firstNameGenitive = $firstNameGenitive;
+
+        return $this;
+    }
+
+    public function getLastNameGenitive(): ?string
+    {
+        return $this->lastNameGenitive;
+    }
+
+    public function setLastNameGenitive(?string $lastNameGenitive): self
+    {
+        $this->lastNameGenitive = $lastNameGenitive;
+
+        return $this;
+    }
+
+    public function getMiddleNameGenitive(): ?string
+    {
+        return $this->middleNameGenitive;
+    }
+
+    public function setMiddleNameGenitive(?string $middleNameGenitive): self
+    {
+        $this->middleNameGenitive = $middleNameGenitive;
+
+        return $this;
+    }
+
     public function isLastNameChanged(): ?bool
     {
         return $this->isLastNameChanged;
@@ -423,6 +474,17 @@ class Contracts extends BaseEntity
             $this->lastName,
             $this->firstName,
             $this->middleName,
+        ]);
+
+        return $parts ? implode(' ', $parts) : null;
+    }
+
+    public function getFullNameGenitive(): ?string
+    {
+        $parts = array_filter([
+            $this->lastNameGenitive,
+            $this->firstNameGenitive,
+            $this->middleNameGenitive,
         ]);
 
         return $parts ? implode(' ', $parts) : null;

@@ -53,4 +53,35 @@ class Court extends BaseEntity
 
         return $this;
     }
+
+    /**
+     * Возвращает название суда в творительном падеже с первой буквой в нижнем регистре.
+     *
+     * @return string Название суда в творительном падеже
+     */
+    public function getNameGenitive(): string
+    {
+        $name = $this->name;
+
+        // Убираем "В " в начале, если есть
+        if (mb_strpos($name, 'В ') === 0) {
+            $name = mb_substr($name, 2);
+        }
+
+        // Заменяем "Арбитражный суд" на "арбитражным судом"
+        $name = preg_replace(
+            '/^Арбитражный суд\s+/u',
+            'арбитражным судом ',
+            $name
+        );
+
+        // Приводим первую букву к нижнему регистру
+        if (mb_strlen($name) > 0) {
+            $firstChar = mb_substr($name, 0, 1);
+            $rest = mb_substr($name, 1);
+            $name = mb_strtolower($firstChar) . $rest;
+        }
+
+        return trim($name);
+    }
 }

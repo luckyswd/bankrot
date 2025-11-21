@@ -9,44 +9,82 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 readonly class EntityDataResolver
 {
+    public const string DEFAULT_VALUE = 'НЕТ_ДАННЫХ_В_БД';
+
     public function __construct(
         private PropertyAccessorInterface $propertyAccessor,
     ) {
     }
 
     /**
-     * Получает значение из контракта по пути вида "contracts.property.subProperty"
-     * Первый элемент пути всегда "contracts", остальные - цепочка геттеров.
+     * Получает значение из контракта по пути вида "court.shortName" или "court.property.subProperty"
+     * Если элементов 2+, то первые N-1 - цепочка связей, последний - свойство/геттер финального объекта.
      *
      * @param Contracts $contract Контракт для использования как базовая сущность
-     * @param string $path Путь к свойству (например, "contracts.contractNumber" или "contracts.author.fio")
+     * @param string $path Путь к свойству (например, "court.shortName" или "court.something.else")
      *
-     * @return mixed Значение свойства или null
+     * @return string Значение свойства или null
      */
-    public function resolveValue(Contracts $contract, string $path): mixed
+    public function resolveValue(Contracts $contract, string $path): string
     {
         $parts = explode('.', $path);
 
         if (count($parts) === 0) {
-            return null;
+            return self::DEFAULT_VALUE;
         }
 
-        $value = null;
+        $currentObject = $contract;
+        $partsCount = count($parts);
 
-        foreach ($parts as $part) {
-            $camelCasePart = $this->snakeToCamel(string: $part);
-            $getter = 'get' . ucfirst($camelCasePart);
+        // Если один элемент - это свойство контракта
+        if ($partsCount === 1) {
+            $value = $this->formatValue(
+                value: $this->getPropertyValue(object: $currentObject, propertyName: $parts[0])
+            );
 
-            if (method_exists($contract, $getter)) {
-                $value = $contract->$getter();
-            } elseif ($this->propertyAccessor->isReadable(objectOrArray: $contract, propertyPath: $camelCasePart)) {
-                $value = $this->propertyAccessor->getValue(objectOrArray: $contract, propertyPath: $camelCasePart);
-            } else {
-                return null;
+            return empty($value) ? self::DEFAULT_VALUE : $value;
+        }
+
+        // Если 2+ элемента: первые N-1 - цепочка связей, последний - свойство
+        // Проходим по цепочке связей (все кроме последнего элемента)
+        for ($i = 0; $i < $partsCount - 1; ++$i) {
+            $value = $this->getPropertyValue(object: $currentObject, propertyName: $parts[$i]);
+
+            if (!$value || !is_object($value)) {
+                return self::DEFAULT_VALUE;
             }
+
+            $currentObject = $value;
         }
 
-        return $this->formatValue(value: $value);
+        // Последний элемент - свойство/геттер финального объекта
+        $finalValue = $this->getPropertyValue(object: $currentObject, propertyName: $parts[$partsCount - 1]);
+
+        return $this->formatValue(value: $finalValue);
+    }
+
+    /**
+     * Получает значение свойства объекта через геттер или PropertyAccessor.
+     *
+     * @param object $object Объект для получения свойства
+     * @param string $propertyName Имя свойства (может быть в snake_case)
+     *
+     * @return mixed Значение свойства или null
+     */
+    private function getPropertyValue(object $object, string $propertyName): mixed
+    {
+        $camelCasePart = $this->snakeToCamel(string: $propertyName);
+        $getter = 'get' . ucfirst($camelCasePart);
+
+        if (method_exists($object, $getter)) {
+            return $object->$getter();
+        }
+
+        if ($this->propertyAccessor->isReadable(objectOrArray: $object, propertyPath: $camelCasePart)) {
+            return $this->propertyAccessor->getValue(objectOrArray: $object, propertyPath: $camelCasePart);
+        }
+
+        return null;
     }
 
     /**

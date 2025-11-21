@@ -45,29 +45,41 @@ readonly class DocumentTemplateProcessor
         $variables = [];
         $functions = [];
 
-        foreach ($templateProcessor->getVariables() as $variable) {
-            $variable = trim(strip_tags($variable));
+        foreach ($templateProcessor->getVariables() as $originalVariable) {
+            $cleanedVariable = $this->clearVariable(variable: $originalVariable);
 
-            if ($this->isFunctionCall(match: $variable)) {
-                $functions[] = $variable;
+            if ($this->isFunctionCall(match: $cleanedVariable)) {
+                $functions[$originalVariable] = $cleanedVariable;
             } else {
-                $variables[] = $variable;
+                $variables[$originalVariable] = $cleanedVariable;
             }
         }
 
-        foreach ($functions as $functionCall) {
-            $value = $this->processFunction(functionCall: $functionCall);
-            $templateProcessor->setValue(search: $functionCall, replace: $value);
+        foreach ($functions as $originalVariable => $cleanedVariable) {
+            $value = $this->processFunction(functionCall: $cleanedVariable);
+            $templateProcessor->setValue(search: $originalVariable, replace: $value);
         }
 
-        foreach ($variables as $variable) {
-            $value = $this->entityDataResolver->resolveValue(contract: $contract, path: $variable);
-            $templateProcessor->setValue(search: $variable, replace: $value);
+        foreach ($variables as $originalVariable => $cleanedVariable) {
+            $value = $this->entityDataResolver->resolveValue(contract: $contract, path: $cleanedVariable);
+            $templateProcessor->setValue(search: $originalVariable, replace: $value);
         }
 
         $templateProcessor->saveAs($outputPath);
 
         return $outputPath;
+    }
+
+    /**
+     * Очищает переменную от XML-тегов.
+     *
+     * @param string $variable Переменная с возможными XML-тегами
+     *
+     * @return string Очищенная переменная
+     */
+    private function clearVariable(string $variable): string
+    {
+        return trim(strip_tags($variable));
     }
 
     /**
