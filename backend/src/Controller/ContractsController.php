@@ -846,14 +846,15 @@ class ContractsController extends AbstractController
             return $this->json(data: ['error' => 'Контракт не найден'], status: 404);
         }
 
-        $data = json_decode(json: $request->getContent(), associative: true);
+        $bankruptcyStages = json_decode(json: $request->getContent(), associative: true);
 
-        if (!is_array($data)) {
+        if (!is_array($bankruptcyStages)) {
             return $this->json(data: ['error' => 'Неверный формат данных'], status: 400);
         }
 
-        $flatData = $this->flattenGroupedData(groupedData: $data);
-        $this->updateContractFields(contract: $contract, data: $flatData);
+        foreach ($bankruptcyStages as $bankruptcyStageData) {
+            $this->updateContractFields(contract: $contract, data: $bankruptcyStageData);
+        }
 
         $this->entityManager->flush();
 
@@ -952,28 +953,6 @@ class ContractsController extends AbstractController
     }
 
     /**
-     * Преобразует сгруппированные данные в плоский массив.
-     *
-     * @param array<string, mixed> $groupedData
-     *
-     * @return array<string, mixed>
-     */
-    private function flattenGroupedData(array $groupedData): array
-    {
-        $flatData = [];
-
-        foreach ($groupedData as $fields) {
-            if (is_array($fields)) {
-                foreach ($fields as $key => $value) {
-                    $flatData[$key] = $value;
-                }
-            }
-        }
-
-        return $flatData;
-    }
-
-    /**
      * Обновляет поля контракта только для переданных ключей динамически.
      *
      * @param array<string, mixed> $data
@@ -1007,7 +986,7 @@ class ContractsController extends AbstractController
                         if (is_numeric($creditorId)) {
                             $creditor = $this->creditorRepository->find((int)$creditorId);
 
-                            if ($creditor !== null) {
+                            if ($creditor) {
                                 $contract->addCreditor($creditor);
                             }
                         }
