@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Templates;
 
 use App\Entity\Contracts;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;

@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Templates;
 
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
-use App\Service\Templates\CustomFunction;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 readonly class DocumentTemplateProcessor

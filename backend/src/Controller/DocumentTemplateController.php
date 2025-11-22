@@ -9,7 +9,7 @@ use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
 use App\Repository\ContractsRepository;
 use App\Repository\DocumentTemplateRepository;
-use App\Service\DocumentTemplateProcessor;
+use App\Service\Templates\DocumentTemplateProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
