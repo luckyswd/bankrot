@@ -25,6 +25,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   registrationHouse: null,
   registrationBuilding: null,
   registrationApartment: null,
+  postal_code: null,
   passportSeries: null,
   passportNumber: null,
   passportIssuedBy: null,
@@ -51,11 +52,9 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
 
 export const defaultPretrial: PretrialFields = {
   court: "",
-  creditors: "",
+  creditors: [],
   powerOfAttorneyNumber: "",
   powerOfAttorneyDate: "",
-  creditor: "",
-  caseNumber: "",
   hearingDate: "",
   hearingTime: "",
 };
@@ -94,6 +93,39 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 export const asPartial = <T extends object>(value: unknown): Partial<T> =>
   isRecord(value) ? (value as Partial<T>) : {};
+
+const normalizeCreditors = (value: unknown): number[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string" || typeof item === "number") {
+          const num = Number(item);
+          return Number.isNaN(num) ? null : num;
+        }
+        if (isRecord(item) && "creditorId" in item && item.creditorId !== undefined) {
+          const num = Number(item.creditorId);
+          return Number.isNaN(num) ? null : num;
+        }
+        if (isRecord(item) && "id" in item && item.id !== undefined) {
+          const num = Number(item.id);
+          return Number.isNaN(num) ? null : num;
+        }
+        return null;
+      })
+      .filter((creditorId): creditorId is number => typeof creditorId === "number");
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((creditorId) => Number(creditorId))
+      .filter((num) => !Number.isNaN(num));
+  }
+
+  return [];
+};
 
 export const normalizeChild = (child: unknown): ChildInfo => {
   if (!isRecord(child)) {
@@ -193,6 +225,9 @@ export const convertApiDataToFormValues = (
     pretrial: {
       ...defaults.pretrial,
       ...asPartial<PretrialFields>(apiData.pre_court),
+      creditors: normalizeCreditors(
+        isRecord(apiData.pre_court) ? apiData.pre_court.creditors : undefined
+      ),
     },
     introduction: {
       ...defaults.introduction,
@@ -246,6 +281,11 @@ export const buildFormValues = (
     pretrial: {
       ...defaults.pretrial,
       ...(overrides.pretrial ?? {}),
+      creditors: normalizeCreditors(
+        overrides.pretrial
+          ? (overrides.pretrial as Record<string, unknown>).creditors
+          : undefined
+      ),
     },
     introduction: {
       ...defaults.introduction,

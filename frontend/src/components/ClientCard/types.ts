@@ -24,6 +24,7 @@ export type PrimaryInfoFields = {
   registrationHouse?: string | null
   registrationBuilding?: string | null
   registrationApartment?: string | null
+  postal_code?: string | null
   passportSeries?: string | null
   passportNumber?: string | null
   passportIssuedBy?: string | null
@@ -50,11 +51,9 @@ export type PrimaryInfoFields = {
 
 export type PretrialFields = {
   court: string
-  creditors: string
+  creditors: number[]
   powerOfAttorneyNumber: string
   powerOfAttorneyDate: string
-  creditor: string
-  caseNumber: string
   hearingDate: string
   hearingTime: string
 }
