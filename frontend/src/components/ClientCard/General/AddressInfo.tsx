@@ -93,11 +93,11 @@ export const AddressInfo: FC<Props> = ({ register }) => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.postal_code">Почтовый индекс</Label>
+          <Label htmlFor="primaryInfo.postalCode">Почтовый индекс</Label>
           <Input
-            id="primaryInfo.postal_code"
+            id="primaryInfo.postalCode"
             placeholder="418"
-            {...register("primaryInfo.postal_code")}
+            {...register("primaryInfo.postalCode")}
           />
         </div>
       </AccordionContent>

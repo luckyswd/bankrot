@@ -25,7 +25,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   registrationHouse: null,
   registrationBuilding: null,
   registrationApartment: null,
-  postal_code: null,
+  postalCode: null,
   passportSeries: null,
   passportNumber: null,
   passportIssuedBy: null,
