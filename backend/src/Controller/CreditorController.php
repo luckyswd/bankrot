@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Creditor;
 use App\Repository\CreditorRepository;
 use App\Service\CacheService;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,7 +39,7 @@ class CreditorController extends AbstractController
                 description: 'Поиск по наименованию',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 'Сбербанк')
+                schema: new OA\Schema(type: Types::STRING, example: 'Сбербанк')
             ),
             new OA\Parameter(
                 name: 'page',
@@ -52,7 +53,7 @@ class CreditorController extends AbstractController
                 description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 10, default: 10)
+                schema: new OA\Schema(type: Types::STRING, example: 10, default: 10)
             ),
         ],
         responses: [
@@ -67,10 +68,10 @@ class CreditorController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                                    new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                                    new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                                    new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                                    new OA\Property(property: 'name', type: Types::STRING, example: 'ПАО Сбербанк'),
+                                    new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                                    new OA\Property(property: 'headFullName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                                    new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -187,10 +188,10 @@ class CreditorController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'ПАО Сбербанк'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -237,10 +238,10 @@ class CreditorController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ПАО Сбербанк'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'ПАО Сбербанк'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                 ],
                 type: 'object'
             )
@@ -253,10 +254,10 @@ class CreditorController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'ПАО Сбербанк'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -317,10 +318,10 @@ class CreditorController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'ПАО Сбербанк'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'ПАО Сбербанк'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                    new OA\Property(property: 'headFullName', description: 'ФИО руководителя', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                 ],
                 type: 'object'
             )
@@ -342,10 +343,10 @@ class CreditorController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'ПАО Сбербанк'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
-                        new OA\Property(property: 'headFullName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'ПАО Сбербанк'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Вавилова, д. 19', nullable: true),
+                        new OA\Property(property: 'headFullName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 044525225, ИНН: 7707083893', nullable: true),
                     ],
                     type: 'object'
                 )

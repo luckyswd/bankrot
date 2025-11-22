@@ -10,6 +10,7 @@ use App\Entity\Enum\BankruptcyStage;
 use App\Repository\ContractsRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Service\DocumentTemplateProcessor;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -61,14 +62,14 @@ class DocumentTemplateController extends AbstractController
                 description: 'Поиск по названию шаблона',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 'договор')
+                schema: new OA\Schema(type: Types::STRING, example: 'договор')
             ),
             new OA\Parameter(
                 name: 'category',
                 description: 'Фильтр по категории',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', enum: BankruptcyStage::class, example: 'Досудебка')
+                schema: new OA\Schema(type: Types::STRING, enum: BankruptcyStage::class, example: 'Досудебка')
             ),
             new OA\Parameter(
                 name: 'page',
@@ -97,8 +98,8 @@ class DocumentTemplateController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Шаблон договора'),
-                                    new OA\Property(property: 'category', type: 'string', example: 'Досудебка'),
+                                    new OA\Property(property: 'name', type: Types::STRING, example: 'Шаблон договора'),
+                                    new OA\Property(property: 'category', type: Types::STRING, example: 'Досудебка'),
                                 ],
                                 type: 'object'
                             )
@@ -181,9 +182,9 @@ class DocumentTemplateController extends AbstractController
                 schema: new OA\Schema(
                     required: ['file', 'name', 'category'],
                     properties: [
-                        new OA\Property(property: 'file', description: 'DOCX файл', type: 'string', format: 'binary'),
-                        new OA\Property(property: 'name', description: 'Название файла', type: 'string', example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', description: 'Категория шаблона', type: 'string', enum: BankruptcyStage::class, example: 'Досудебка'),
+                        new OA\Property(property: 'file', description: 'DOCX файл', type: Types::STRING, format: 'binary'),
+                        new OA\Property(property: 'name', description: 'Название файла', type: Types::STRING, example: 'Шаблон договора'),
+                        new OA\Property(property: 'category', description: 'Категория шаблона', type: Types::STRING, enum: BankruptcyStage::class, example: 'Досудебка'),
                     ]
                 )
             )
@@ -196,8 +197,8 @@ class DocumentTemplateController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', type: 'string', example: 'Досудебка'),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Шаблон договора'),
+                        new OA\Property(property: 'category', type: Types::STRING, example: 'Досудебка'),
                     ],
                     type: 'object'
                 )
@@ -363,7 +364,7 @@ class DocumentTemplateController extends AbstractController
                 schema: new OA\Schema(
                     required: ['file'],
                     properties: [
-                        new OA\Property(property: 'file', description: 'DOCX файл', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'file', description: 'DOCX файл', type: Types::STRING, format: 'binary'),
                     ]
                 )
             )
@@ -385,8 +386,8 @@ class DocumentTemplateController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', type: 'string', example: 'Досудебка'),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Шаблон договора'),
+                        new OA\Property(property: 'category', type: Types::STRING, example: 'Досудебка'),
                     ],
                     type: 'object'
                 )

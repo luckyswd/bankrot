@@ -25,14 +25,6 @@ class Court extends BaseEntity
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
 
-    #[ORM\Column(type: Types::STRING, length: 10, nullable: true)]
-    #[Groups(['pre_court'])]
-    private ?string $postalCode = null;
-
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    #[Groups(['pre_court'])]
-    private ?bool $work = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -58,30 +50,6 @@ class Court extends BaseEntity
     public function setAddress(?string $address): self
     {
         $this->address = $address;
-
-        return $this;
-    }
-
-    public function getPostalCode(): ?string
-    {
-        return $this->postalCode;
-    }
-
-    public function setPostalCode(?string $postalCode): self
-    {
-        $this->postalCode = $postalCode;
-
-        return $this;
-    }
-
-    public function getWork(): ?bool
-    {
-        return $this->work;
-    }
-
-    public function setWork(?bool $work): self
-    {
-        $this->work = $work;
 
         return $this;
     }

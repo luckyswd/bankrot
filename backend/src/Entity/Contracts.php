@@ -8,6 +8,7 @@ use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -28,32 +29,32 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Имя должника', type: 'string', example: 'Иван', nullable: true)]
+    #[OA\Property(description: 'Имя должника', type: Types::STRING, example: 'Иван', nullable: true)]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Фамилия должника', type: 'string', example: 'Иванов', nullable: true)]
+    #[OA\Property(description: 'Фамилия должника', type: Types::STRING, example: 'Иванов', nullable: true)]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Отчество должника', type: 'string', example: 'Иванович', nullable: true)]
+    #[OA\Property(description: 'Отчество должника', type: Types::STRING, example: 'Иванович', nullable: true)]
     private ?string $middleName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Имя должника в родительном падеже', type: 'string', example: 'Ивана', nullable: true)]
+    #[OA\Property(description: 'Имя должника в родительном падеже', type: Types::STRING, example: 'Ивана', nullable: true)]
     private ?string $firstNameGenitive = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Фамилия должника в родительном падеже', type: 'string', example: 'Иванова', nullable: true)]
+    #[OA\Property(description: 'Фамилия должника в родительном падеже', type: Types::STRING, example: 'Иванова', nullable: true)]
     private ?string $lastNameGenitive = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Отчество должника в родительном падеже', type: 'string', example: 'Ивановича', nullable: true)]
+    #[OA\Property(description: 'Отчество должника в родительном падеже', type: Types::STRING, example: 'Ивановича', nullable: true)]
     private ?string $middleNameGenitive = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
@@ -63,106 +64,106 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Предыдущее ФИО должника (если изменялось)', type: 'string', example: 'Петров Петр Петрович', nullable: true)]
+    #[OA\Property(description: 'Предыдущее ФИО должника (если изменялось)', type: Types::STRING, example: 'Петров Петр Петрович', nullable: true)]
     private ?string $changedLastName = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дата рождения должника', type: 'string', format: 'date', example: '1990-01-01', nullable: true)]
+    #[OA\Property(description: 'Дата рождения должника', type: Types::STRING, format: 'date', example: '1990-01-01', nullable: true)]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'СНИЛС должника', type: 'string', example: '123-456-789 00', nullable: true)]
+    #[OA\Property(description: 'СНИЛС должника', type: Types::STRING, example: '123-456-789 00', nullable: true)]
     private ?string $snils = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Место рождения должника', type: 'string', example: 'г. Москва', nullable: true)]
+    #[OA\Property(description: 'Место рождения должника', type: Types::STRING, example: 'г. Москва', nullable: true)]
     private ?string $birthPlace = null;
 
     // Адрес регистрации (отдельные поля)
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Субъект РФ (регион)', type: 'string', example: 'Санкт-Петербург', nullable: true)]
+    #[OA\Property(description: 'Субъект РФ (регион)', type: Types::STRING, example: 'Санкт-Петербург', nullable: true)]
     private ?string $registrationRegion = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Район', type: 'string', example: 'Московский', nullable: true)]
+    #[OA\Property(description: 'Район', type: Types::STRING, example: 'Московский', nullable: true)]
     private ?string $registrationDistrict = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Город', type: 'string', example: 'Санкт-Петербург', nullable: true)]
+    #[OA\Property(description: 'Город', type: Types::STRING, example: 'Санкт-Петербург', nullable: true)]
     private ?string $registrationCity = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Населенный пункт', type: 'string', example: 'пос. Ленинский', nullable: true)]
+    #[OA\Property(description: 'Населенный пункт', type: Types::STRING, example: 'пос. Ленинский', nullable: true)]
     private ?string $registrationSettlement = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Улица', type: 'string', example: 'Смоленская', nullable: true)]
+    #[OA\Property(description: 'Улица', type: Types::STRING, example: 'Смоленская', nullable: true)]
     private ?string $registrationStreet = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дом', type: 'string', example: '9', nullable: true)]
+    #[OA\Property(description: 'Дом', type: Types::STRING, example: '9', nullable: true)]
     private ?string $registrationHouse = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Корпус', type: 'string', example: '1', nullable: true)]
+    #[OA\Property(description: 'Корпус', type: Types::STRING, example: '1', nullable: true)]
     private ?string $registrationBuilding = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Квартира', type: 'string', example: '418', nullable: true)]
+    #[OA\Property(description: 'Квартира', type: Types::STRING, example: '418', nullable: true)]
     private ?string $registrationApartment = null;
 
     // Паспорт
     #[ORM\Column(length: 10, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Серия паспорта', type: 'string', example: '4016', nullable: true)]
+    #[OA\Property(description: 'Серия паспорта', type: Types::STRING, example: '4016', nullable: true)]
     private ?string $passportSeries = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Номер паспорта', type: 'string', example: '123456', nullable: true)]
+    #[OA\Property(description: 'Номер паспорта', type: Types::STRING, example: '123456', nullable: true)]
     private ?string $passportNumber = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Кем выдан паспорт', type: 'string', example: 'ОУФМС России по СПб и ЛО в Московском районе', nullable: true)]
+    #[OA\Property(description: 'Кем выдан паспорт', type: Types::STRING, example: 'ОУФМС России по СПб и ЛО в Московском районе', nullable: true)]
     private ?string $passportIssuedBy = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дата выдачи паспорта', type: 'string', format: 'date', example: '2010-05-15', nullable: true)]
+    #[OA\Property(description: 'Дата выдачи паспорта', type: Types::STRING, format: 'date', example: '2010-05-15', nullable: true)]
     private ?\DateTimeInterface $passportIssuedDate = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Код подразделения', type: 'string', example: '780-089', nullable: true)]
+    #[OA\Property(description: 'Код подразделения', type: Types::STRING, example: '780-089', nullable: true)]
     private ?string $passportDepartmentCode = null;
 
     // Семейное положение
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Семейное положение (Да/Нет/Не состоял в течение 3 лет)', type: 'string', example: 'Да', nullable: true)]
+    #[OA\Property(description: 'Семейное положение (Да/Нет/Не состоял в течение 3 лет)', type: Types::STRING, example: 'Да', nullable: true)]
     private ?string $maritalStatus = null;
 
     // Данные супруга
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'ФИО супруга', type: 'string', example: 'Иванова Мария Петровна', nullable: true)]
+    #[OA\Property(description: 'ФИО супруга', type: Types::STRING, example: 'Иванова Мария Петровна', nullable: true)]
     private ?string $spouseFullName = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дата рождения супруга', type: 'string', format: 'date', example: '1992-03-25', nullable: true)]
+    #[OA\Property(description: 'Дата рождения супруга', type: Types::STRING, format: 'date', example: '1992-03-25', nullable: true)]
     private ?\DateTimeInterface $spouseBirthDate = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
@@ -180,12 +181,12 @@ class Contracts extends BaseEntity
         type: 'array',
         items: new OA\Items(
             properties: [
-                new OA\Property(property: 'firstName', type: 'string', example: 'Александр'),
-                new OA\Property(property: 'lastName', type: 'string', example: 'Иванов'),
-                new OA\Property(property: 'middleName', type: 'string', example: 'Иванович', nullable: true),
+                new OA\Property(property: 'firstName', type: Types::STRING, example: 'Александр'),
+                new OA\Property(property: 'lastName', type: Types::STRING, example: 'Иванов'),
+                new OA\Property(property: 'middleName', type: Types::STRING, example: 'Иванович', nullable: true),
                 new OA\Property(property: 'isLastNameChanged', type: 'boolean', example: false),
-                new OA\Property(property: 'changedLastName', type: 'string', example: null, nullable: true),
-                new OA\Property(property: 'birthDate', type: 'string', format: 'date', example: '2015-08-10'),
+                new OA\Property(property: 'changedLastName', type: Types::STRING, example: null, nullable: true),
+                new OA\Property(property: 'birthDate', type: Types::STRING, format: 'date', example: '2015-08-10'),
             ],
             type: 'object'
         ),
@@ -200,37 +201,42 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Наименование работодателя', type: 'string', example: 'ООО "Рога и Копыта"', nullable: true)]
+    #[OA\Property(description: 'Наименование работодателя', type: Types::STRING, example: 'ООО "Рога и Копыта"', nullable: true)]
     private ?string $employerName = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Адрес работодателя', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true)]
+    #[OA\Property(description: 'Адрес работодателя', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true)]
     private ?string $employerAddress = null;
 
     #[ORM\Column(length: 12, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'ИНН работодателя', type: 'string', example: '1234567890', nullable: true)]
+    #[OA\Property(description: 'ИНН работодателя', type: Types::STRING, example: '1234567890', nullable: true)]
     private ?string $employerInn = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Пенсии и социальные выплаты (алименты, пособия, ЕДВ, прочее)', type: 'string', example: 'Пособие по безработице, ЕДВ', nullable: true)]
+    #[OA\Property(description: 'Пенсии и социальные выплаты (алименты, пособия, ЕДВ, прочее)', type: Types::STRING, example: 'Пособие по безработице, ЕДВ', nullable: true)]
     private ?string $socialBenefits = null;
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Есть работа', type: 'boolean', example: false, nullable: true)]
+    private ?bool $work = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Телефон', type: 'string', example: '+7 (999) 123-45-67', nullable: true)]
+    #[OA\Property(description: 'Телефон', type: Types::STRING, example: '+7 (999) 123-45-67', nullable: true)]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Электронная почта', type: 'string', format: 'email', example: 'example@mail.ru', nullable: true)]
+    #[OA\Property(description: 'Электронная почта', type: Types::STRING, format: 'email', example: 'example@mail.ru', nullable: true)]
     private ?string $email = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Адрес для направления корреспонденции', type: 'string', example: '196084, г. Санкт-Петербург, ул. Смоленская, 9-418', nullable: true)]
+    #[OA\Property(description: 'Адрес для направления корреспонденции', type: Types::STRING, example: '196084, г. Санкт-Петербург, ул. Смоленская, 9-418', nullable: true)]
     private ?string $mailingAddress = null;
 
     #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
@@ -247,9 +253,9 @@ class Contracts extends BaseEntity
     #[ORM\JoinColumn(name: 'author_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private User $author;
 
-    #[ORM\Column(type: 'string', nullable: false, enumType: ContractStatus::class)]
+    #[ORM\Column(type: Types::STRING, nullable: false, enumType: ContractStatus::class)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Статус договора', type: 'string', enum: ContractStatus::class, example: 'in_progress')]
+    #[OA\Property(description: 'Статус договора', type: Types::STRING, enum: ContractStatus::class, example: 'in_progress')]
     private ContractStatus $status = ContractStatus::IN_PROGRESS;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -260,12 +266,12 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Номер договора', type: 'string', example: 'ДГ-2024-001', nullable: true)]
+    #[OA\Property(description: 'Номер договора', type: Types::STRING, example: 'ДГ-2024-001', nullable: true)]
     private ?string $contractNumber = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['basic_info'])]
-    #[OA\Property(description: 'Дата договора', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
+    #[OA\Property(description: 'Дата договора', type: Types::STRING, format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $contractDate = null;
 
     #[ORM\OneToOne(targetEntity: Court::class)]
@@ -276,12 +282,12 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: 'Номер доверенности', type: 'string', example: 'Д-123/2024', nullable: true)]
+    #[OA\Property(description: 'Номер доверенности', type: Types::STRING, example: 'Д-123/2024', nullable: true)]
     private ?string $powerOfAttorneyNumber = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: 'Дата составления доверенности', type: 'string', format: 'date', example: '2024-01-15', nullable: true)]
+    #[OA\Property(description: 'Дата составления доверенности', type: Types::STRING, format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $powerOfAttorneyDate = null;
 
     /**
@@ -295,23 +301,27 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: '№ Дела', type: 'string', example: 'А56-75258/2025', nullable: true)]
+    #[OA\Property(description: '№ Дела', type: Types::STRING, example: 'А56-75258/2025', nullable: true)]
     private ?string $caseNumber = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: 'Дата и время заседания', type: 'string', format: 'date-time', example: '2025-01-15T10:00:00', nullable: true)]
+    #[OA\Property(description: 'Дата и время заседания', type: Types::STRING, format: 'date-time', example: '2025-01-15T10:00:00', nullable: true)]
     private ?\DateTimeInterface $hearingDateTime = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: 'Дата и время ЕФРСБ', type: 'string', format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
+    #[OA\Property(description: 'Дата и время ЕФРСБ', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
     private ?\DateTimeInterface $efrsbDateTime = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['pre_court'])]
-    #[OA\Property(description: 'Кабинет ЕФРСБ', type: 'string', example: 'Кабинет 101', nullable: true)]
+    #[OA\Property(description: 'Кабинет ЕФРСБ', type: Types::STRING, example: 'Кабинет 101', nullable: true)]
     private ?string $efrsbCabinet = null;
+
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
+    #[Groups(['pre_court'])]
+    private ?string $postalCode = null;
 
     public function __construct()
     {
@@ -1032,5 +1042,26 @@ class Contracts extends BaseEntity
         $this->efrsbCabinet = $efrsbCabinet;
 
         return $this;
+    }
+
+    public function getWork(): ?bool
+    {
+        return $this->work;
+    }
+
+    public function setWork(?bool $work): self
+    {
+        $this->work = $work;
+
+        return $this;
+    }
+
+    public function getTemplateWork(): string
+    {
+        if (!$this->work || empty($this->employerName) || empty($this->employerAddress) || empty($this->employerInn)) {
+            return 'не работает';
+        }
+
+        return $this->employerName . ', ' . $this->employerAddress . ', ' . $this->employerInn;
     }
 }

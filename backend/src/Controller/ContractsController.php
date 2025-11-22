@@ -13,6 +13,7 @@ use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Service\Serializer;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,21 +47,21 @@ class ContractsController extends AbstractController
                 description: 'Фильтр: all, my, in_progress, completed',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', default: 'all', enum: ['all', 'my', 'in_progress', 'completed'])
+                schema: new OA\Schema(type: Types::STRING, default: 'all', enum: ['all', 'my', 'in_progress', 'completed'])
             ),
             new OA\Parameter(
                 name: 'sortBy',
                 description: 'Поле для сортировки: id, contractNumber, firstName, lastName, middleName, contractDate, status',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string')
+                schema: new OA\Schema(type: Types::STRING)
             ),
             new OA\Parameter(
                 name: 'sortOrder',
                 description: 'Направление сортировки: ASC или DESC',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', default: 'ASC', enum: ['ASC', 'DESC'])
+                schema: new OA\Schema(type: Types::STRING, default: 'ASC', enum: ['ASC', 'DESC'])
             ),
             new OA\Parameter(
                 name: 'page',
@@ -81,7 +82,7 @@ class ContractsController extends AbstractController
                 description: 'Поиск по ФИО или номеру договора',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 'Иванов')
+                schema: new OA\Schema(type: Types::STRING, example: 'Иванов')
             ),
         ],
         responses: [
@@ -97,12 +98,12 @@ class ContractsController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer'),
-                                    new OA\Property(property: 'contractNumber', type: 'string', nullable: true),
-                                    new OA\Property(property: 'fullName', type: 'string', nullable: true),
-                                    new OA\Property(property: 'contractDate', type: 'string', format: 'date', nullable: true),
+                                    new OA\Property(property: 'contractNumber', type: Types::STRING, nullable: true),
+                                    new OA\Property(property: 'fullName', type: Types::STRING, nullable: true),
+                                    new OA\Property(property: 'contractDate', type: Types::STRING, format: 'date', nullable: true),
                                     new OA\Property(property: 'manager', type: 'object', nullable: true),
                                     new OA\Property(property: 'author', type: 'object', nullable: true),
-                                    new OA\Property(property: 'status', type: 'string'),
+                                    new OA\Property(property: 'status', type: Types::STRING),
                                 ],
                                 type: 'object'
                             )
@@ -210,25 +211,25 @@ class ContractsController extends AbstractController
                     new OA\Property(
                         property: 'contractNumber',
                         description: 'Номер договора',
-                        type: 'string',
+                        type: Types::STRING,
                         example: 'ДГ-2024-001'
                     ),
                     new OA\Property(
                         property: 'firstName',
                         description: 'Имя клиента',
-                        type: 'string',
+                        type: Types::STRING,
                         example: 'Иван'
                     ),
                     new OA\Property(
                         property: 'lastName',
                         description: 'Фамилия клиента',
-                        type: 'string',
+                        type: Types::STRING,
                         example: 'Иванов'
                     ),
                     new OA\Property(
                         property: 'middleName',
                         description: 'Отчество клиента',
-                        type: 'string',
+                        type: Types::STRING,
                         example: 'Иванович'
                     ),
                 ],
@@ -243,11 +244,11 @@ class ContractsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'contractNumber', type: 'string', example: 'ДГ-2024-001'),
-                        new OA\Property(property: 'firstName', type: 'string', example: 'Иван'),
-                        new OA\Property(property: 'lastName', type: 'string', example: 'Иванов'),
-                        new OA\Property(property: 'middleName', type: 'string', example: 'Иванович'),
-                        new OA\Property(property: 'status', type: 'string', example: 'В работе'),
+                        new OA\Property(property: 'contractNumber', type: Types::STRING, example: 'ДГ-2024-001'),
+                        new OA\Property(property: 'firstName', type: Types::STRING, example: 'Иван'),
+                        new OA\Property(property: 'lastName', type: Types::STRING, example: 'Иванов'),
+                        new OA\Property(property: 'middleName', type: Types::STRING, example: 'Иванович'),
+                        new OA\Property(property: 'status', type: Types::STRING, example: 'В работе'),
                     ],
                     type: 'object'
                 )
@@ -257,7 +258,7 @@ class ContractsController extends AbstractController
                 description: 'Ошибка валидации',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: 'error', type: 'string', example: 'Не указаны обязательные поля'),
+                        new OA\Property(property: 'error', type: Types::STRING, example: 'Не указаны обязательные поля'),
                         new OA\Property(property: 'details', type: 'object'),
                     ],
                     type: 'object'
@@ -367,7 +368,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -387,7 +388,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -407,7 +408,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -427,7 +428,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -447,7 +448,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -467,7 +468,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -487,7 +488,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -651,7 +652,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -671,7 +672,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -691,7 +692,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -711,7 +712,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -731,7 +732,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )
@@ -751,7 +752,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', type: 'integer', description: 'ID шаблона документа'),
-                                            new OA\Property(property: 'name', type: 'string', description: 'Название документа'),
+                                            new OA\Property(property: 'name', type: Types::STRING, description: 'Название документа'),
                                         ],
                                         type: 'object'
                                     )
@@ -771,7 +772,7 @@ class ContractsController extends AbstractController
                                     items: new OA\Items(
                                         properties: [
                                             new OA\Property(property: 'id', description: 'ID шаблона документа', type: 'integer'),
-                                            new OA\Property(property: 'name', description: 'Название документа', type: 'string'),
+                                            new OA\Property(property: 'name', description: 'Название документа', type: Types::STRING),
                                         ],
                                         type: 'object'
                                     )

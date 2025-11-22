@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Court;
 use App\Repository\CourtRepository;
 use App\Service\CacheService;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,7 +39,7 @@ class CourtController extends AbstractController
                 description: 'Поиск по наименованию, адресу',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 'Московский')
+                schema: new OA\Schema(type: Types::STRING, example: 'Московский')
             ),
             new OA\Parameter(
                 name: 'page',
@@ -52,7 +53,7 @@ class CourtController extends AbstractController
                 description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 10, default: 10)
+                schema: new OA\Schema(type: Types::STRING, example: 10, default: 10)
             ),
         ],
         responses: [
@@ -67,8 +68,8 @@ class CourtController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Арбитражный суд города Москвы'),
-                                    new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                                    new OA\Property(property: 'name', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                                    new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -180,9 +181,9 @@ class CourtController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Арбитражный суд города Москвы'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                        new OA\Property(property: 'phone', type: Types::STRING, example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -227,8 +228,8 @@ class CourtController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Арбитражный суд города Москвы'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
                 ],
                 type: 'object'
             )
@@ -241,9 +242,9 @@ class CourtController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Арбитражный суд города Москвы'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                        new OA\Property(property: 'phone', type: Types::STRING, example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -300,8 +301,8 @@ class CourtController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Арбитражный суд города Москвы'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
                 ],
                 type: 'object'
             )
@@ -323,9 +324,9 @@ class CourtController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Арбитражный суд города Москвы'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
-                        new OA\Property(property: 'phone', type: 'string', example: '+7 (495) 123-45-67', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Арбитражный суд города Москвы'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Большая Тульская, д. 17', nullable: true),
+                        new OA\Property(property: 'phone', type: Types::STRING, example: '+7 (495) 123-45-67', nullable: true),
                     ],
                     type: 'object'
                 )

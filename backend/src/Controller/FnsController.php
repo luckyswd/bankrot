@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Fns;
 use App\Repository\FnsRepository;
 use App\Service\CacheService;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,7 +39,7 @@ class FnsController extends AbstractController
                 description: 'Поиск по наименованию, адресу, ФИО руководителя',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 'Московский')
+                schema: new OA\Schema(type: Types::STRING, example: 'Московский')
             ),
             new OA\Parameter(
                 name: 'page',
@@ -52,7 +53,7 @@ class FnsController extends AbstractController
                 description: 'Количество элементов на странице (или "all" для получения всех записей)',
                 in: 'query',
                 required: false,
-                schema: new OA\Schema(type: 'string', example: 10, default: 10)
+                schema: new OA\Schema(type: Types::STRING, example: 10, default: 10)
             ),
         ],
         responses: [
@@ -67,10 +68,10 @@ class FnsController extends AbstractController
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(property: 'id', type: 'integer', example: 1),
-                                    new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                                    new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                                    new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                                    new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
+                                    new OA\Property(property: 'name', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                                    new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                                    new OA\Property(property: 'directorName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                                    new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                                 ],
                                 type: 'object'
                             )
@@ -187,10 +188,10 @@ class FnsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                        new OA\Property(property: 'directorName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -237,9 +238,9 @@ class FnsController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'code', description: 'Код', type: 'string', example: '7701', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                    new OA\Property(property: 'code', description: 'Код', type: Types::STRING, example: '7701', nullable: true),
                 ],
                 type: 'object'
             )
@@ -252,9 +253,9 @@ class FnsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'code', type: 'string', example: '7701', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                        new OA\Property(property: 'code', type: Types::STRING, example: '7701', nullable: true),
                     ],
                     type: 'object'
                 )
@@ -315,10 +316,10 @@ class FnsController extends AbstractController
             content: new OA\JsonContent(
                 required: ['name'],
                 properties: [
-                    new OA\Property(property: 'name', description: 'Наименование', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                    new OA\Property(property: 'address', description: 'Адрес', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                    new OA\Property(property: 'directorName', description: 'ФИО руководителя', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
+                    new OA\Property(property: 'name', description: 'Наименование', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                    new OA\Property(property: 'address', description: 'Адрес', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                    new OA\Property(property: 'directorName', description: 'ФИО руководителя', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                    new OA\Property(property: 'bankDetails', description: 'Банковские реквизиты', type: Types::STRING, example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                 ],
                 type: 'object'
             )
@@ -340,10 +341,10 @@ class FnsController extends AbstractController
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Межрайонная ИФНС России № 1 по г. Москве'),
-                        new OA\Property(property: 'address', type: 'string', example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
-                        new OA\Property(property: 'directorName', type: 'string', example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
-                        new OA\Property(property: 'bankDetails', type: 'string', example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
+                        new OA\Property(property: 'name', type: Types::STRING, example: 'Межрайонная ИФНС России № 1 по г. Москве'),
+                        new OA\Property(property: 'address', type: Types::STRING, example: 'г. Москва, ул. Ленина, д. 1', nullable: true),
+                        new OA\Property(property: 'directorName', type: Types::STRING, example: 'ИВАНОВ ИВАН ИВАНОВИЧ', nullable: true),
+                        new OA\Property(property: 'bankDetails', type: Types::STRING, example: 'БИК: 017003983, ИНН: 7727406020', nullable: true),
                     ],
                     type: 'object'
                 )
