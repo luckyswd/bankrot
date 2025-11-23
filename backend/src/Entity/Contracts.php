@@ -489,6 +489,28 @@ class Contracts extends BaseEntity
         return $parts ? implode(' ', $parts) : null;
     }
 
+    public function getShortFullName(): ?string
+    {
+        if (!$this->lastName) {
+            return null;
+        }
+
+        $initials = [];
+        if ($this->firstName) {
+            $initials[] = mb_substr($this->firstName, 0, 1) . '.';
+        }
+        if ($this->middleName) {
+            $initials[] = mb_substr($this->middleName, 0, 1) . '.';
+        }
+
+        $result = $this->lastName;
+        if ($initials) {
+            $result .= ' ' . implode('', $initials);
+        }
+
+        return $result;
+    }
+
     public function getFullNameGenitive(): ?string
     {
         $parts = array_filter([
@@ -1063,5 +1085,10 @@ class Contracts extends BaseEntity
         }
 
         return $this->employerName . ', ' . $this->employerAddress . ', ' . $this->employerInn;
+    }
+
+    public function getCurrentYear(): int
+    {
+        return (int)date('Y');
     }
 }

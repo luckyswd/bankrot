@@ -221,9 +221,11 @@ readonly class DocumentTemplateProcessor
 
             // Подготавливаем замены для всех элементов коллекции
             $variableReplacements = [];
+            $index = 1;
 
             foreach ($collection as $item) {
                 $itemReplacements = [];
+                $itemName = $block['itemName'];
 
                 foreach ($blockVariables as $originalVariable => $propertyPath) {
                     $value = $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
@@ -231,7 +233,10 @@ readonly class DocumentTemplateProcessor
                     $itemReplacements[$cleanedOriginal] = $value;
                 }
 
+                $itemReplacements['$' . $itemName . '.index'] = (string)$index;
+
                 $variableReplacements[] = $itemReplacements;
+                ++$index;
             }
 
             $templateProcessor->cloneBlock(

@@ -9,7 +9,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 readonly class EntityDataResolver
 {
-    public const string DEFAULT_VALUE = 'НЕТ_ДАННЫХ_В_БД';
+    public const string DEFAULT_VALUE = '';
 
     public function __construct(
         private PropertyAccessorInterface $propertyAccessor,
