@@ -64,6 +64,43 @@ readonly class EntityDataResolver
     }
 
     /**
+     * Получает значение из произвольного объекта по пути к свойству.
+     *
+     * @param object $object Объект для получения значения
+     * @param string $path Путь к свойству (например, "name" или "headFullName")
+     *
+     * @return string Значение свойства
+     */
+    public function resolveValueFromObject(object $object, string $path): string
+    {
+        if ($path === '') {
+            return $this->formatValue(value: $object);
+        }
+
+        $parts = explode('.', $path);
+        $currentObject = $object;
+
+        foreach ($parts as $i => $part) {
+            $value = $this->getPropertyValue(object: $currentObject, propertyName: $part);
+
+            if ($value === null) {
+                return self::DEFAULT_VALUE;
+            }
+
+            if ($i < count($parts) - 1) {
+                if (!is_object($value)) {
+                    return self::DEFAULT_VALUE;
+                }
+                $currentObject = $value;
+            } else {
+                return $this->formatValue(value: $value);
+            }
+        }
+
+        return self::DEFAULT_VALUE;
+    }
+
+    /**
      * Получает значение свойства объекта через геттер или PropertyAccessor.
      *
      * @param object $object Объект для получения свойства

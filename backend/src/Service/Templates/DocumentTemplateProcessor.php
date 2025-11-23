@@ -6,6 +6,7 @@ namespace App\Service\Templates;
 
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
+use Doctrine\Common\Collections\Collection;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 readonly class DocumentTemplateProcessor
@@ -65,6 +66,8 @@ readonly class DocumentTemplateProcessor
         }
 
         $templateProcessor->saveAs($outputPath);
+
+        $this->handeFORVariables(outputPath: $outputPath, contract: $contract);
 
         return $outputPath;
     }
@@ -181,5 +184,179 @@ readonly class DocumentTemplateProcessor
         }
 
         return $parameters;
+    }
+
+    /**
+     * Обрабатывает все FOR-блоки в шаблоне (${blockName} ... ${/blockName}).
+     *
+     * @param string $outputPath Путь к файлу шаблона
+     * @param Contracts $contract Контракт для получения данных
+     *
+     * @throws \RuntimeException Если блок не найден или коллекция не найдена
+     */
+    private function handeFORVariables(string $outputPath, Contracts $contract): void
+    {
+        // Используем стандартные макросы для cloneBlock
+        $templateProcessor = new TemplateProcessor(documentTemplate: $outputPath);
+        $templateProcessor->setMacroChars('${', '}');
+
+        $variables = $templateProcessor->getVariables();
+        $blocks = $this->findBlocks(variables: $variables);
+
+        foreach ($blocks as $block) {
+            $collection = $this->getCollection(contract: $contract, collectionName: $block['collectionName']);
+
+            if (!$collection || $collection->isEmpty()) {
+                continue;
+            }
+
+            $blockVariables = $this->getBlockVariables(
+                variables: $templateProcessor->getVariables(),
+                itemName: $block['itemName']
+            );
+
+            if (empty($blockVariables)) {
+                continue;
+            }
+
+            // Подготавливаем замены для всех элементов коллекции
+            $variableReplacements = [];
+
+            foreach ($collection as $item) {
+                $itemReplacements = [];
+
+                foreach ($blockVariables as $originalVariable => $propertyPath) {
+                    $value = $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
+                    $cleanedOriginal = trim(strip_tags($originalVariable));
+                    $itemReplacements[$cleanedOriginal] = $value;
+                }
+
+                $variableReplacements[] = $itemReplacements;
+            }
+
+            $templateProcessor->cloneBlock(
+                blockname: $block['blockName'],
+                clones: $collection->count(),
+                variableReplacements: $variableReplacements,
+            );
+        }
+
+        $templateProcessor->saveAs($outputPath);
+    }
+
+    /**
+     * Находит все блоки в формате ${blockName} и ${/blockName}.
+     *
+     * @param array<string> $variables Массив переменных (уже без макросов ${ и })
+     *
+     * @return array<int, array{blockName: string, itemName: string, collectionName: string}>
+     */
+    private function findBlocks(array $variables): array
+    {
+        $blocks = [];
+        $blockPattern = '/^(\w+)$/';
+        $endBlockPattern = '/^\/(\w+)$/';
+        $itemVariablePattern = '/^\$(\w+)\./';
+
+        $currentBlock = null;
+        $itemNameMap = [];
+
+        foreach ($variables as $variable) {
+            $cleaned = trim(strip_tags($variable));
+
+            // Определяем имя элемента из переменных внутри блока ($creditor.name -> creditor)
+            if (preg_match($itemVariablePattern, $cleaned, $itemMatches)) {
+                $itemName = $itemMatches[1];
+                if ($currentBlock !== null) {
+                    $itemNameMap[$currentBlock['blockName']] = $itemName;
+                }
+            }
+
+            // Начало блока (переменная без точки и без слэша в начале)
+            if (preg_match($blockPattern, $cleaned, $matches) && !str_starts_with($cleaned, '/') && !str_starts_with($cleaned, '$')) {
+                $blockName = $matches[1];
+                $currentBlock = ['blockName' => $blockName];
+            }
+
+            // Конец блока (/blockName)
+            if ($currentBlock !== null && preg_match($endBlockPattern, $cleaned, $matches)) {
+                $endBlockName = $matches[1];
+
+                if ($endBlockName === $currentBlock['blockName']) {
+                    // Определяем имя элемента и коллекции
+                    if (isset($itemNameMap[$currentBlock['blockName']])) {
+                        $itemName = $itemNameMap[$currentBlock['blockName']];
+                        $collectionName = $currentBlock['blockName'];
+                    } elseif (str_ends_with($currentBlock['blockName'], 's')) {
+                        $itemName = substr($currentBlock['blockName'], 0, -1);
+                        $collectionName = $currentBlock['blockName'];
+                    } else {
+                        $itemName = $currentBlock['blockName'];
+                        $collectionName = $currentBlock['blockName'] . 's';
+                    }
+
+                    $blocks[] = [
+                        'blockName' => $currentBlock['blockName'],
+                        'itemName' => $itemName,
+                        'collectionName' => $collectionName,
+                    ];
+
+                    $currentBlock = null;
+                }
+            }
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Получает коллекцию из контракта по имени.
+     *
+     * @param Contracts $contract Контракт
+     * @param string $collectionName Имя коллекции (например, "creditors")
+     *
+     * @return Collection<int, object>|null Коллекция или null
+     */
+    private function getCollection(Contracts $contract, string $collectionName): ?Collection
+    {
+        $camelCaseName = lcfirst(str_replace('_', '', ucwords($collectionName, '_')));
+        $getter = 'get' . ucfirst($camelCaseName);
+
+        if (!method_exists($contract, $getter)) {
+            return null;
+        }
+
+        $value = $contract->$getter();
+
+        if (!$value instanceof Collection) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Получает переменные, относящиеся к блоку.
+     *
+     * @param array<string> $variables Все переменные шаблона
+     * @param string $itemName Имя переменной элемента (например, "creditor")
+     *
+     * @return array<string, string> Массив [оригинальная_переменная => путь_к_свойству]
+     */
+    private function getBlockVariables(array $variables, string $itemName): array
+    {
+        $blockVariables = [];
+
+        foreach ($variables as $originalVariable) {
+            $cleaned = trim(strip_tags($originalVariable));
+
+            // Проверяем переменные в формате $itemName.property (например, $creditor.name)
+            if (preg_match('/^\$' . preg_quote($itemName, '/') . '\.(.+)$/', $cleaned, $matches)) {
+                $propertyPath = $matches[1];
+                $blockVariables[$originalVariable] = $propertyPath;
+            }
+        }
+
+        return $blockVariables;
     }
 }
