@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 interface Props {
   register: any;
 }
@@ -13,7 +13,9 @@ interface Props {
 export const AddressInfo: FC<Props> = ({ register }) => {
   return (
     <AccordionItem value="addressInfo">
-      <AccordionTrigger><h3 className="text-xl font-semibold">Адрес регистрации</h3></AccordionTrigger>
+      <AccordionTrigger>
+        <h3 className="text-xl font-semibold">Адрес регистрации</h3>
+      </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.registrationRegion">
@@ -88,6 +90,14 @@ export const AddressInfo: FC<Props> = ({ register }) => {
             id="primaryInfo.registrationApartment"
             placeholder="418"
             {...register("primaryInfo.registrationApartment")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="primaryInfo.postalCode">Почтовый индекс</Label>
+          <Input
+            id="primaryInfo.postalCode"
+            placeholder="418"
+            {...register("primaryInfo.postalCode")}
           />
         </div>
       </AccordionContent>

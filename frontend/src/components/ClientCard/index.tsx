@@ -64,7 +64,10 @@ function ClientCard() {
 
     const apiData: Record<string, unknown> = {
       basic_info: currentValues.primaryInfo || {},
-      pre_court: currentValues.pretrial || {},
+      pre_court: {
+        ...(currentValues.pretrial || {}),
+        creditors: currentValues.pretrial?.creditors ?? [],
+      },
       procedure_initiation: currentValues.introduction || {},
       procedure: currentValues.procedure || {},
     };

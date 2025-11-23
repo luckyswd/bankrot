@@ -2,13 +2,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FC } from "react";
 import { Controller } from "react-hook-form";
-import { DatePickerInput } from "@/components/ui/DatePickerInput"
+import { DatePickerInput } from "@/components/ui/DatePickerInput";
 import { SelectField, SelectOption } from "@/components/shared/SelectFields";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 
 interface Props {
   register: any;
@@ -24,14 +24,19 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
   const yesNoOptions: SelectOption[] = [
     { value: true, label: "Да" },
     { value: false, label: "Нет" },
-  ]
-  
+  ];
+
   return (
     <AccordionItem value="mainInfo">
-      <AccordionTrigger><h3 className="text-xl font-semibold">Личные данные</h3></AccordionTrigger>
+      <AccordionTrigger>
+        <h3 className="text-xl font-semibold">Личные данные</h3>
+      </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <p className="col-span-3 text-xs text-blue-500">В именительном падаже</p>
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.lastName">Фамилия *</Label>
+          <Label htmlFor="primaryInfo.lastName" required>
+            Фамилия
+          </Label>
           <Input
             id="primaryInfo.lastName"
             placeholder="Иванов"
@@ -40,7 +45,9 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.firstName">Имя *</Label>
+          <Label htmlFor="primaryInfo.firstName" required>
+            Имя
+          </Label>
           <Input
             id="primaryInfo.firstName"
             placeholder="Иван"
@@ -49,11 +56,46 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.middleName">Отчество</Label>
+          <Label htmlFor="primaryInfo.middleName" required>
+            Отчество
+          </Label>
           <Input
             id="primaryInfo.middleName"
             placeholder="Иванович"
             {...register("primaryInfo.middleName")}
+          />
+        </div>
+        <p className="col-span-3 text-xs text-blue-500">В родительном падеже</p>
+        <div className="space-y-2">
+          <Label htmlFor="primaryInfo.lastNameGenitive" required>
+            Фамилия
+          </Label>
+          <Input
+            id="primaryInfo.lastNameGenitive"
+            placeholder="Иванов"
+            {...register("primaryInfo.lastNameGenitive")}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="primaryInfo.firstNameGenitive" required>
+            Имя
+          </Label>
+          <Input
+            id="primaryInfo.firstNameGenitive"
+            placeholder="Иван"
+            {...register("primaryInfo.firstNameGenitive")}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="primaryInfo.middleNameGenitive" required>
+            Отчество
+          </Label>
+          <Input
+            id="primaryInfo.middleNameGenitive"
+            placeholder="Иванович"
+            {...register("primaryInfo.middleNameGenitive")}
           />
         </div>
 
