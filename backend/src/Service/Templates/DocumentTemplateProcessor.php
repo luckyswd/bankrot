@@ -261,7 +261,7 @@ readonly class DocumentTemplateProcessor
         $blocks = [];
         $blockPattern = '/^(\w+)$/';
         $endBlockPattern = '/^\/(\w+)$/';
-        $itemVariablePattern = '/^\$(\w+)\./';
+        $itemVariablePattern = '/^(\$)?(\w+)\./';
 
         $currentBlock = null;
         $itemNameMap = [];
@@ -269,9 +269,8 @@ readonly class DocumentTemplateProcessor
         foreach ($variables as $variable) {
             $cleaned = trim(strip_tags($variable));
 
-            // Определяем имя элемента из переменных внутри блока ($creditor.name -> creditor)
             if (preg_match($itemVariablePattern, $cleaned, $itemMatches)) {
-                $itemName = $itemMatches[1];
+                $itemName = $itemMatches[2];
                 if ($currentBlock !== null) {
                     $itemNameMap[$currentBlock['blockName']] = $itemName;
                 }
@@ -291,7 +290,11 @@ readonly class DocumentTemplateProcessor
                     // Определяем имя элемента и коллекции
                     if (isset($itemNameMap[$currentBlock['blockName']])) {
                         $itemName = $itemNameMap[$currentBlock['blockName']];
-                        $collectionName = $currentBlock['blockName'];
+                        if (str_ends_with($itemName, 's')) {
+                            $collectionName = $itemName;
+                        } else {
+                            $collectionName = $itemName . 's';
+                        }
                     } elseif (str_ends_with($currentBlock['blockName'], 's')) {
                         $itemName = substr($currentBlock['blockName'], 0, -1);
                         $collectionName = $currentBlock['blockName'];
