@@ -83,9 +83,21 @@ export const PretrialTab = ({
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
-  const hasHearingDateTime =
-    Boolean(watch("pretrial.hearingDate")) &&
-    Boolean(watch("pretrial.hearingTime"));
+  const hearingDateTimeValue = watch("pretrial.hearingDateTime") as
+    | string
+    | undefined;
+  const parseDateTime = (value?: string) => {
+    if (!value) return { date: "", time: "" };
+    const [date, timeWithZone] = value.split("T");
+    const time = timeWithZone?.slice(0, 5) ?? "";
+    return { date, time };
+  };
+  const combineDateTime = (date: string, time: string) => {
+    if (!date && !time) return "";
+    if (!date) return time ? `T${time}` : "";
+    return time ? `${date}T${time}` : date;
+  };
+  const hasHearingDateTime = Boolean(hearingDateTimeValue);
 
   return (
     <TabsContent value="pretrial" className="space-y-6">
@@ -240,25 +252,40 @@ export const PretrialTab = ({
 
             <div className="space-y-2">
               <Label>Дата и время заседания</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Controller
-                  name="pretrial.hearingDate"
-                  control={control}
-                  render={({ field }) => {
-                    console.log(field)
-                    return (
-                    <DatePickerInput
-                      value={(field.value as string) ?? ""}
-                      onChange={field.onChange}
-                      className="space-y-1"
-                    />
-                  )
-                  }}
-                />
-                <div className="space-y-1">
-                  <Input type="time" {...register("pretrial.hearingTime")} />
-                </div>
-              </div>
+              <Controller
+                name="pretrial.hearingDateTime"
+                control={control}
+                render={({ field }) => {
+                  const { date, time } = parseDateTime(field.value as string);
+                  return (
+                    <div className="grid grid-cols-2 gap-2">
+                      <DatePickerInput
+                        value={date}
+                        onChange={(nextDate) =>
+                          field.onChange(
+                            combineDateTime(
+                              typeof nextDate === "string" ? nextDate : "",
+                              time
+                            )
+                          )
+                        }
+                        className="space-y-1"
+                      />
+                      <div className="space-y-1">
+                        <Input
+                          type="time"
+                          value={time}
+                          onChange={(e) =>
+                            field.onChange(
+                              combineDateTime(date, e.target.value)
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                  );
+                }}
+              />
             </div>
             {hasHearingDateTime && (
               <div className="space-y-2">

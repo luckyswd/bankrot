@@ -57,8 +57,8 @@ export type PretrialFields = {
   powerOfAttorneyNumber: string
   powerOfAttorneyDate: string
   efrsbCabinet?: string
-  hearingDate: string
-  hearingTime: string
+  efrsbDateTime: string
+  hearingDateTime: string
 }
 
 export type IntroductionFields = {

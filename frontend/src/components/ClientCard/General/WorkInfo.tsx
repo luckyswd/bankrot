@@ -33,18 +33,20 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
           <Controller
             name="primaryInfo.work"
             control={control}
-            render={({ field }) => (
-                            <div
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-              >
-              <Switch
-                checked={Boolean(field.value)}
-                onCheckedChange={field.onChange}
-                aria-label="Работает"
-              />
-              </div>
-            )}
+            render={({ field }) => {
+              return (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <Switch
+                    checked={Boolean(field.value)}
+                    onCheckedChange={field.onChange}
+                    aria-label="Работает"
+                  />
+                </div>
+              );
+            }}
           />
         </div>
       </AccordionTrigger>

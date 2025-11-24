@@ -58,8 +58,8 @@ export const defaultPretrial: PretrialFields = {
   powerOfAttorneyNumber: "",
   powerOfAttorneyDate: "",
   efrsbCabinet: "",
-  hearingDate: "",
-  hearingTime: "",
+  efrsbDateTime: "",
+  hearingDateTime: "",
 };
 
 export const defaultIntroduction: IntroductionFields = {
@@ -182,6 +182,9 @@ export const convertApiDataToFormValues = (
     return String(date);
   };
 
+  const asBool = (value: unknown): boolean =>
+    value === true || value === 1 || value === "1" || value === "true";
+
   return {
     ...defaults,
     primaryInfo: {
@@ -227,6 +230,7 @@ export const convertApiDataToFormValues = (
       hasEnforcementProceedings: basicInfo.hasEnforcementProceedings ?? null,
       contractNumber: basicInfo.contractNumber ?? null,
       contractDate: formatDate(basicInfo.contractDate),
+      work: asBool(basicInfo.work),
     },
     pretrial: {
       ...defaults.pretrial,
