@@ -320,8 +320,14 @@ class Contracts extends BaseEntity
     private ?string $efrsbCabinet = null;
 
     #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
-    #[Groups(['pre_court'])]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Почтовый индекс', type: Types::STRING, example: '123123', nullable: true)]
     private ?string $postalCode = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['basic_info'])]
+    #[OA\Property(description: 'Дата расторжения брака', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
+    private ?\DateTimeInterface $marriageTerminationDate = null;
 
     public function __construct()
     {
@@ -1074,6 +1080,30 @@ class Contracts extends BaseEntity
     public function setWork(?bool $work): self
     {
         $this->work = $work;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): self
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getMarriageTerminationDate(): ?\DateTimeInterface
+    {
+        return $this->marriageTerminationDate;
+    }
+
+    public function setMarriageTerminationDate(?\DateTimeInterface $marriageTerminationDate): self
+    {
+        $this->marriageTerminationDate = $marriageTerminationDate;
 
         return $this;
     }
