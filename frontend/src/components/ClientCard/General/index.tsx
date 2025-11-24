@@ -45,7 +45,7 @@ export const GeneralTab = ({
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
-
+  
   return (
     <TabsContent value="primary" className="space-y-6">
       <Card>

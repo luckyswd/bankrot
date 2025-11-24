@@ -33,6 +33,8 @@ export const FamilyInfo: FC<Props> = ({
   const shouldShowSpouseFields =
     maritalStatus === "married" || maritalStatus === "married_3y_ago";
 
+  const isDivorcedWithin3Years = maritalStatus === "married_3y_ago";
+
   const hasMinorChildren = useWatch({
     control,
     name: "primaryInfo.hasMinorChildren",
@@ -77,7 +79,7 @@ export const FamilyInfo: FC<Props> = ({
     <AccordionItem value="familyInfo">
       <AccordionTrigger><h3 className="text-xl font-semibold">Семейное положение</h3></AccordionTrigger>
       <AccordionContent>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
           <Label>Семейное положение</Label>
           <Controller
@@ -121,6 +123,25 @@ export const FamilyInfo: FC<Props> = ({
                 />
               )}
             />
+            {isDivorcedWithin3Years && (
+              <Controller
+                control={control}
+                name="primaryInfo.marriageTerminationDate"
+                render={({ field }) => (
+                  <DatePickerInput
+                    label="Дата расторжения брака"
+                    value={
+                      field.value
+                        ? typeof field.value === "string"
+                          ? field.value
+                          : (field.value as any)?.toString()
+                        : ""
+                    }
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            )}
           </>
         )}
 

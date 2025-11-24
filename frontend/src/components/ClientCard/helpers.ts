@@ -34,6 +34,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   maritalStatus: null,
   spouseFullName: null,
   spouseBirthDate: null,
+  marriageTerminationDate: null,
   hasMinorChildren: null,
   children: [],
   isStudent: null,
@@ -48,6 +49,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   hasEnforcementProceedings: null,
   contractNumber: null,
   contractDate: null,
+  work: false,
 };
 
 export const defaultPretrial: PretrialFields = {
@@ -55,6 +57,7 @@ export const defaultPretrial: PretrialFields = {
   creditors: [],
   powerOfAttorneyNumber: "",
   powerOfAttorneyDate: "",
+  efrsbCabinet: "",
   hearingDate: "",
   hearingTime: "",
 };
@@ -207,6 +210,9 @@ export const convertApiDataToFormValues = (
       maritalStatus: basicInfo.maritalStatus ?? null,
       spouseFullName: basicInfo.spouseFullName ?? null,
       spouseBirthDate: formatDate(basicInfo.spouseBirthDate),
+      marriageTerminationDate: formatDate(
+        basicInfo.marriageTerminationDate
+      ),
       hasMinorChildren: basicInfo.hasMinorChildren ?? null,
       children: normalizeChildren(basicInfo.children),
       isStudent: basicInfo.isStudent ?? null,

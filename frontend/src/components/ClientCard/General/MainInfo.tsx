@@ -31,7 +31,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
       <AccordionTrigger>
         <h3 className="text-xl font-semibold">Личные данные</h3>
       </AccordionTrigger>
-      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <p className="col-span-3 text-xs text-blue-500">В именительном падаже</p>
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.lastName" required>

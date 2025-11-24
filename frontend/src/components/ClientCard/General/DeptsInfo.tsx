@@ -23,7 +23,7 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
       <AccordionTrigger><h3 className="text-xl font-semibold">
         Долг и исполнительные производства
       </h3></AccordionTrigger>
-      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.debtAmount">Сумма долга</Label>
           <Input

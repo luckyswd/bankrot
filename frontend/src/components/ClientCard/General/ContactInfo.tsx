@@ -15,7 +15,7 @@ export const ContactInfo: FC<Props> = ({ register }) => {
       <AccordionTrigger>
         <h3 className="text-xl font-semibold">Контакты</h3>
       </AccordionTrigger>
-      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.phone">Телефон</Label>
           <Input

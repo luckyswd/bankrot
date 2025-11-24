@@ -5,12 +5,13 @@ interface SelectFieldProps {
   onChange: (value: string | boolean | null) => void
   options: SelectOption[]
   placeholder?: string
+  disabled?: boolean
 }
 export type SelectOption = { value: string | boolean; label: string }
 
 const CLEAR_VALUE = "__clear__"
 
-export const SelectField = ({ value, onChange, options, placeholder = "Не указано" }: SelectFieldProps) => {
+export const SelectField = ({ value, onChange, options, placeholder = "Не указано", disabled }: SelectFieldProps) => {
   const stringValue = value === undefined || value === null ? undefined : String(value)
   const optionValueMap = options.reduce<Record<string, string | boolean>>((acc, option) => {
     acc[String(option.value)] = option.value
@@ -31,8 +32,9 @@ export const SelectField = ({ value, onChange, options, placeholder = "Не ук
         }
         onChange(selected)
       }}
+      disabled={disabled}
     >
-      <SelectTrigger>
+      <SelectTrigger disabled={disabled}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

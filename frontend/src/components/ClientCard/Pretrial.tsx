@@ -83,6 +83,9 @@ export const PretrialTab = ({
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
+  const hasHearingDateTime =
+    Boolean(watch("pretrial.hearingDate")) &&
+    Boolean(watch("pretrial.hearingTime"));
 
   return (
     <TabsContent value="pretrial" className="space-y-6">
@@ -214,7 +217,7 @@ export const PretrialTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label>3. Доверенность</Label>
+              <Label>Доверенность</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   type="text"
@@ -257,6 +260,16 @@ export const PretrialTab = ({
                 </div>
               </div>
             </div>
+            {hasHearingDateTime && (
+              <div className="space-y-2">
+                <Label htmlFor="pretrial.efrsbCabinet">Кабинет ЕФРСБ</Label>
+                <Input
+                  id="pretrial.efrsbCabinet"
+                  placeholder="Ссылка или идентификатор кабинета"
+                  {...register("pretrial.efrsbCabinet")}
+                />
+              </div>
+            )}
           </div>
 
           <DocumentsList

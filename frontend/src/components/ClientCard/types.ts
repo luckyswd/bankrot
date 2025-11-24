@@ -33,6 +33,7 @@ export type PrimaryInfoFields = {
   maritalStatus?: string | null
   spouseFullName?: string | null
   spouseBirthDate?: string | null
+  marriageTerminationDate?: string | null
   hasMinorChildren?: boolean | null
   children: ChildInfo[]
   isStudent?: boolean | null
@@ -47,6 +48,7 @@ export type PrimaryInfoFields = {
   hasEnforcementProceedings?: boolean | null
   contractNumber?: string | null
   contractDate?: string | null
+  work: boolean
 }
 
 export type PretrialFields = {
@@ -54,6 +56,7 @@ export type PretrialFields = {
   creditors: number[]
   powerOfAttorneyNumber: string
   powerOfAttorneyDate: string
+  efrsbCabinet?: string
   hearingDate: string
   hearingTime: string
 }
