@@ -1108,6 +1108,38 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    /**
+     * Для шаблона Досудебка. Заявление о признании банкротом
+     */
+    public function getMaritalStatusDescription(): string
+    {
+        $isMarried = $this->maritalStatus === 'married';
+        $wasMarried3YearsAgo = $this->maritalStatus === 'married_3y_ago';
+        $hasChildren = $this->hasMinorChildren === true;
+        $divorceDate = $this->marriageTerminationDate;
+
+        $parts = [];
+
+        if ($isMarried) {
+            $parts[] = 'Должник состоит в браке';
+        } else {
+            $divorceInfo = '';
+            if ($wasMarried3YearsAgo && $divorceDate !== null) {
+                $formattedDate = $divorceDate->format('d.m.Y');
+                $divorceInfo = " (брак расторгнут {$formattedDate}г.)";
+            }
+            $parts[] = 'Должник не состоит в браке' . $divorceInfo;
+        }
+
+        if ($hasChildren) {
+            $parts[] = 'имеет несовершеннолетних детей';
+        } else {
+            $parts[] = 'не имеет несовершеннолетних детей';
+        }
+
+        return implode(', ', $parts) . '.';
+    }
+
     public function getTemplateWork(): string
     {
         if (!$this->work || empty($this->employerName) || empty($this->employerAddress) || empty($this->employerInn)) {
@@ -1120,5 +1152,29 @@ class Contracts extends BaseEntity
     public function getCurrentYear(): int
     {
         return (int)date('Y');
+    }
+
+    /**
+     * Для шаблона Досудебка. Заявление о признании банкротом
+     */
+    public function getWorkDescription(): string
+    {
+        if ($this->work) {
+            return 'Должник временно трудоустроен.';
+        } else {
+            return 'Должник временно не трудоустроен.';
+        }
+    }
+
+    /**
+     * Для шаблона Досудебка. Заявление о признании банкротом
+     */
+    public function getHasEnforcementProceedingsDescription(): string
+    {
+        if ($this->hasEnforcementProceedings) {
+            return 'У Должника имеются возбужденные исполнительные производства.';
+        } else {
+            return 'У Должника не имеются возбужденные исполнительные производства.';
+        }
     }
 }

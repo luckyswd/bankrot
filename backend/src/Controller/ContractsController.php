@@ -962,7 +962,7 @@ class ContractsController extends AbstractController
     {
         $reflection = new \ReflectionClass($contract);
         $dateFields = ['birthDate', 'passportIssuedDate', 'spouseBirthDate', 'contractDate', 'powerOfAttorneyDate'];
-        $dateTimeFields = ['hearingDateTime', 'efrsbDateTime'];
+        $dateTimeFields = ['hearingDateTime', 'efrsbDateTime', 'marriageTerminationDate'];
 
         foreach ($data as $key => $value) {
             if ($key === 'court') {
