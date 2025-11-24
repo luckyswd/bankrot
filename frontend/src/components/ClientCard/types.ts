@@ -11,6 +11,9 @@ export type PrimaryInfoFields = {
   lastName?: string | null
   firstName?: string | null
   middleName?: string | null
+  firstNameGenitive?: string | null
+  middleNameGenitive?: string | null
+  lastNameGenitive?: string | null
   isLastNameChanged?: boolean | null
   changedLastName?: string | null
   birthDate?: string | null

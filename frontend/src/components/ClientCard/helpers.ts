@@ -12,6 +12,9 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   lastName: null,
   firstName: null,
   middleName: null,
+  firstNameGenitive: null,
+  middleNameGenitive: null,
+  lastNameGenitive: null,
   isLastNameChanged: null,
   changedLastName: null,
   birthDate: null,
@@ -185,6 +188,12 @@ export const convertApiDataToFormValues = (
   const asBool = (value: unknown): boolean =>
     value === true || value === 1 || value === "1" || value === "true";
 
+  const pickString = (value: unknown): string | null =>
+    typeof value === "string" ? value : null;
+  const basicInfoRecord = isRecord(apiData.basic_info)
+    ? (apiData.basic_info as Record<string, unknown>)
+    : {};
+
   return {
     ...defaults,
     primaryInfo: {
@@ -192,6 +201,18 @@ export const convertApiDataToFormValues = (
       lastName: basicInfo.lastName ?? null,
       firstName: basicInfo.firstName ?? null,
       middleName: basicInfo.middleName ?? null,
+      lastNameGenitive:
+        basicInfo.lastNameGenitive ??
+        pickString(basicInfoRecord["last_name_genitive"]) ??
+        null,
+      firstNameGenitive:
+        basicInfo.firstNameGenitive ??
+        pickString(basicInfoRecord["first_name_genitive"]) ??
+        null,
+      middleNameGenitive:
+        basicInfo.middleNameGenitive ??
+        pickString(basicInfoRecord["middle_name_genitive"]) ??
+        null,
       isLastNameChanged: basicInfo.isLastNameChanged ?? null,
       changedLastName: basicInfo.changedLastName ?? null,
       birthDate: formatDate(basicInfo.birthDate),
