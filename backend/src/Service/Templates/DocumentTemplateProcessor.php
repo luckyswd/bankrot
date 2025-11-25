@@ -7,7 +7,6 @@ namespace App\Service\Templates;
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
 use Doctrine\Common\Collections\Collection;
-use PhpOffice\PhpWord\TemplateProcessor;
 
 readonly class DocumentTemplateProcessor
 {
@@ -39,7 +38,7 @@ readonly class DocumentTemplateProcessor
 
         copy($templatePath, $outputPath);
 
-        $templateProcessor = new TemplateProcessor($outputPath);
+        $templateProcessor = new OptimizedTemplateProcessor($outputPath);
         $templateProcessor->setMacroChars('{{', '}}');
 
         $variables = [];
@@ -197,7 +196,7 @@ readonly class DocumentTemplateProcessor
     private function handeFORVariables(string $outputPath, Contracts $contract): void
     {
         // Используем стандартные макросы для cloneBlock
-        $templateProcessor = new TemplateProcessor(documentTemplate: $outputPath);
+        $templateProcessor = new OptimizedTemplateProcessor(documentTemplate: $outputPath);
         $templateProcessor->setMacroChars('${', '}');
 
         $variables = $templateProcessor->getVariables();
@@ -240,7 +239,7 @@ readonly class DocumentTemplateProcessor
             }
 
             $templateProcessor->cloneBlock(
-                blockname: $block['blockName'],
+                blockName: $block['blockName'],
                 clones: $collection->count(),
                 variableReplacements: $variableReplacements,
             );
