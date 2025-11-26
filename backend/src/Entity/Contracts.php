@@ -315,28 +315,6 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Дата и время ЕФРСБ', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
     private ?\DateTimeInterface $efrsbDateTime = null;
 
-    #[ORM\Column(type: 'date', nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_REALIZATION->value])]
-    #[OA\Property(
-        description: 'Дата принятия судебного решения',
-        type: Types::STRING,
-        format: 'date',
-        example: '2025-06-20',
-        nullable: true
-    )]
-    private ?\DateTimeInterface $judicialRealizationDecisionDate = null;
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_REALIZATION->value])]
-    #[OA\Property(
-        description: 'Дата объявления резолютивной части судебного решения',
-        type: Types::STRING,
-        format: 'date',
-        example: '2025-06-20',
-        nullable: true
-    )]
-    private ?\DateTimeInterface $judicialRealizationResolutionDate = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: 'Кабинет ЕФРСБ', type: Types::STRING, example: 'Кабинет 101', nullable: true)]
@@ -351,6 +329,78 @@ class Contracts extends BaseEntity
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Дата расторжения брака', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
     private ?\DateTimeInterface $marriageTerminationDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Дата принятия судебного решения',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-06-20',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $procedureInitiationDecisionDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Дата объявления резолютивной части судебного решения',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-06-20',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $procedureInitiationResolutionDate = null;
+
+    #[ORM\ManyToOne(targetEntity: Mchs::class)]
+    #[ORM\JoinColumn(name: 'procedure_initiation_mchs_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'ГИМС', type: 'object', nullable: true)]
+    private ?Mchs $procedureInitiationMchs = null;
+
+    #[ORM\ManyToOne(targetEntity: Gostekhnadzor::class)]
+    #[ORM\JoinColumn(name: 'procedure_initiation_gostekhnadzor_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Гостехнадзор', type: 'object', nullable: true)]
+    private ?Gostekhnadzor $procedureInitiationGostekhnadzor = null;
+
+    #[ORM\ManyToOne(targetEntity: Fns::class)]
+    #[ORM\JoinColumn(name: 'procedure_initiation_fns_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'ФНС', type: 'object', nullable: true)]
+    private ?Fns $procedureInitiationFns = null;
+
+    #[ORM\ManyToOne(targetEntity: Bailiff::class)]
+    #[ORM\JoinColumn(name: 'procedure_initiation_bailiff_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Судебный пристав', type: 'object', nullable: true)]
+    private ?Bailiff $procedureInitiationBailiff = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Дата документа',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-06-20',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $procedureInitiationDocumentDate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Номер дела', type: Types::STRING, example: 'А56-12345/2025', nullable: true)]
+    private ?string $procedureInitiationCaseNumber = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Судья', type: Types::STRING, example: 'Иванов Иван Иванович', nullable: true)]
+    private ?string $procedureInitiationJudge = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Номер спец счёта', type: Types::STRING, example: '40817810099910004312', nullable: true)]
+    private ?string $procedureInitiationSpecialAccountNumber = null;
 
     public function __construct()
     {
@@ -999,6 +1049,102 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    public function getProcedureInitiationMchs(): ?Mchs
+    {
+        return $this->procedureInitiationMchs;
+    }
+
+    public function setProcedureInitiationMchs(?Mchs $procedureInitiationMchs): self
+    {
+        $this->procedureInitiationMchs = $procedureInitiationMchs;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationGostekhnadzor(): ?Gostekhnadzor
+    {
+        return $this->procedureInitiationGostekhnadzor;
+    }
+
+    public function setProcedureInitiationGostekhnadzor(?Gostekhnadzor $procedureInitiationGostekhnadzor): self
+    {
+        $this->procedureInitiationGostekhnadzor = $procedureInitiationGostekhnadzor;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationFns(): ?Fns
+    {
+        return $this->procedureInitiationFns;
+    }
+
+    public function setProcedureInitiationFns(?Fns $procedureInitiationFns): self
+    {
+        $this->procedureInitiationFns = $procedureInitiationFns;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationBailiff(): ?Bailiff
+    {
+        return $this->procedureInitiationBailiff;
+    }
+
+    public function setProcedureInitiationBailiff(?Bailiff $procedureInitiationBailiff): self
+    {
+        $this->procedureInitiationBailiff = $procedureInitiationBailiff;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationDocumentDate(): ?\DateTimeInterface
+    {
+        return $this->procedureInitiationDocumentDate;
+    }
+
+    public function setProcedureInitiationDocumentDate(?\DateTimeInterface $procedureInitiationDocumentDate): self
+    {
+        $this->procedureInitiationDocumentDate = $procedureInitiationDocumentDate;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationCaseNumber(): ?string
+    {
+        return $this->procedureInitiationCaseNumber;
+    }
+
+    public function setProcedureInitiationCaseNumber(?string $procedureInitiationCaseNumber): self
+    {
+        $this->procedureInitiationCaseNumber = $procedureInitiationCaseNumber;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationJudge(): ?string
+    {
+        return $this->procedureInitiationJudge;
+    }
+
+    public function setProcedureInitiationJudge(?string $procedureInitiationJudge): self
+    {
+        $this->procedureInitiationJudge = $procedureInitiationJudge;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationSpecialAccountNumber(): ?string
+    {
+        return $this->procedureInitiationSpecialAccountNumber;
+    }
+
+    public function setProcedureInitiationSpecialAccountNumber(?string $procedureInitiationSpecialAccountNumber): self
+    {
+        $this->procedureInitiationSpecialAccountNumber = $procedureInitiationSpecialAccountNumber;
+
+        return $this;
+    }
+
     public function getPowerOfAttorneyNumber(): ?string
     {
         return $this->powerOfAttorneyNumber;
@@ -1083,26 +1229,26 @@ class Contracts extends BaseEntity
         return $this;
     }
 
-    public function getJudicialRealizationDecisionDate(): ?\DateTimeInterface
+    public function getProcedureInitiationDecisionDate(): ?\DateTimeInterface
     {
-        return $this->judicialRealizationDecisionDate;
+        return $this->procedureInitiationDecisionDate;
     }
 
-    public function setJudicialRealizationDecisionDate(?\DateTimeInterface $judicialRealizationDecisionDate): self
+    public function setProcedureInitiationDecisionDate(?\DateTimeInterface $procedureInitiationDecisionDate): self
     {
-        $this->judicialRealizationDecisionDate = $judicialRealizationDecisionDate;
+        $this->procedureInitiationDecisionDate = $procedureInitiationDecisionDate;
 
         return $this;
     }
 
-    public function getJudicialRealizationResolutionDate(): ?\DateTimeInterface
+    public function getProcedureInitiationResolutionDate(): ?\DateTimeInterface
     {
-        return $this->judicialRealizationResolutionDate;
+        return $this->procedureInitiationResolutionDate;
     }
 
-    public function setJudicialRealizationResolutionDate(?\DateTimeInterface $judicialRealizationResolutionDate): self
+    public function setProcedureInitiationResolutionDate(?\DateTimeInterface $procedureInitiationResolutionDate): self
     {
-        $this->judicialRealizationResolutionDate = $judicialRealizationResolutionDate;
+        $this->procedureInitiationResolutionDate = $procedureInitiationResolutionDate;
 
         return $this;
     }

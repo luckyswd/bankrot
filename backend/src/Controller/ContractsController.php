@@ -9,8 +9,12 @@ use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
 use App\Repository\ContractsRepository;
+use App\Repository\BailiffRepository;
 use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
+use App\Repository\FnsRepository;
+use App\Repository\GostekhnadzorRepository;
+use App\Repository\MchsRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Service\Serializer;
 use Doctrine\DBAL\Types\Types;
@@ -32,6 +36,10 @@ class ContractsController extends AbstractController
         private readonly DocumentTemplateRepository $documentTemplateRepository,
         private readonly CourtRepository $courtRepository,
         private readonly CreditorRepository $creditorRepository,
+        private readonly MchsRepository $mchsRepository,
+        private readonly GostekhnadzorRepository $gostekhnadzorRepository,
+        private readonly FnsRepository $fnsRepository,
+        private readonly BailiffRepository $bailiffRepository,
     ) {
     }
 
@@ -967,8 +975,9 @@ class ContractsController extends AbstractController
             'spouseBirthDate',
             'contractDate',
             'powerOfAttorneyDate',
-            'judicialRealizationDecisionDate',
-            'judicialRealizationResolutionDate',
+            'procedureInitiationDecisionDate',
+            'procedureInitiationResolutionDate',
+            'procedureInitiationDocumentDate',
         ];
         $dateTimeFields = [
             'hearingDateTime',
@@ -985,6 +994,62 @@ class ContractsController extends AbstractController
 
                     if ($court !== null) {
                         $contract->setCourt($court);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'procedureInitiationMchs') {
+                if ($value === null) {
+                    $contract->setProcedureInitiationMchs(null);
+                } elseif (is_numeric($value)) {
+                    $mchs = $this->mchsRepository->find((int)$value);
+
+                    if ($mchs !== null) {
+                        $contract->setProcedureInitiationMchs($mchs);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'procedureInitiationGostekhnadzor') {
+                if ($value === null) {
+                    $contract->setProcedureInitiationGostekhnadzor(null);
+                } elseif (is_numeric($value)) {
+                    $gostekhnadzor = $this->gostekhnadzorRepository->find((int)$value);
+
+                    if ($gostekhnadzor !== null) {
+                        $contract->setProcedureInitiationGostekhnadzor($gostekhnadzor);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'procedureInitiationFns') {
+                if ($value === null) {
+                    $contract->setProcedureInitiationFns(null);
+                } elseif (is_numeric($value)) {
+                    $fns = $this->fnsRepository->find((int)$value);
+
+                    if ($fns !== null) {
+                        $contract->setProcedureInitiationFns($fns);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'procedureInitiationBailiff') {
+                if ($value === null) {
+                    $contract->setProcedureInitiationBailiff(null);
+                } elseif (is_numeric($value)) {
+                    $bailiff = $this->bailiffRepository->find((int)$value);
+
+                    if ($bailiff !== null) {
+                        $contract->setProcedureInitiationBailiff($bailiff);
                     }
                 }
 
