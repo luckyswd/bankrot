@@ -315,6 +315,28 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Дата и время ЕФРСБ', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
     private ?\DateTimeInterface $efrsbDateTime = null;
 
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_REALIZATION->value])]
+    #[OA\Property(
+        description: 'Дата принятия судебного решения',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-06-20',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $judicialRealizationDecisionDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_REALIZATION->value])]
+    #[OA\Property(
+        description: 'Дата объявления резолютивной части судебного решения',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-06-20',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $judicialRealizationResolutionDate = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: 'Кабинет ЕФРСБ', type: Types::STRING, example: 'Кабинет 101', nullable: true)]
@@ -1057,6 +1079,30 @@ class Contracts extends BaseEntity
     public function setEfrsbDateTime(?\DateTimeInterface $efrsbDateTime): self
     {
         $this->efrsbDateTime = $efrsbDateTime;
+
+        return $this;
+    }
+
+    public function getJudicialRealizationDecisionDate(): ?\DateTimeInterface
+    {
+        return $this->judicialRealizationDecisionDate;
+    }
+
+    public function setJudicialRealizationDecisionDate(?\DateTimeInterface $judicialRealizationDecisionDate): self
+    {
+        $this->judicialRealizationDecisionDate = $judicialRealizationDecisionDate;
+
+        return $this;
+    }
+
+    public function getJudicialRealizationResolutionDate(): ?\DateTimeInterface
+    {
+        return $this->judicialRealizationResolutionDate;
+    }
+
+    public function setJudicialRealizationResolutionDate(?\DateTimeInterface $judicialRealizationResolutionDate): self
+    {
+        $this->judicialRealizationResolutionDate = $judicialRealizationResolutionDate;
 
         return $this;
     }

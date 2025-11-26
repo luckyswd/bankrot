@@ -510,19 +510,17 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial', $response);
-        $this->assertArrayHasKey('realization', $response);
-        $this->assertArrayHasKey('procedure_initiation', $response);
-        $this->assertArrayHasKey('procedure', $response);
-        $this->assertArrayHasKey('report', $response);
+        $this->assertArrayHasKey('judicial_realization', $response);
+        $this->assertArrayHasKey('judicial_procedure_initiation', $response);
+        $this->assertArrayHasKey('judicial_procedure', $response);
+        $this->assertArrayHasKey('judicial_report', $response);
 
         $this->assertIsArray($response['basic_info']);
         $this->assertIsArray($response['pre_court']);
-        $this->assertIsArray($response['judicial']);
-        $this->assertIsArray($response['realization']);
-        $this->assertIsArray($response['procedure_initiation']);
-        $this->assertIsArray($response['procedure']);
-        $this->assertIsArray($response['report']);
+        $this->assertIsArray($response['judicial_realization']);
+        $this->assertIsArray($response['judicial_procedure_initiation']);
+        $this->assertIsArray($response['judicial_procedure']);
+        $this->assertIsArray($response['judicial_report']);
 
         if (!empty($response['basic_info'])) {
             $this->assertArrayHasKey('id', $response['basic_info']);
@@ -607,11 +605,10 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial', $response);
-        $this->assertArrayHasKey('realization', $response);
-        $this->assertArrayHasKey('procedure_initiation', $response);
-        $this->assertArrayHasKey('procedure', $response);
-        $this->assertArrayHasKey('report', $response);
+        $this->assertArrayHasKey('judicial_realization', $response);
+        $this->assertArrayHasKey('judicial_procedure_initiation', $response);
+        $this->assertArrayHasKey('judicial_procedure', $response);
+        $this->assertArrayHasKey('judicial_report', $response);
 
         foreach ($response as $groupData) {
             if (!empty($groupData)) {
@@ -636,8 +633,6 @@ class ContractsControllerTest extends BaseTestCase
         $contract1 = $contractsRepository->findOneBy(['contractNumber' => 'CONTRACT-001']);
 
         $this->assertNotNull($contract1);
-        $originalFirstName = $contract1->getFirstName();
-        $originalLastName = $contract1->getLastName();
         $originalMiddleName = $contract1->getMiddleName();
 
         $updateData = [
@@ -658,11 +653,10 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial', $response);
-        $this->assertArrayHasKey('realization', $response);
-        $this->assertArrayHasKey('procedure_initiation', $response);
-        $this->assertArrayHasKey('procedure', $response);
-        $this->assertArrayHasKey('report', $response);
+        $this->assertArrayHasKey('judicial_realization', $response);
+        $this->assertArrayHasKey('judicial_procedure_initiation', $response);
+        $this->assertArrayHasKey('judicial_procedure', $response);
+        $this->assertArrayHasKey('judicial_report', $response);
 
         $this->assertArrayHasKey('id', $response['basic_info']);
         $this->assertEquals($contract1->getId(), $response['basic_info']['id']);

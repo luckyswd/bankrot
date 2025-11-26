@@ -961,8 +961,20 @@ class ContractsController extends AbstractController
     private function updateContractFields(Contracts $contract, array $data): void
     {
         $reflection = new \ReflectionClass($contract);
-        $dateFields = ['birthDate', 'passportIssuedDate', 'spouseBirthDate', 'contractDate', 'powerOfAttorneyDate'];
-        $dateTimeFields = ['hearingDateTime', 'efrsbDateTime', 'marriageTerminationDate'];
+        $dateFields = [
+            'birthDate',
+            'passportIssuedDate',
+            'spouseBirthDate',
+            'contractDate',
+            'powerOfAttorneyDate',
+            'judicialRealizationDecisionDate',
+            'judicialRealizationResolutionDate',
+        ];
+        $dateTimeFields = [
+            'hearingDateTime',
+            'efrsbDateTime',
+            'marriageTerminationDate',
+        ];
 
         foreach ($data as $key => $value) {
             if ($key === 'court') {
