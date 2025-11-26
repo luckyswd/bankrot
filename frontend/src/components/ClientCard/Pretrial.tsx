@@ -108,41 +108,46 @@ export const PretrialTab = ({
         </CardHeader>
         <CardContent>
           <Accordion
-            type="single"
-            collapsible
+            type="multiple"
             className="mb-6"
-            defaultValue="creditorsInfo"
+            defaultValue={["creditorsInfo"]}
           >
             <AccordionItem value="creditorsInfo">
               <AccordionTrigger>
                 <h3 className="text-xl font-semibold">Кредиторы</h3>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-3">
+                <div className="space-y-3 p-1">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="pretrial.creditors" className="font-medium">
                       Кредиторы (можно несколько)
                     </Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const firstAvailable = getAvailableCreditors()[0];
-                        if (firstAvailable) {
-                          appendCreditor(Number(firstAvailable.id));
-                        }
-                      }}
-                      disabled={!hasAvailableCreditors}
-                    >
-                      Добавить кредитора
-                    </Button>
                   </div>
 
                   {creditorFields.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Список пуст. Добавьте кредитора.
-                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="pretrial.creditors.empty">
+                        Кредитор 1
+                      </Label>
+                      <Select
+                        onValueChange={(val) => appendCreditor(Number(val))}
+                        disabled={!hasAvailableCreditors}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите кредитора" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getAvailableCreditors().map((creditor) => (
+                            <SelectItem
+                              key={creditor.id}
+                              value={String(creditor.id)}
+                            >
+                              {creditor.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   ) : (
                     <div className="space-y-3">
                       {creditorFields.map((item, index) => {
@@ -198,106 +203,139 @@ export const PretrialTab = ({
                       })}
                     </div>
                   )}
+
+                                      <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-auto block"
+                      onClick={() => {
+                        const firstAvailable = getAvailableCreditors()[0];
+                        if (firstAvailable) {
+                          appendCreditor(Number(firstAvailable.id));
+                        }
+                      }}
+                      disabled={!hasAvailableCreditors}
+                    >
+                      Добавить кредитора
+                    </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="courtInfo">
+              <AccordionTrigger>
+                <h3 className="text-xl font-semibold">Суд и заседание</h3>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 p-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="pretrial.court">Арбитражный суд</Label>
+                    <Controller
+                      name="pretrial.court"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={toIdString(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите суд" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {referenceData?.courts?.map((court) => (
+                              <SelectItem
+                                key={court.id}
+                                value={String(court.id)}
+                              >
+                                {court.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Доверенность</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Номер"
+                        {...register("pretrial.powerOfAttorneyNumber")}
+                      />
+                      <Controller
+                        name="pretrial.powerOfAttorneyDate"
+                        control={control}
+                        render={({ field }) => (
+                          <DatePickerInput
+                            value={(field.value as string) ?? ""}
+                            onChange={field.onChange}
+                            className="space-y-1"
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Дата и время заседания</Label>
+                    <Controller
+                      name="pretrial.hearingDateTime"
+                      control={control}
+                      render={({ field }) => {
+                        const { date, time } = parseDateTime(
+                          field.value as string
+                        );
+                        return (
+                          <div className="grid grid-cols-2 gap-2">
+                            <DatePickerInput
+                              value={date}
+                              onChange={(nextDate) =>
+                                field.onChange(
+                                  combineDateTime(
+                                    typeof nextDate === "string"
+                                      ? nextDate
+                                      : "",
+                                    time
+                                  )
+                                )
+                              }
+                              className="space-y-1"
+                            />
+                            <div className="space-y-1">
+                              <Input
+                                type="time"
+                                value={time}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    combineDateTime(date, e.target.value)
+                                  )
+                                }
+                              />
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                  </div>
+                  {hasHearingDateTime && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pretrial.efrsbCabinet">
+                        Кабинет ЕФРСБ
+                      </Label>
+                      <Input
+                        id="pretrial.efrsbCabinet"
+                        placeholder="Ссылка или идентификатор кабинета"
+                        {...register("pretrial.efrsbCabinet")}
+                      />
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="pretrial.court">Арбитражный суд</Label>
-              <Controller
-                name="pretrial.court"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={toIdString(field.value)}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите суд" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {referenceData?.courts?.map((court) => (
-                        <SelectItem key={court.id} value={String(court.id)}>
-                          {court.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Доверенность</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="text"
-                  placeholder="Номер"
-                  {...register("pretrial.powerOfAttorneyNumber")}
-                />
-                <Controller
-                  name="pretrial.powerOfAttorneyDate"
-                  control={control}
-                  render={({ field }) => (
-                    <DatePickerInput
-                      value={(field.value as string) ?? ""}
-                      onChange={field.onChange}
-                      className="space-y-1"
-                    />
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Дата и время заседания</Label>
-              <Controller
-                name="pretrial.hearingDateTime"
-                control={control}
-                render={({ field }) => {
-                  const { date, time } = parseDateTime(field.value as string);
-                  return (
-                    <div className="grid grid-cols-2 gap-2">
-                      <DatePickerInput
-                        value={date}
-                        onChange={(nextDate) =>
-                          field.onChange(
-                            combineDateTime(
-                              typeof nextDate === "string" ? nextDate : "",
-                              time
-                            )
-                          )
-                        }
-                        className="space-y-1"
-                      />
-                      <div className="space-y-1">
-                        <Input
-                          type="time"
-                          value={time}
-                          onChange={(e) =>
-                            field.onChange(
-                              combineDateTime(date, e.target.value)
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                  );
-                }}
-              />
-            </div>
-            {hasHearingDateTime && (
-              <div className="space-y-2">
-                <Label htmlFor="pretrial.efrsbCabinet">Кабинет ЕФРСБ</Label>
-                <Input
-                  id="pretrial.efrsbCabinet"
-                  placeholder="Ссылка или идентификатор кабинета"
-                  {...register("pretrial.efrsbCabinet")}
-                />
-              </div>
-            )}
-          </div>
 
           <DocumentsList
             documents={documents}
