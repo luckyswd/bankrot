@@ -510,14 +510,12 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial_realization', $response);
         $this->assertArrayHasKey('judicial_procedure_initiation', $response);
         $this->assertArrayHasKey('judicial_procedure', $response);
         $this->assertArrayHasKey('judicial_report', $response);
 
         $this->assertIsArray($response['basic_info']);
         $this->assertIsArray($response['pre_court']);
-        $this->assertIsArray($response['judicial_realization']);
         $this->assertIsArray($response['judicial_procedure_initiation']);
         $this->assertIsArray($response['judicial_procedure']);
         $this->assertIsArray($response['judicial_report']);
@@ -605,7 +603,6 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial_realization', $response);
         $this->assertArrayHasKey('judicial_procedure_initiation', $response);
         $this->assertArrayHasKey('judicial_procedure', $response);
         $this->assertArrayHasKey('judicial_report', $response);
@@ -653,7 +650,6 @@ class ContractsControllerTest extends BaseTestCase
 
         $this->assertArrayHasKey('basic_info', $response);
         $this->assertArrayHasKey('pre_court', $response);
-        $this->assertArrayHasKey('judicial_realization', $response);
         $this->assertArrayHasKey('judicial_procedure_initiation', $response);
         $this->assertArrayHasKey('judicial_procedure', $response);
         $this->assertArrayHasKey('judicial_report', $response);
