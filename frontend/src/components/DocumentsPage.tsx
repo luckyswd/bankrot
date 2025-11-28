@@ -15,11 +15,9 @@ import { useModalStore } from './Modals/ModalProvider'
 const CATEGORIES = [
   { value: 'basic_info', label: 'Основная информация' },
   { value: 'pre_court', label: 'Досудебка' },
-  { value: 'judicial', label: 'Судебка' },
-  { value: 'realization', label: 'Реализация' },
-  { value: 'procedure_initiation', label: 'Введение процедуры' },
-  { value: 'procedure', label: 'Процедура' },
-  { value: 'report', label: 'Отчет' },
+  { value: 'judicial_procedure_initiation', label: 'Судебка введение процедуры' },
+  { value: 'judicial_procedure', label: 'Судебка процедура' },
+  { value: 'judicial_report', label: 'Судебка отчет' },
 ]
 
 interface Template {

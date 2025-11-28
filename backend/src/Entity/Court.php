@@ -84,4 +84,11 @@ class Court extends BaseEntity
 
         return trim($name);
     }
+
+    public function getShortName(): string
+    {
+        $name = $this->name;
+
+        return str_replace('Арбитражный суд ', '', $name);
+    }
 }

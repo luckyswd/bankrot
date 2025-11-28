@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
+use App\Service\DateHelperService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -1369,5 +1370,44 @@ class Contracts extends BaseEntity
         } else {
             return 'У Должника не имеются возбужденные исполнительные производства.';
         }
+    }
+
+    /**
+     * Для шаблона Судебка введение процедуры. отчёт Публикация ЕФРСБ.
+     */
+    public function getFinancialManagerReportHearingDescription(): string
+    {
+        $hearingDateTime = $this->getEfrsbDateTime();
+
+        if ($hearingDateTime === null || $this->court === null) {
+            return '';
+        }
+
+        $date = $hearingDateTime->format('d');
+        $month = DateHelperService::getMonthNameGenitive($hearingDateTime->format('n'));
+        $year = $hearingDateTime->format('Y');
+        $time = (int)$hearingDateTime->format('G');
+        $minutes = $hearingDateTime->format('i');
+
+        $courtName = $this->court->getShortName();
+        $courtAddress = $this->court->getAddress() ?? '';
+
+        $roomPart = '';
+
+        if ($this->efrsbCabinet !== null && $this->efrsbCabinet !== '') {
+            $roomPart = ', зал ' . $this->efrsbCabinet;
+        }
+
+        return sprintf(
+            'Судебное заседание по рассмотрению отчета финансового управляющего назначено на %s %s %s года в %s час. %s мин. в помещении Арбитражного суда %s по адресу: %s%s',
+            $date,
+            $month,
+            $year,
+            $time,
+            $minutes,
+            $courtName,
+            $courtAddress,
+            $roomPart
+        );
     }
 }
