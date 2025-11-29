@@ -13,6 +13,13 @@ import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import type { ReferenceData } from "@/types/reference";
 
@@ -67,40 +74,84 @@ export const IntroductionTab = ({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.gims">ГИМС</Label>
-              <Input
-                id="judicial_procedure_initiation.gims"
-                placeholder="Выбор из списка"
-                {...register("judicial_procedure_initiation.gims")}
-              />
-            </div>
+            <Controller
+              name="judicial_procedure_initiation.gims"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="judicial_procedure_initiation.gims">
+                    ГИМС
+                  </Label>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="judicial_procedure_initiation.gims">
+                      <SelectValue placeholder="Выберите ГИМС" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {referenceData?.mchs?.map((item) => (
+                        <SelectItem key={item.id} value={String(item.name)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.gostechnadzor">
-                3. Гостехнадзор
-              </Label>
-              <Input
-                id="judicial_procedure_initiation.gostechnadzor"
-                placeholder="Выбор из списка"
-                {...register("judicial_procedure_initiation.gostechnadzor")}
-              />
-            </div>
+            <Controller
+              name="judicial_procedure_initiation.gostechnadzor"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="judicial_procedure_initiation.gostechnadzor">
+                    3. Гостехнадзор
+                  </Label>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="judicial_procedure_initiation.gostechnadzor">
+                      <SelectValue placeholder="Выберите Гостехнадзор" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {referenceData?.gostekhnadzor?.map((item) => (
+                        <SelectItem key={item.id} value={String(item.name)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.fns">ФНС</Label>
-              <Input
-                id="judicial_procedure_initiation.fns"
-                placeholder="Выбор из списка"
-                list="fns-list"
-                {...register("judicial_procedure_initiation.fns")}
-              />
-              <datalist id="fns-list">
-                {referenceData?.fns?.map((item) => (
-                  <option key={item.id} value={item.name} />
-                ))}
-              </datalist>
-            </div>
+            <Controller
+              name="judicial_procedure_initiation.fns"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="judicial_procedure_initiation.fns">ФНС</Label>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="judicial_procedure_initiation.fns">
+                      <SelectValue placeholder="Выберите ФНС" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {referenceData?.fns?.map((item) => (
+                        <SelectItem key={item.id} value={String(item.name)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="judicial_procedure_initiation.documentNumber">
@@ -121,14 +172,32 @@ export const IntroductionTab = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.rosaviation">Росавиация</Label>
-              <Input
-                id="judicial_procedure_initiation.rosaviation"
-                placeholder="Выбор из списка"
-                {...register("judicial_procedure_initiation.rosaviation")}
-              />
-            </div>
+            <Controller
+              name="judicial_procedure_initiation.rosaviation"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="judicial_procedure_initiation.rosaviation">
+                    Росгвардия
+                  </Label>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="judicial_procedure_initiation.rosaviation">
+                      <SelectValue placeholder="Выберите Росгвардию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {referenceData?.rosgvardia?.map((item) => (
+                        <SelectItem key={item.id} value={String(item.name)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="judicial_procedure_initiation.judge">Судья</Label>
@@ -138,12 +207,43 @@ export const IntroductionTab = ({
               />
             </div>
 
+            <Controller
+              name="judicial_procedure_initiation.bailiff"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label htmlFor="judicial_procedure_initiation.bailiff">
+                    Судебный пристав
+                  </Label>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="judicial_procedure_initiation.bailiff">
+                      <SelectValue placeholder="Выберите пристава" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {referenceData?.bailiffs?.map((item) => (
+                        <SelectItem key={item.id} value={String(item.name)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            />
+
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.bailiff">Судебный пристав</Label>
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationDuration">
+                Продолжительность процедуры
+              </Label>
               <Input
-                id="judicial_procedure_initiation.bailiff"
-                placeholder="Выбор из списка"
-                {...register("judicial_procedure_initiation.bailiff")}
+                id="judicial_procedure_initiation.procedureInitiationDuration"
+                placeholder="Укажите срок"
+                {...register(
+                  "judicial_procedure_initiation.procedureInitiationDuration"
+                )}
               />
             </div>
 

@@ -19,6 +19,7 @@ export type PrimaryInfoFields = {
   birthDate?: string | null
   birthPlace?: string | null
   snils?: string | null
+  gender?: string | null
   registrationRegion?: string | null
   registrationDistrict?: string | null
   registrationCity?: string | null
@@ -72,6 +73,7 @@ export type IntroductionFields = {
   fns: string
   documentNumber: string
   procedureInitiationCaseNumber: string
+  procedureInitiationDuration: string
   rosaviation: string
   judge: string
   bailiff: string

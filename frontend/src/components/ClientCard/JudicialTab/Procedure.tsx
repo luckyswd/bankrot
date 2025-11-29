@@ -12,16 +12,19 @@ import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
+import type { ReferenceData } from "@/types/reference";
 
 interface ProcedureTabProps {
   openDocument: (document: { id: number; name: string }) => void;
   onDownload: (document: { id: number; name: string }) => void;
+  referenceData?: ReferenceData;
   contractData?: Record<string, unknown> | null;
 }
 
 export const ProcedureTab = ({
   openDocument,
   onDownload,
+  referenceData,
   contractData,
 }: ProcedureTabProps): JSX.Element => {
   const { register } = useFormContext<FormValues>();
@@ -49,8 +52,14 @@ export const ProcedureTab = ({
               <Input
                 id="judicial_procedure.creditorRequirement"
                 placeholder="Выбор из списка"
+                list="creditors-list"
                 {...register("judicial_procedure.creditorRequirement")}
               />
+              <datalist id="creditors-list">
+                {referenceData?.creditors?.map((item) => (
+                  <option key={item.id} value={item.name} />
+                ))}
+              </datalist>
               <p className="text-xs text-muted-foreground">
                 Наименование кредитора, ОГРН, ИНН, адрес
               </p>
@@ -63,6 +72,7 @@ export const ProcedureTab = ({
               <Input
                 id="judicial_procedure.receivedRequirements"
                 placeholder="Выбор из списка"
+                list="creditors-list"
                 {...register("judicial_procedure.receivedRequirements")}
               />
             </div>

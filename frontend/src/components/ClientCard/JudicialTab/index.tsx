@@ -37,6 +37,7 @@ export const JudicialTab = ({
           <ProcedureTab
             openDocument={openDocument}
             onDownload={onDownload}
+            referenceData={referenceData}
             contractData={contractData}
           />
           <ReportTab
