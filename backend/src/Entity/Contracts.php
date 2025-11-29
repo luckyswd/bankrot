@@ -64,6 +64,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Изменялось ли ФИО должника', type: 'boolean', example: false, nullable: true)]
     private ?bool $isLastNameChanged = null;
 
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
+    #[OA\Property(description: 'Пол', type: 'boolean', example: false, nullable: true)]
+    private ?bool $sex = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Предыдущее ФИО должника (если изменялось)', type: Types::STRING, example: 'Петров Петр Петрович', nullable: true)]
@@ -1298,6 +1303,18 @@ class Contracts extends BaseEntity
     public function setMarriageTerminationDate(?\DateTimeInterface $marriageTerminationDate): self
     {
         $this->marriageTerminationDate = $marriageTerminationDate;
+
+        return $this;
+    }
+
+    public function getSex(): ?bool
+    {
+        return $this->sex;
+    }
+
+    public function setSex(?bool $sex): self
+    {
+        $this->sex = $sex;
 
         return $this;
     }
