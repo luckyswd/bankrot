@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IntroductionTab } from "./Introduction";
 import { ProcedureTab } from "./Procedure";
-import { RealizationTab } from "./Realization";
 import { ReportTab } from "./Report";
 
 import type { ReferenceData } from "@/types/reference";
@@ -21,20 +20,14 @@ export const JudicialTab = ({
 }: JudicialTabProps): JSX.Element => {
   return (
     <TabsContent value="judicial" className="mt-0 p-0 border-0">
-      <Tabs defaultValue="realization">
-        <TabsList className="grid w-full grid-cols-4 h-11 rounded-t-none border-t-0 bg-muted">
-          <TabsTrigger value="realization">Реализация</TabsTrigger>
+      <Tabs defaultValue="introduction">
+        <TabsList className="grid w-full grid-cols-3 h-11 rounded-t-none border-t-0 bg-muted">
           <TabsTrigger value="introduction">Введение процедуры</TabsTrigger>
           <TabsTrigger value="procedure">Процедура</TabsTrigger>
           <TabsTrigger value="report">Отчет</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
-          <RealizationTab
-            openDocument={openDocument}
-            onDownload={onDownload}
-            contractData={contractData}
-          />
           <IntroductionTab
             openDocument={openDocument}
             onDownload={onDownload}

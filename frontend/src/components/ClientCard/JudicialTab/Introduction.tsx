@@ -33,7 +33,7 @@ export const IntroductionTab = ({
 
   const documents =
     (
-      contractData?.procedure_initiation as {
+      contractData?.judicial_procedure_initiation as {
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
@@ -42,7 +42,7 @@ export const IntroductionTab = ({
     <TabsContent value="introduction" className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>1. Введение процедуры</CardTitle>
+          <CardTitle>Введение процедуры</CardTitle>
           <CardDescription>
             Данные для введения процедуры банкротства
           </CardDescription>
@@ -51,7 +51,7 @@ export const IntroductionTab = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Controller
-                name="introduction.courtDecisionDate"
+                name="judicial_procedure_initiation.courtDecisionDate"
                 control={control}
                 render={({ field }) => (
                   <DatePickerInput
@@ -68,32 +68,32 @@ export const IntroductionTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.gims">2. ГИМС</Label>
+              <Label htmlFor="judicial_procedure_initiation.gims">ГИМС</Label>
               <Input
-                id="introduction.gims"
+                id="judicial_procedure_initiation.gims"
                 placeholder="Выбор из списка"
-                {...register("introduction.gims")}
+                {...register("judicial_procedure_initiation.gims")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.gostechnadzor">
+              <Label htmlFor="judicial_procedure_initiation.gostechnadzor">
                 3. Гостехнадзор
               </Label>
               <Input
-                id="introduction.gostechnadzor"
+                id="judicial_procedure_initiation.gostechnadzor"
                 placeholder="Выбор из списка"
-                {...register("introduction.gostechnadzor")}
+                {...register("judicial_procedure_initiation.gostechnadzor")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.fns">4. ФНС</Label>
+              <Label htmlFor="judicial_procedure_initiation.fns">ФНС</Label>
               <Input
-                id="introduction.fns"
+                id="judicial_procedure_initiation.fns"
                 placeholder="Выбор из списка"
                 list="fns-list"
-                {...register("introduction.fns")}
+                {...register("judicial_procedure_initiation.fns")}
               />
               <datalist id="fns-list">
                 {referenceData?.fns?.map((item) => (
@@ -103,67 +103,59 @@ export const IntroductionTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.documentNumber">
-                5. Номер документа
+              <Label htmlFor="judicial_procedure_initiation.documentNumber">
+                Номер документа
               </Label>
               <Input
-                id="introduction.documentNumber"
+                id="judicial_procedure_initiation.documentNumber"
                 placeholder="Укажите номер"
-                {...register("introduction.documentNumber")}
+                {...register("judicial_procedure_initiation.documentNumber")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.caseNumber">6. Номер дела</Label>
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationCaseNumber">Номер дела</Label>
               <Input
-                id="introduction.caseNumber"
-                {...register("introduction.caseNumber")}
+                id="judicial_procedure_initiation.procedureInitiationCaseNumber"
+                {...register("judicial_procedure_initiation.procedureInitiationCaseNumber")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.rosaviation">7. Росавиация</Label>
+              <Label htmlFor="judicial_procedure_initiation.rosaviation">Росавиация</Label>
               <Input
-                id="introduction.rosaviation"
+                id="judicial_procedure_initiation.rosaviation"
                 placeholder="Выбор из списка"
-                {...register("introduction.rosaviation")}
+                {...register("judicial_procedure_initiation.rosaviation")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.caseNumber2">8. Номер дела</Label>
+              <Label htmlFor="judicial_procedure_initiation.judge">Судья</Label>
               <Input
-                id="introduction.caseNumber2"
-                {...register("introduction.caseNumber2")}
+                id="judicial_procedure_initiation.judge"
+                {...register("judicial_procedure_initiation.judge")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.judge">9. Судья</Label>
+              <Label htmlFor="judicial_procedure_initiation.bailiff">Судебный пристав</Label>
               <Input
-                id="introduction.judge"
-                {...register("introduction.judge")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="introduction.bailiff">10. Судебный пристав</Label>
-              <Input
-                id="introduction.bailiff"
+                id="judicial_procedure_initiation.bailiff"
                 placeholder="Выбор из списка"
-                {...register("introduction.bailiff")}
+                {...register("judicial_procedure_initiation.bailiff")}
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label>12. Окончание исполнительных производств</Label>
+              <Label>Окончание исполнительных производств</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   placeholder="Номер"
-                  {...register("introduction.executionNumber")}
+                  {...register("judicial_procedure_initiation.executionNumber")}
                 />
                 <Controller
-                  name="introduction.executionDate"
+                  name="judicial_procedure_initiation.executionDate"
                   control={control}
                   render={({ field }) => (
                     <DatePickerInput
@@ -177,12 +169,12 @@ export const IntroductionTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction.specialAccountNumber">
-                13. Номер спец счёта
+              <Label htmlFor="judicial_procedure_initiation.specialAccountNumber">
+                Номер спец счёта
               </Label>
               <Input
-                id="introduction.specialAccountNumber"
-                {...register("introduction.specialAccountNumber")}
+                id="judicial_procedure_initiation.specialAccountNumber"
+                {...register("judicial_procedure_initiation.specialAccountNumber")}
               />
             </div>
           </div>

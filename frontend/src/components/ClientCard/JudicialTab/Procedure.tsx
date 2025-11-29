@@ -28,13 +28,13 @@ export const ProcedureTab = ({
 
   const documents =
     (
-      contractData?.procedure as {
+      contractData?.judicial_procedure as {
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
 
   return (
-    <TabsContent value="procedure" className="space-y-6">
+    <TabsContent value="judicial_procedure" className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>2. Процедура</CardTitle>
@@ -43,13 +43,13 @@ export const ProcedureTab = ({
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="procedure.creditorRequirement">
+              <Label htmlFor="judicial_procedure.creditorRequirement">
                 1. Требование кредитора
               </Label>
               <Input
-                id="procedure.creditorRequirement"
+                id="judicial_procedure.creditorRequirement"
                 placeholder="Выбор из списка"
-                {...register("procedure.creditorRequirement")}
+                {...register("judicial_procedure.creditorRequirement")}
               />
               <p className="text-xs text-muted-foreground">
                 Наименование кредитора, ОГРН, ИНН, адрес
@@ -57,24 +57,24 @@ export const ProcedureTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="procedure.receivedRequirements">
+              <Label htmlFor="judicial_procedure.receivedRequirements">
                 2. Полученные требования кредитора
               </Label>
               <Input
-                id="procedure.receivedRequirements"
+                id="judicial_procedure.receivedRequirements"
                 placeholder="Выбор из списка"
-                {...register("procedure.receivedRequirements")}
+                {...register("judicial_procedure.receivedRequirements")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="procedure.principalAmount">
+              <Label htmlFor="judicial_procedure.principalAmount">
                 3. Основная сумма
               </Label>
               <Input
-                id="procedure.principalAmount"
+                id="judicial_procedure.principalAmount"
                 type="number"
-                {...register("procedure.principalAmount")}
+                {...register("judicial_procedure.principalAmount")}
               />
             </div>
           </div>

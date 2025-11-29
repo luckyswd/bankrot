@@ -204,21 +204,21 @@ export const PretrialTab = ({
                     </div>
                   )}
 
-                                      <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="ml-auto block"
-                      onClick={() => {
-                        const firstAvailable = getAvailableCreditors()[0];
-                        if (firstAvailable) {
-                          appendCreditor(Number(firstAvailable.id));
-                        }
-                      }}
-                      disabled={!hasAvailableCreditors}
-                    >
-                      Добавить кредитора
-                    </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto block"
+                    onClick={() => {
+                      const firstAvailable = getAvailableCreditors()[0];
+                      if (firstAvailable) {
+                        appendCreditor(Number(firstAvailable.id));
+                      }
+                    }}
+                    disabled={!hasAvailableCreditors}
+                  >
+                    Добавить кредитора
+                  </Button>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -254,6 +254,14 @@ export const PretrialTab = ({
                           </SelectContent>
                         </Select>
                       )}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Номер дела</Label>
+                    <Input
+                      type="text"
+                      placeholder="Номер"
+                      {...register("pretrial.caseNumber")}
                     />
                   </div>
 
