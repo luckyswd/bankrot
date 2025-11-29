@@ -26,13 +26,20 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
     { value: false, label: "Нет" },
   ];
 
+  const genderOptions: SelectOption[] = [
+    { value: "male", label: "Мужской" },
+    { value: "female", label: "Женский" },
+  ];
+
   return (
     <AccordionItem value="mainInfo">
       <AccordionTrigger>
         <h3 className="text-xl font-semibold">Личные данные</h3>
       </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
-        <p className="col-span-3 text-xs text-blue-500">В именительном падаже</p>
+        <p className="col-span-3 text-xs text-blue-500">
+          В именительном падаже
+        </p>
         <div className="space-y-2">
           <Label htmlFor="primaryInfo.lastName" required>
             Фамилия
@@ -124,6 +131,20 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             />
           </div>
         )}
+        <Controller
+          control={control}
+          name="primaryInfo.gender"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="primaryInfo.gender">Пол</Label>
+              <SelectField
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+                options={genderOptions}
+              />
+            </div>
+          )}
+        />
 
         <Controller
           control={control}
