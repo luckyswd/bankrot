@@ -64,10 +64,10 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Изменялось ли ФИО должника', type: 'boolean', example: false, nullable: true)]
     private ?bool $isLastNameChanged = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
-    #[OA\Property(description: 'Пол', type: 'boolean', example: false, nullable: true)]
-    private ?bool $sex = null;
+    #[OA\Property(description: 'Пол', type: Types::STRING, example: false, nullable: true)]
+    private ?string $gender = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
@@ -1312,14 +1312,14 @@ class Contracts extends BaseEntity
         return $this;
     }
 
-    public function getSex(): ?bool
+    public function getGender(): ?string
     {
-        return $this->sex;
+        return $this->gender;
     }
 
-    public function setSex(?bool $sex): self
+    public function setGender(?string $gender): self
     {
-        $this->sex = $sex;
+        $this->gender = $gender;
 
         return $this;
     }
