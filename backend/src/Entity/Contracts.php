@@ -410,8 +410,8 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
-    #[OA\Property(description: 'Продолжительность процедуры', type: Types::STRING, example: '40817810099910004312', nullable: true)]
-    private ?string $procedureInitiationDurationProcedure = null;
+    #[OA\Property(description: 'Продолжительность процедуры', type: Types::STRING, example: 'шесть месяцев', nullable: true)]
+    private ?string $procedureInitiationDuration = null;
 
     public function __construct()
     {
@@ -1324,14 +1324,14 @@ class Contracts extends BaseEntity
         return $this;
     }
 
-    public function getProcedureInitiationDurationProcedure(): ?string
+    public function getProcedureInitiationDuration(): ?string
     {
-        return $this->procedureInitiationDurationProcedure;
+        return $this->procedureInitiationDuration;
     }
 
-    public function setProcedureInitiationDurationProcedure(?string $procedureInitiationDurationProcedure): self
+    public function setProcedureInitiationDuration(?string $procedureInitiationDuration): self
     {
-        $this->procedureInitiationDurationProcedure = $procedureInitiationDurationProcedure;
+        $this->procedureInitiationDuration = $procedureInitiationDuration;
 
         return $this;
     }
