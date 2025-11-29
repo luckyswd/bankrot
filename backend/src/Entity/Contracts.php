@@ -408,6 +408,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Номер спец счёта', type: Types::STRING, example: '40817810099910004312', nullable: true)]
     private ?string $procedureInitiationSpecialAccountNumber = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Продолжительность процедуры', type: Types::STRING, example: '40817810099910004312', nullable: true)]
+    private ?string $procedureInitiationDurationProcedure = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -1315,6 +1320,18 @@ class Contracts extends BaseEntity
     public function setSex(?bool $sex): self
     {
         $this->sex = $sex;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationDurationProcedure(): ?string
+    {
+        return $this->procedureInitiationDurationProcedure;
+    }
+
+    public function setProcedureInitiationDurationProcedure(?string $procedureInitiationDurationProcedure): self
+    {
+        $this->procedureInitiationDurationProcedure = $procedureInitiationDurationProcedure;
 
         return $this;
     }
