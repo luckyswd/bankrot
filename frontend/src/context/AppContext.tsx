@@ -47,8 +47,8 @@ export interface Contract {
   updatedAt?: string
   primaryInfo?: Record<string, unknown>
   pretrial?: Record<string, unknown>
-  introduction?: Record<string, unknown>
-  procedure?: Record<string, unknown>
+  judicial_procedure_initiation?: Record<string, unknown>
+  judicial_procedure?: Record<string, unknown>
   preTrialData?: Record<string, unknown>
   trialData?: Record<string, unknown>
   creditors?: Record<string, unknown>[]
@@ -251,8 +251,8 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       },
       primaryInfo: contractData.primaryInfo ?? {},
       pretrial: contractData.pretrial ?? {},
-      introduction: contractData.introduction ?? {},
-      procedure: contractData.procedure ?? {},
+      judicial_procedure_initiation: contractData.judicial_procedure_initiation ?? {},
+      judicial_procedure: contractData.judicial_procedure ?? {},
       preTrialData: contractData.preTrialData ?? {},
       trialData: contractData.trialData ?? {},
       creditors: contractData.creditors ?? [],

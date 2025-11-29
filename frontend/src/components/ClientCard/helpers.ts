@@ -59,6 +59,7 @@ export const defaultPretrial: PretrialFields = {
   court: "",
   creditors: [],
   powerOfAttorneyNumber: "",
+  caseNumber: "",
   powerOfAttorneyDate: "",
   efrsbCabinet: "",
   efrsbDateTime: "",
@@ -71,9 +72,8 @@ export const defaultIntroduction: IntroductionFields = {
   gostechnadzor: "",
   fns: "",
   documentNumber: "",
-  caseNumber: "",
+  procedureInitiationCaseNumber: "",
   rosaviation: "",
-  caseNumber2: "",
   judge: "",
   bailiff: "",
   executionNumber: "",
@@ -90,8 +90,8 @@ export const defaultProcedure: ProcedureFields = {
 export const createDefaultFormValues = (): FormValues => ({
   primaryInfo: { ...defaultPrimaryInfo },
   pretrial: { ...defaultPretrial },
-  introduction: { ...defaultIntroduction },
-  procedure: { ...defaultProcedure },
+  judicial_procedure_initiation: { ...defaultIntroduction },
+  judicial_procedure: { ...defaultProcedure },
 });
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -260,13 +260,13 @@ export const convertApiDataToFormValues = (
         isRecord(apiData.pre_court) ? apiData.pre_court.creditors : undefined
       ),
     },
-    introduction: {
-      ...defaults.introduction,
-      ...asPartial<IntroductionFields>(apiData.procedure_initiation),
+    judicial_procedure_initiation: {
+      ...defaults.judicial_procedure_initiation,
+      ...asPartial<IntroductionFields>(apiData.judicial_procedure_initiation),
     },
-    procedure: {
-      ...defaults.procedure,
-      ...asPartial<ProcedureFields>(apiData.procedure),
+    judicial_procedure: {
+      ...defaults.judicial_procedure,
+      ...asPartial<ProcedureFields>(apiData.judicial_procedure_initiation),
     },
   };
 };
@@ -318,13 +318,13 @@ export const buildFormValues = (
           : undefined
       ),
     },
-    introduction: {
-      ...defaults.introduction,
-      ...(overrides.introduction ?? {}),
+    judicial_procedure_initiation: {
+      ...defaults.judicial_procedure_initiation,
+      ...(overrides.judicial_procedure_initiation ?? {}),
     },
-    procedure: {
-      ...defaults.procedure,
-      ...(overrides.procedure ?? {}),
+    judicial_procedure: {
+      ...defaults.judicial_procedure,
+      ...(overrides.judicial_procedure ?? {}),
     },
   };
 };
