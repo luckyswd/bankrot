@@ -1407,7 +1407,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * Для шаблона Судебка введение процедуры. отчёт Публикация ЕФРСБ.
+     * Для шаблона Судебка введение процедуры. отчёт 1. Публикация ЕФРСБ.
      */
     public function getFinancialManagerReportHearingDescription(): string
     {
@@ -1443,5 +1443,17 @@ class Contracts extends BaseEntity
             $courtAddress,
             $roomPart
         );
+    }
+
+    /**
+     * Для шаблона Судебка введение процедуры. отчёт 1. Публикация ЕФРСБ.
+     */
+    public function textDeclaredInsolvent(): string
+    {
+        if ($this->gender === 'female') {
+            return 'признана несостоятельной';
+        }
+
+        return 'признан несостоятельным';
     }
 }
