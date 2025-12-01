@@ -67,20 +67,29 @@ export const IntroductionTab = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Controller
-                name="judicial_procedure_initiation.courtDecisionDate"
+                name="judicial_procedure_initiation.procedureInitiationDecisionDate"
                 control={control}
                 render={({ field }) => (
                   <DatePickerInput
-                    label="Дата решения суда"
+                    label="Дата принятия судебного решения"
                     value={(field.value as string) ?? ""}
                     onChange={field.onChange}
                   />
                 )}
               />
-              <p className="text-xs text-muted-foreground">
-                Если ставится дата суда, то информация не будет отображена в
-                документе
-              </p>
+            </div>
+                            <div className="space-y-2">
+              <Controller
+                name="judicial_procedure_initiation.procedureInitiationResolutionDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePickerInput
+                    label="Дата объявления резолютивной части судебного решения"
+                    value={(field.value as string) ?? ""}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             <Controller
@@ -163,13 +172,13 @@ export const IntroductionTab = ({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.documentNumber">
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationDocNumber">
                 Номер документа
               </Label>
               <Input
-                id="judicial_procedure_initiation.documentNumber"
+                id="judicial_procedure_initiation.procedureInitiationDocNumber"
                 placeholder="Укажите номер"
-                {...register("judicial_procedure_initiation.documentNumber")}
+                {...register("judicial_procedure_initiation.procedureInitiationDocNumber")}
               />
             </div>
 
@@ -242,7 +251,7 @@ export const IntroductionTab = ({
                 </div>
               )}
             />
-
+{/* 
             <div className="space-y-2">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationDuration">
                 Продолжительность процедуры
@@ -275,15 +284,15 @@ export const IntroductionTab = ({
                   )}
                 />
               </div>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.specialAccountNumber">
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber">
                 Номер спец счёта
               </Label>
               <Input
-                id="judicial_procedure_initiation.specialAccountNumber"
-                {...register("judicial_procedure_initiation.specialAccountNumber")}
+                id="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber"
+                {...register("judicial_procedure_initiation.procedureInitiationSpecialAccountNumber")}
               />
             </div>
           </div>

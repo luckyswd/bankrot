@@ -67,11 +67,12 @@ export type PretrialFields = {
 }
 
 export type IntroductionFields = {
-  courtDecisionDate: string
+  procedureInitiationDecisionDate: string
+  procedureInitiationResolutionDate: string
   procedureInitiationMchs: string
   procedureInitiationGostekhnadzor: string
   procedureInitiationFns: string
-  documentNumber: string
+  procedureInitiationDocNumber: string
   procedureInitiationCaseNumber: string
   procedureInitiationDuration: string
   procedureInitiationRoszdrav: string
@@ -79,7 +80,7 @@ export type IntroductionFields = {
   procedureInitiationBailiff: string
   executionNumber: string
   executionDate: string
-  specialAccountNumber: string
+  procedureInitiationSpecialAccountNumber: string
 }
 
 export type ProcedureFields = {

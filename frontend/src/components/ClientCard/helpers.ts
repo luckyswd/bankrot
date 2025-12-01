@@ -68,11 +68,12 @@ export const defaultPretrial: PretrialFields = {
 };
 
 export const defaultIntroduction: IntroductionFields = {
-  courtDecisionDate: "",
+  procedureInitiationDecisionDate: "",
+  procedureInitiationResolutionDate: "",
   procedureInitiationMchs: "",
   procedureInitiationGostekhnadzor: "",
   procedureInitiationFns: "",
-  documentNumber: "",
+  procedureInitiationDocNumber: "",
   procedureInitiationCaseNumber: "",
   procedureInitiationDuration: "",
   procedureInitiationRoszdrav: "",
@@ -80,7 +81,7 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationBailiff: "",
   executionNumber: "",
   executionDate: "",
-  specialAccountNumber: "",
+  procedureInitiationSpecialAccountNumber: "",
 };
 
 export const defaultProcedure: ProcedureFields = {
@@ -195,12 +196,12 @@ export const convertApiDataToFormValues = (
   const basicInfoRecord = isRecord(apiData.basic_info)
     ? (apiData.basic_info as Record<string, unknown>)
     : {};
-  const introductionData =
-    apiData.judicial_procedure_initiation ?? apiData.procedure_initiation;
-  const introductionRecord = isRecord(introductionData)
-    ? (introductionData as Record<string, unknown>)
-    : {};
-  const introduction = asPartial<IntroductionFields>(introductionData);
+  // const introductionData =
+  //   apiData.judicial_procedure_initiation ?? apiData.procedure_initiation;
+  // const introductionRecord = isRecord(introductionData)
+  //   ? (introductionData as Record<string, unknown>)
+  //   : {};
+  // const introduction = asPartial<IntroductionFields>(introductionData);
 
   return {
     ...defaults,
