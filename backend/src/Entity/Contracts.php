@@ -89,7 +89,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Место рождения должника', type: Types::STRING, example: 'г. Москва', nullable: true)]
     private ?string $birthPlace = null;
 
-    // Адрес регистрации (отдельные поля)
+    #[ORM\Column(length: 2000, nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
+    #[OA\Property(description: 'Фактическое место проживания', type: Types::STRING, example: 'Воронеж, Район 20 район, г. Воронеж, ул. Центральная, д. 69, кв. 257', nullable: true)]
+    private ?string $actualPlaceResidence = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Субъект РФ (регион)', type: Types::STRING, example: 'Санкт-Петербург', nullable: true)]
@@ -1336,6 +1340,18 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    public function getActualPlaceResidence(): ?string
+    {
+        return $this->actualPlaceResidence;
+    }
+
+    public function setActualPlaceResidence(?string $actualPlaceResidence): self
+    {
+        $this->actualPlaceResidence = $actualPlaceResidence;
+
+        return $this;
+    }
+
     /**
      * Для шаблона Досудебка. Заявление о признании банкротом
      */
@@ -1455,5 +1471,98 @@ class Contracts extends BaseEntity
         }
 
         return 'признан несостоятельным';
+    }
+
+    /**
+     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
+     *
+     * @example '24 июня 2025 г.'
+     */
+    public function getProcedureInitiationDateForPublication(): string
+    {
+        $date = $this->procedureInitiationDecisionDate ?? $this->procedureInitiationResolutionDate;
+
+        if ($date === null) {
+            return '';
+        }
+
+        $day = $date->format('d');
+        $month = DateHelperService::getMonthNameGenitive($date->format('n'));
+        $year = $date->format('Y');
+
+        return sprintf('«%s» %s %s г.', $day, $month, $year);
+    }
+
+    /**
+     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
+     *
+     * @example '12.12.2025 г. (резолютивная часть объявлена 10.12.2025 г.)'
+     */
+    public function getProcedureInitiationDateWithResolution(): string
+    {
+        $decisionDate = $this->procedureInitiationDecisionDate;
+        $resolutionDate = $this->procedureInitiationResolutionDate;
+
+        // Если есть обе даты
+        if ($decisionDate !== null && $resolutionDate !== null) {
+            $decisionFormatted = $decisionDate->format('d.m.Y');
+            $resolutionFormatted = $resolutionDate->format('d.m.Y');
+
+            return sprintf('%s г. (резолютивная часть объявлена %s г.)', $decisionFormatted, $resolutionFormatted);
+        }
+
+        // Если есть только дата решения
+        if ($decisionDate !== null) {
+            return $decisionDate->format('d.m.Y') . ' г.';
+        }
+
+        // Если есть только дата резолютивной части
+        if ($resolutionDate !== null) {
+            return $resolutionDate->format('d.m.Y') . ' г. (резолютивная часть)';
+        }
+
+        return '';
+    }
+
+    /**
+     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
+     *
+     * @example 'заседание-25.11.24 в 10:05, зал 3052'
+     */
+    public function getEfrsbHearingInfo(): string
+    {
+        $efrsbDateTime = $this->getEfrsbDateTime();
+
+        if ($efrsbDateTime === null) {
+            return '';
+        }
+
+        $date = $efrsbDateTime->format('d.m.y');
+        $time = $efrsbDateTime->format('H:i');
+
+        $result = sprintf('заседание-%s в %s', $date, $time);
+
+        $cabinet = $this->getEfrsbCabinet();
+
+        if ($cabinet !== null && $cabinet !== '') {
+            $result .= ', зал ' . $cabinet;
+        }
+
+        return $result;
+    }
+
+    public function getPhoneAndEmail(): string
+    {
+        $parts = [];
+
+        if ($this->phone !== null && $this->phone !== '') {
+            $parts[] = $this->phone;
+        }
+
+        if ($this->email !== null && $this->email !== '') {
+            $parts[] = $this->email;
+        }
+
+        return implode(', ', $parts);
     }
 }
