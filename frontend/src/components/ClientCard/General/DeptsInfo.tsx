@@ -25,13 +25,13 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
       </h3></AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.debtAmount">Сумма долга</Label>
+          <Label htmlFor="basic_info.debtAmount">Сумма долга</Label>
           <Input
-            id="primaryInfo.debtAmount"
+            id="basic_info.debtAmount"
             type="number"
             step="0.01"
             placeholder="1500000.50"
-            {...register("primaryInfo.debtAmount")}
+            {...register("basic_info.debtAmount")}
           />
         </div>
 
@@ -39,7 +39,7 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
           <Label>Наличие возбужденных исполнительных производств</Label>
           <Controller
             control={control}
-            name="primaryInfo.hasEnforcementProceedings"
+            name="basic_info.hasEnforcementProceedings"
             render={({ field }) => (
               <SelectField
                 value={field.value}

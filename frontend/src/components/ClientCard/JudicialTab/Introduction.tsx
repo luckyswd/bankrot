@@ -37,6 +37,15 @@ export const IntroductionTab = ({
   contractData,
 }: IntroductionTabProps): JSX.Element => {
   const { register, control } = useFormContext<FormValues>();
+  const toIdString = (value: unknown) => {
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
+    }
+    if (value && typeof value === "object" && "id" in (value as any)) {
+      return String((value as any).id);
+    }
+    return "";
+  };
 
   const documents =
     (
@@ -58,40 +67,49 @@ export const IntroductionTab = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Controller
-                name="judicial_procedure_initiation.courtDecisionDate"
+                name="judicial_procedure_initiation.procedureInitiationDecisionDate"
                 control={control}
                 render={({ field }) => (
                   <DatePickerInput
-                    label="1. Дата решения суда"
+                    label="Дата принятия судебного решения"
                     value={(field.value as string) ?? ""}
                     onChange={field.onChange}
                   />
                 )}
               />
-              <p className="text-xs text-muted-foreground">
-                Если ставится дата суда, то информация не будет отображена в
-                документе
-              </p>
+            </div>
+                            <div className="space-y-2">
+              <Controller
+                name="judicial_procedure_initiation.procedureInitiationResolutionDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePickerInput
+                    label="Дата объявления резолютивной части судебного решения"
+                    value={(field.value as string) ?? ""}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             <Controller
-              name="judicial_procedure_initiation.gims"
+              name="judicial_procedure_initiation.procedureInitiationMchs"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.gims">
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationMchs">
                     ГИМС
                   </Label>
                   <Select
-                    value={field.value ?? ""}
+                    value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.gims">
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationMchs">
                       <SelectValue placeholder="Выберите ГИМС" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.mchs?.map((item) => (
-                        <SelectItem key={item.id} value={String(item.name)}>
+                        <SelectItem key={item.id} value={String(item.id)}>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -102,23 +120,23 @@ export const IntroductionTab = ({
             />
 
             <Controller
-              name="judicial_procedure_initiation.gostechnadzor"
+              name="judicial_procedure_initiation.procedureInitiationGostekhnadzor"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.gostechnadzor">
-                    3. Гостехнадзор
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationGostekhnadzor">
+                    Гостехнадзор
                   </Label>
                   <Select
-                    value={field.value ?? ""}
+                    value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.gostechnadzor">
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationGostekhnadzor">
                       <SelectValue placeholder="Выберите Гостехнадзор" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.gostekhnadzor?.map((item) => (
-                        <SelectItem key={item.id} value={String(item.name)}>
+                        <SelectItem key={item.id} value={String(item.id)}>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -129,21 +147,21 @@ export const IntroductionTab = ({
             />
 
             <Controller
-              name="judicial_procedure_initiation.fns"
+              name="judicial_procedure_initiation.procedureInitiationFns"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.fns">ФНС</Label>
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationFns">ФНС</Label>
                   <Select
-                    value={field.value ?? ""}
+                    value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.fns">
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationFns">
                       <SelectValue placeholder="Выберите ФНС" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.fns?.map((item) => (
-                        <SelectItem key={item.id} value={String(item.name)}>
+                        <SelectItem key={item.id} value={String(item.id)}>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -154,13 +172,13 @@ export const IntroductionTab = ({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.documentNumber">
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationDocNumber">
                 Номер документа
               </Label>
               <Input
-                id="judicial_procedure_initiation.documentNumber"
+                id="judicial_procedure_initiation.procedureInitiationDocNumber"
                 placeholder="Укажите номер"
-                {...register("judicial_procedure_initiation.documentNumber")}
+                {...register("judicial_procedure_initiation.procedureInitiationDocNumber")}
               />
             </div>
 
@@ -173,23 +191,23 @@ export const IntroductionTab = ({
             </div>
 
             <Controller
-              name="judicial_procedure_initiation.rosaviation"
+              name="judicial_procedure_initiation.procedureInitiationRoszdrav"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.rosaviation">
-                    Росгвардия
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationRoszdrav">
+                    Росздрав
                   </Label>
                   <Select
-                    value={field.value ?? ""}
+                    value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.rosaviation">
-                      <SelectValue placeholder="Выберите Росгвардию" />
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationRoszdrav">
+                      <SelectValue placeholder="Выберите Росздрав" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.rosgvardia?.map((item) => (
-                        <SelectItem key={item.id} value={String(item.name)}>
+                        <SelectItem key={item.id} value={String(item.id)}>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -200,31 +218,31 @@ export const IntroductionTab = ({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.judge">Судья</Label>
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationJudge">Судья</Label>
               <Input
-                id="judicial_procedure_initiation.judge"
-                {...register("judicial_procedure_initiation.judge")}
+                id="judicial_procedure_initiation.procedureInitiationJudge"
+                {...register("judicial_procedure_initiation.procedureInitiationJudge")}
               />
             </div>
 
             <Controller
-              name="judicial_procedure_initiation.bailiff"
+              name="judicial_procedure_initiation.procedureInitiationBailiff"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.bailiff">
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationBailiff">
                     Судебный пристав
                   </Label>
                   <Select
-                    value={field.value ?? ""}
+                    value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.bailiff">
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationBailiff">
                       <SelectValue placeholder="Выберите пристава" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.bailiffs?.map((item) => (
-                        <SelectItem key={item.id} value={String(item.name)}>
+                        <SelectItem key={item.id} value={String(item.id)}>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -233,7 +251,7 @@ export const IntroductionTab = ({
                 </div>
               )}
             />
-
+{/* 
             <div className="space-y-2">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationDuration">
                 Продолжительность процедуры
@@ -266,15 +284,15 @@ export const IntroductionTab = ({
                   )}
                 />
               </div>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.specialAccountNumber">
+              <Label htmlFor="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber">
                 Номер спец счёта
               </Label>
               <Input
-                id="judicial_procedure_initiation.specialAccountNumber"
-                {...register("judicial_procedure_initiation.specialAccountNumber")}
+                id="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber"
+                {...register("judicial_procedure_initiation.procedureInitiationSpecialAccountNumber")}
               />
             </div>
           </div>

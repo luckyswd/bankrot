@@ -27,7 +27,7 @@ export const FamilyInfo: FC<Props> = ({
 }) => {
   const maritalStatus = useWatch({
     control,
-    name: "primaryInfo.maritalStatus",
+    name: "basic_info.maritalStatus",
   }) as string | undefined;
 
   const shouldShowSpouseFields =
@@ -37,7 +37,7 @@ export const FamilyInfo: FC<Props> = ({
 
   const hasMinorChildren = useWatch({
     control,
-    name: "primaryInfo.hasMinorChildren",
+    name: "basic_info.hasMinorChildren",
   }) as boolean | undefined;
 
 
@@ -49,10 +49,10 @@ export const FamilyInfo: FC<Props> = ({
   // Управление списком детей
   const { fields, append, remove } = useFieldArray<
     FormValues,
-    "primaryInfo.children"
+    "basic_info.children"
   >({
     control,
-    name: "primaryInfo.children",
+    name: "basic_info.children",
   });
 
 
@@ -73,7 +73,7 @@ export const FamilyInfo: FC<Props> = ({
   })
 
   // Отслеживаем изменения для всех детей сразу
-  const childrenValues = watch("primaryInfo.children") ?? [];
+  const childrenValues = watch("basic_info.children") ?? [];
 
   return (
     <AccordionItem value="familyInfo">
@@ -84,7 +84,7 @@ export const FamilyInfo: FC<Props> = ({
           <Label>Семейное положение</Label>
           <Controller
             control={control}
-            name="primaryInfo.maritalStatus"
+            name="basic_info.maritalStatus"
             render={({ field }) => (
               <SelectField
                 value={field.value}
@@ -98,17 +98,17 @@ export const FamilyInfo: FC<Props> = ({
         {shouldShowSpouseFields && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="primaryInfo.spouseFullName">ФИО супруга</Label>
+              <Label htmlFor="basic_info.spouseFullName">ФИО супруга</Label>
               <Input
-                id="primaryInfo.spouseFullName"
+                id="basic_info.spouseFullName"
                 placeholder="Иванова Мария Петровна"
-                {...register("primaryInfo.spouseFullName")}
+                {...register("basic_info.spouseFullName")}
               />
             </div>
 
             <Controller
               control={control}
-              name="primaryInfo.spouseBirthDate"
+              name="basic_info.spouseBirthDate"
               render={({ field }) => (
                 <DatePickerInput
                   label="Дата рождения супруга"
@@ -126,7 +126,7 @@ export const FamilyInfo: FC<Props> = ({
             {isDivorcedWithin3Years && (
               <Controller
                 control={control}
-                name="primaryInfo.marriageTerminationDate"
+                name="basic_info.marriageTerminationDate"
                 render={({ field }) => (
                   <DatePickerInput
                     label="Дата расторжения брака"
@@ -149,7 +149,7 @@ export const FamilyInfo: FC<Props> = ({
           <Label>Наличие несовершеннолетних детей</Label>
           <Controller
             control={control}
-            name="primaryInfo.hasMinorChildren"
+            name="basic_info.hasMinorChildren"
             render={({ field }) => (
               <SelectField
                 value={field.value}
@@ -205,35 +205,35 @@ export const FamilyInfo: FC<Props> = ({
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor={`primaryInfo.children.${index}.lastName`}>
+                    <Label htmlFor={`basic_info.children.${index}.lastName`}>
                       Фамилия *
                     </Label>
                     <Input
-                      id={`primaryInfo.children.${index}.lastName`}
+                      id={`basic_info.children.${index}.lastName`}
                       placeholder="Иванов"
-                      {...register(`primaryInfo.children.${index}.lastName`)}
+                      {...register(`basic_info.children.${index}.lastName`)}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`primaryInfo.children.${index}.firstName`}>
+                    <Label htmlFor={`basic_info.children.${index}.firstName`}>
                       Имя *
                     </Label>
                     <Input
-                      id={`primaryInfo.children.${index}.firstName`}
+                      id={`basic_info.children.${index}.firstName`}
                       placeholder="Александр"
-                      {...register(`primaryInfo.children.${index}.firstName`)}
+                      {...register(`basic_info.children.${index}.firstName`)}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`primaryInfo.children.${index}.middleName`}>
+                    <Label htmlFor={`basic_info.children.${index}.middleName`}>
                       Отчество
                     </Label>
                     <Input
-                      id={`primaryInfo.children.${index}.middleName`}
+                      id={`basic_info.children.${index}.middleName`}
                       placeholder="Иванович"
-                      {...register(`primaryInfo.children.${index}.middleName`)}
+                      {...register(`basic_info.children.${index}.middleName`)}
                     />
                   </div>
 
@@ -241,7 +241,7 @@ export const FamilyInfo: FC<Props> = ({
                     <Label>Изменялось ли ФИО</Label>
                     <Controller
                       control={control}
-                      name={`primaryInfo.children.${index}.isLastNameChanged`}
+                      name={`basic_info.children.${index}.isLastNameChanged`}
                       render={({ field }) => (
                         <SelectField
                           value={field.value}
@@ -255,15 +255,15 @@ export const FamilyInfo: FC<Props> = ({
                   {childIsLastNameChanged === true && (
                     <div className="space-y-2 lg:col-span-2">
                       <Label
-                        htmlFor={`primaryInfo.children.${index}.changedLastName`}
+                        htmlFor={`basic_info.children.${index}.changedLastName`}
                       >
                         Предыдущее ФИО
                       </Label>
                       <Input
-                        id={`primaryInfo.children.${index}.changedLastName`}
+                        id={`basic_info.children.${index}.changedLastName`}
                         placeholder="Петров Петр Петрович"
                         {...register(
-                          `primaryInfo.children.${index}.changedLastName`
+                          `basic_info.children.${index}.changedLastName`
                         )}
                       />
                     </div>
@@ -271,7 +271,7 @@ export const FamilyInfo: FC<Props> = ({
 
                   <Controller
                     control={control}
-                    name={`primaryInfo.children.${index}.birthDate`}
+                    name={`basic_info.children.${index}.birthDate`}
                     render={({ field }) => (
                       <DatePickerInput
                         label="Дата рождения *"

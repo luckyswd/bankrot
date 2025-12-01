@@ -68,19 +68,20 @@ export const defaultPretrial: PretrialFields = {
 };
 
 export const defaultIntroduction: IntroductionFields = {
-  courtDecisionDate: "",
-  gims: "",
-  gostechnadzor: "",
-  fns: "",
-  documentNumber: "",
+  procedureInitiationDecisionDate: "",
+  procedureInitiationResolutionDate: "",
+  procedureInitiationMchs: "",
+  procedureInitiationGostekhnadzor: "",
+  procedureInitiationFns: "",
+  procedureInitiationDocNumber: "",
   procedureInitiationCaseNumber: "",
   procedureInitiationDuration: "",
-  rosaviation: "",
-  judge: "",
-  bailiff: "",
+  procedureInitiationRoszdrav: "",
+  procedureInitiationJudge: "",
+  procedureInitiationBailiff: "",
   executionNumber: "",
   executionDate: "",
-  specialAccountNumber: "",
+  procedureInitiationSpecialAccountNumber: "",
 };
 
 export const defaultProcedure: ProcedureFields = {
@@ -90,8 +91,8 @@ export const defaultProcedure: ProcedureFields = {
 };
 
 export const createDefaultFormValues = (): FormValues => ({
-  primaryInfo: { ...defaultPrimaryInfo },
-  pretrial: { ...defaultPretrial },
+  basic_info: { ...defaultPrimaryInfo },
+  pre_court: { ...defaultPretrial },
   judicial_procedure_initiation: { ...defaultIntroduction },
   judicial_procedure: { ...defaultProcedure },
 });
@@ -195,11 +196,17 @@ export const convertApiDataToFormValues = (
   const basicInfoRecord = isRecord(apiData.basic_info)
     ? (apiData.basic_info as Record<string, unknown>)
     : {};
+  // const introductionData =
+  //   apiData.judicial_procedure_initiation ?? apiData.procedure_initiation;
+  // const introductionRecord = isRecord(introductionData)
+  //   ? (introductionData as Record<string, unknown>)
+  //   : {};
+  // const introduction = asPartial<IntroductionFields>(introductionData);
 
   return {
     ...defaults,
-    primaryInfo: {
-      ...defaults.primaryInfo,
+    basic_info: {
+      ...defaults.basic_info,
       lastName: basicInfo.lastName ?? null,
       firstName: basicInfo.firstName ?? null,
       middleName: basicInfo.middleName ?? null,
@@ -220,6 +227,7 @@ export const convertApiDataToFormValues = (
       birthDate: formatDate(basicInfo.birthDate),
       birthPlace: basicInfo.birthPlace ?? null,
       snils: basicInfo.snils ?? null,
+      gender: basicInfo.gender ?? null,
       registrationRegion: basicInfo.registrationRegion ?? null,
       registrationDistrict: basicInfo.registrationDistrict ?? null,
       registrationCity: basicInfo.registrationCity ?? null,
@@ -255,8 +263,8 @@ export const convertApiDataToFormValues = (
       contractDate: formatDate(basicInfo.contractDate),
       work: asBool(basicInfo.work),
     },
-    pretrial: {
-      ...defaults.pretrial,
+    pre_court: {
+      ...defaults.pre_court,
       ...asPartial<PretrialFields>(apiData.pre_court),
       creditors: normalizeCreditors(
         isRecord(apiData.pre_court) ? apiData.pre_court.creditors : undefined
@@ -264,11 +272,11 @@ export const convertApiDataToFormValues = (
     },
     judicial_procedure_initiation: {
       ...defaults.judicial_procedure_initiation,
-      ...asPartial<IntroductionFields>(apiData.judicial_procedure_initiation),
+      ...asPartial<PretrialFields>(apiData.judicial_procedure_initiation),
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,
-      ...asPartial<ProcedureFields>(apiData.judicial_procedure_initiation),
+      ...asPartial<ProcedureFields>(apiData.judicial_procedure),
     },
   };
 };
@@ -291,32 +299,32 @@ export const buildFormValues = (
     return convertApiDataToFormValues(contract);
   }
 
-  // Если данные в старом формате (primaryInfo, pretrial и т.д.)
+  // Если данные в старом формате (basic_info, pre_court и т.д.)
   const overrides = contract as Partial<FormSections>;
 
-  const primaryInfoOverrides: Partial<PrimaryInfoFields> = overrides.primaryInfo
-    ? { ...overrides.primaryInfo }
+  const primaryInfoOverrides: Partial<PrimaryInfoFields> = overrides.basic_info
+    ? { ...overrides.basic_info }
     : {};
   const mergedPrimaryInfo = {
-    ...defaults.primaryInfo,
+    ...defaults.basic_info,
     ...primaryInfoOverrides,
   };
 
   return {
     ...defaults,
     ...contract,
-    primaryInfo: {
+    basic_info: {
       ...mergedPrimaryInfo,
       children: normalizeChildren(
         primaryInfoOverrides.children ?? mergedPrimaryInfo.children
       ),
     },
-    pretrial: {
-      ...defaults.pretrial,
-      ...(overrides.pretrial ?? {}),
+    pre_court: {
+      ...defaults.pre_court,
+      ...(overrides.pre_court ?? {}),
       creditors: normalizeCreditors(
-        overrides.pretrial
-          ? (overrides.pretrial as Record<string, unknown>).creditors
+        overrides.pre_court
+          ? (overrides.pre_court as Record<string, unknown>).creditors
           : undefined
       ),
     },

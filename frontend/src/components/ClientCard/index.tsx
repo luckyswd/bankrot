@@ -63,10 +63,10 @@ function ClientCard() {
     }
 
     const apiData: Record<string, unknown> = {
-      basic_info: currentValues.primaryInfo || {},
+      basic_info: currentValues.basic_info || {},
       pre_court: {
-        ...(currentValues.pretrial || {}),
-        creditors: currentValues.pretrial?.creditors ?? [],
+        ...(currentValues.pre_court || {}),
+        creditors: currentValues.pre_court?.creditors ?? [],
       },
       judicial_procedure_initiation: currentValues.judicial_procedure_initiation || {},
       judicial_procedure: currentValues.judicial_procedure || {},
@@ -212,10 +212,10 @@ function ClientCard() {
     }
   };
 
-  const primaryInfo = (watchedValues.primaryInfo ??
+  const basic_info = (watchedValues.basic_info ??
     {}) as Partial<PrimaryInfoFields>;
   const fullName =
-    [primaryInfo.lastName, primaryInfo.firstName, primaryInfo.middleName]
+    [basic_info.lastName, basic_info.firstName, basic_info.middleName]
       .filter(Boolean)
       .join(" ") ||
     contract?.contractNumber ||
@@ -254,7 +254,7 @@ function ClientCard() {
                 <TabsTrigger value="primary" className="text-sm font-medium">
                   Основная информация
                 </TabsTrigger>
-                <TabsTrigger value="pretrial" className="text-sm font-medium">
+                <TabsTrigger value="pre_court" className="text-sm font-medium">
                   Досудебка
                 </TabsTrigger>
                 <TabsTrigger value="judicial" className="text-sm font-medium">
