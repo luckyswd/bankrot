@@ -22,7 +22,7 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
   const isWorking =
     useWatch({
       control,
-      name: "primaryInfo.work",
+      name: "basic_info.work",
     }) ?? false;
 
   return (
@@ -31,7 +31,7 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
         <div className="flex items-center gap-3">
           <h3 className="text-xl font-semibold">Работа и образование</h3>
           <Controller
-            name="primaryInfo.work"
+            name="basic_info.work"
             control={control}
             render={({ field }) => {
               return (
@@ -55,7 +55,7 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
           <Label>Является ли студентом</Label>
           <Controller
             control={control}
-            name="primaryInfo.isStudent"
+            name="basic_info.isStudent"
             render={({ field }) => (
               <SelectField
                 value={field.value}
@@ -68,48 +68,48 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
         </div>
 
         <div className="space-y-2 lg:col-span-2">
-          <Label htmlFor="primaryInfo.employerName">
+          <Label htmlFor="basic_info.employerName">
             Наименование работодателя
           </Label>
           <Input
-            id="primaryInfo.employerName"
+            id="basic_info.employerName"
             placeholder='ООО "Рога и Копыта"'
-            {...register("primaryInfo.employerName")}
+            {...register("basic_info.employerName")}
             disabled={!isWorking}
           />
         </div>
 
         <div className="space-y-2 lg:col-span-2">
-          <Label htmlFor="primaryInfo.employerAddress">
+          <Label htmlFor="basic_info.employerAddress">
             Адрес работодателя
           </Label>
           <Input
-            id="primaryInfo.employerAddress"
+            id="basic_info.employerAddress"
             placeholder="г. Москва, ул. Ленина, д. 1"
-            {...register("primaryInfo.employerAddress")}
+            {...register("basic_info.employerAddress")}
             disabled={!isWorking}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.employerInn">ИНН работодателя</Label>
+          <Label htmlFor="basic_info.employerInn">ИНН работодателя</Label>
           <Input
-            id="primaryInfo.employerInn"
+            id="basic_info.employerInn"
             placeholder="1234567890"
             maxLength={12}
-            {...register("primaryInfo.employerInn")}
+            {...register("basic_info.employerInn")}
             disabled={!isWorking}
           />
         </div>
 
         <div className="space-y-2 lg:col-span-3">
-          <Label htmlFor="primaryInfo.socialBenefits">
+          <Label htmlFor="basic_info.socialBenefits">
             Пенсии и социальные выплаты
           </Label>
           <Input
-            id="primaryInfo.socialBenefits"
+            id="basic_info.socialBenefits"
             placeholder="Алименты, пособие, ЕДВ, прочее"
-            {...register("primaryInfo.socialBenefits")}
+            {...register("basic_info.socialBenefits")}
           />
         </div>
       </AccordionContent>

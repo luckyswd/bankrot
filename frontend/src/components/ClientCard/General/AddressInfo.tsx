@@ -18,86 +18,86 @@ export const AddressInfo: FC<Props> = ({ register }) => {
       </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationRegion">
+          <Label htmlFor="basic_info.registrationRegion">
             Субъект РФ (регион)
           </Label>
           <Input
-            id="primaryInfo.registrationRegion"
+            id="basic_info.registrationRegion"
             placeholder="Санкт-Петербург"
-            {...register("primaryInfo.registrationRegion")}
+            {...register("basic_info.registrationRegion")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationDistrict">Район</Label>
+          <Label htmlFor="basic_info.registrationDistrict">Район</Label>
           <Input
-            id="primaryInfo.registrationDistrict"
+            id="basic_info.registrationDistrict"
             placeholder="Московский"
-            {...register("primaryInfo.registrationDistrict")}
+            {...register("basic_info.registrationDistrict")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationCity">Город</Label>
+          <Label htmlFor="basic_info.registrationCity">Город</Label>
           <Input
-            id="primaryInfo.registrationCity"
+            id="basic_info.registrationCity"
             placeholder="Санкт-Петербург"
-            {...register("primaryInfo.registrationCity")}
+            {...register("basic_info.registrationCity")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationSettlement">
+          <Label htmlFor="basic_info.registrationSettlement">
             Населенный пункт
           </Label>
           <Input
-            id="primaryInfo.registrationSettlement"
+            id="basic_info.registrationSettlement"
             placeholder="пос. Ленинский"
-            {...register("primaryInfo.registrationSettlement")}
+            {...register("basic_info.registrationSettlement")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationStreet">Улица</Label>
+          <Label htmlFor="basic_info.registrationStreet">Улица</Label>
           <Input
-            id="primaryInfo.registrationStreet"
+            id="basic_info.registrationStreet"
             placeholder="Смоленская"
-            {...register("primaryInfo.registrationStreet")}
+            {...register("basic_info.registrationStreet")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationHouse">Дом</Label>
+          <Label htmlFor="basic_info.registrationHouse">Дом</Label>
           <Input
-            id="primaryInfo.registrationHouse"
+            id="basic_info.registrationHouse"
             placeholder="9"
-            {...register("primaryInfo.registrationHouse")}
+            {...register("basic_info.registrationHouse")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationBuilding">Корпус</Label>
+          <Label htmlFor="basic_info.registrationBuilding">Корпус</Label>
           <Input
-            id="primaryInfo.registrationBuilding"
+            id="basic_info.registrationBuilding"
             placeholder="1"
-            {...register("primaryInfo.registrationBuilding")}
+            {...register("basic_info.registrationBuilding")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.registrationApartment">Квартира</Label>
+          <Label htmlFor="basic_info.registrationApartment">Квартира</Label>
           <Input
-            id="primaryInfo.registrationApartment"
+            id="basic_info.registrationApartment"
             placeholder="418"
-            {...register("primaryInfo.registrationApartment")}
+            {...register("basic_info.registrationApartment")}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.postalCode">Почтовый индекс</Label>
+          <Label htmlFor="basic_info.postalCode">Почтовый индекс</Label>
           <Input
-            id="primaryInfo.postalCode"
+            id="basic_info.postalCode"
             placeholder="418"
-            {...register("primaryInfo.postalCode")}
+            {...register("basic_info.postalCode")}
           />
         </div>
       </AccordionContent>

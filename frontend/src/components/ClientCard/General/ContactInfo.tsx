@@ -17,33 +17,33 @@ export const ContactInfo: FC<Props> = ({ register }) => {
       </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.phone">Телефон</Label>
+          <Label htmlFor="basic_info.phone">Телефон</Label>
           <Input
-            id="primaryInfo.phone"
+            id="basic_info.phone"
             type="tel"
             placeholder="+7 (999) 123-45-67"
-            {...register("primaryInfo.phone")}
+            {...register("basic_info.phone")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.email">Электронная почта</Label>
+          <Label htmlFor="basic_info.email">Электронная почта</Label>
           <Input
-            id="primaryInfo.email"
+            id="basic_info.email"
             type="email"
             placeholder="example@mail.ru"
-            {...register("primaryInfo.email")}
+            {...register("basic_info.email")}
           />
         </div>
 
         <div className="space-y-2 lg:col-span-3">
-          <Label htmlFor="primaryInfo.mailingAddress">
+          <Label htmlFor="basic_info.mailingAddress">
             Адрес для направления корреспонденции
           </Label>
           <Input
-            id="primaryInfo.mailingAddress"
+            id="basic_info.mailingAddress"
             placeholder="196084, г. Санкт-Петербург, ул. Смоленская, 9-418"
-            {...register("primaryInfo.mailingAddress")}
+            {...register("basic_info.mailingAddress")}
           />
         </div>
       </AccordionContent>

@@ -60,9 +60,9 @@ export const PretrialTab = ({
     remove: removeCreditor,
   } = useFieldArray({
     control: control as any,
-    name: "pretrial.creditors" as any,
+    name: "pre_court.creditors" as any,
   });
-  const watchedCreditors = watch("pretrial.creditors") ?? [];
+  const watchedCreditors = watch("pre_court.creditors") ?? [];
   const selectedCreditorIds = useMemo(
     () =>
       watchedCreditors
@@ -83,7 +83,7 @@ export const PretrialTab = ({
         documents?: Array<{ id: number; name: string }>;
       }
     )?.documents || [];
-  const hearingDateTimeValue = watch("pretrial.hearingDateTime") as
+  const hearingDateTimeValue = watch("pre_court.hearingDateTime") as
     | string
     | undefined;
   const parseDateTime = (value?: string) => {
@@ -100,7 +100,7 @@ export const PretrialTab = ({
   const hasHearingDateTime = Boolean(hearingDateTimeValue);
 
   return (
-    <TabsContent value="pretrial" className="space-y-6">
+    <TabsContent value="pre_court" className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Досудебка</CardTitle>
@@ -119,14 +119,14 @@ export const PretrialTab = ({
               <AccordionContent>
                 <div className="space-y-3 p-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="pretrial.creditors" className="font-medium">
+                    <Label htmlFor="pre_court.creditors" className="font-medium">
                       Кредиторы (можно несколько)
                     </Label>
                   </div>
 
                   {creditorFields.length === 0 ? (
                     <div className="space-y-2">
-                      <Label htmlFor="pretrial.creditors.empty">
+                      <Label htmlFor="pre_court.creditors.empty">
                         Кредитор 1
                       </Label>
                       <Select
@@ -159,11 +159,11 @@ export const PretrialTab = ({
                         return (
                           <div key={item.id} className="flex items-end gap-3">
                             <div className="flex-1 space-y-2">
-                              <Label htmlFor={`pretrial.creditors.${index}`}>
+                              <Label htmlFor={`pre_court.creditors.${index}`}>
                                 Кредитор {index + 1}
                               </Label>
                               <Controller
-                                name={`pretrial.creditors.${index}`}
+                                name={`pre_court.creditors.${index}`}
                                 control={control}
                                 render={({ field }) => (
                                   <Select
@@ -230,9 +230,9 @@ export const PretrialTab = ({
               <AccordionContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 p-1">
                   <div className="space-y-2">
-                    <Label htmlFor="pretrial.court">Арбитражный суд</Label>
+                    <Label htmlFor="pre_court.court">Арбитражный суд</Label>
                     <Controller
-                      name="pretrial.court"
+                      name="pre_court.court"
                       control={control}
                       render={({ field }) => (
                         <Select
@@ -261,7 +261,7 @@ export const PretrialTab = ({
                     <Input
                       type="text"
                       placeholder="Номер"
-                      {...register("pretrial.caseNumber")}
+                      {...register("pre_court.caseNumber")}
                     />
                   </div>
 
@@ -271,10 +271,10 @@ export const PretrialTab = ({
                       <Input
                         type="text"
                         placeholder="Номер"
-                        {...register("pretrial.powerOfAttorneyNumber")}
+                        {...register("pre_court.powerOfAttorneyNumber")}
                       />
                       <Controller
-                        name="pretrial.powerOfAttorneyDate"
+                        name="pre_court.powerOfAttorneyDate"
                         control={control}
                         render={({ field }) => (
                           <DatePickerInput
@@ -290,7 +290,7 @@ export const PretrialTab = ({
                   <div className="space-y-2">
                     <Label>Дата и время заседания</Label>
                     <Controller
-                      name="pretrial.hearingDateTime"
+                      name="pre_court.hearingDateTime"
                       control={control}
                       render={({ field }) => {
                         const { date, time } = parseDateTime(
@@ -330,13 +330,13 @@ export const PretrialTab = ({
                   </div>
                   {hasHearingDateTime && (
                     <div className="space-y-2">
-                      <Label htmlFor="pretrial.efrsbCabinet">
+                      <Label htmlFor="pre_court.efrsbCabinet">
                         Кабинет ЕФРСБ
                       </Label>
                       <Input
-                        id="pretrial.efrsbCabinet"
+                        id="pre_court.efrsbCabinet"
                         placeholder="Ссылка или идентификатор кабинета"
-                        {...register("pretrial.efrsbCabinet")}
+                        {...register("pre_court.efrsbCabinet")}
                       />
                     </div>
                   )}

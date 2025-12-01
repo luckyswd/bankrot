@@ -18,7 +18,7 @@ interface Props {
 export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
   const isLastNameChanged = useWatch({
     control,
-    name: "primaryInfo.isLastNameChanged",
+    name: "basic_info.isLastNameChanged",
   }) as boolean | undefined;
 
   const yesNoOptions: SelectOption[] = [
@@ -41,68 +41,68 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           В именительном падаже
         </p>
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.lastName" required>
+          <Label htmlFor="basic_info.lastName" required>
             Фамилия
           </Label>
           <Input
-            id="primaryInfo.lastName"
+            id="basic_info.lastName"
             placeholder="Иванов"
-            {...register("primaryInfo.lastName")}
+            {...register("basic_info.lastName")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.firstName" required>
+          <Label htmlFor="basic_info.firstName" required>
             Имя
           </Label>
           <Input
-            id="primaryInfo.firstName"
+            id="basic_info.firstName"
             placeholder="Иван"
-            {...register("primaryInfo.firstName")}
+            {...register("basic_info.firstName")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.middleName" required>
+          <Label htmlFor="basic_info.middleName" required>
             Отчество
           </Label>
           <Input
-            id="primaryInfo.middleName"
+            id="basic_info.middleName"
             placeholder="Иванович"
-            {...register("primaryInfo.middleName")}
+            {...register("basic_info.middleName")}
           />
         </div>
         <p className="col-span-3 text-xs text-blue-500">В родительном падеже</p>
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.lastNameGenitive" required>
+          <Label htmlFor="basic_info.lastNameGenitive" required>
             Фамилия
           </Label>
           <Input
-            id="primaryInfo.lastNameGenitive"
+            id="basic_info.lastNameGenitive"
             placeholder="Иванов"
-            {...register("primaryInfo.lastNameGenitive")}
+            {...register("basic_info.lastNameGenitive")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.firstNameGenitive" required>
+          <Label htmlFor="basic_info.firstNameGenitive" required>
             Имя
           </Label>
           <Input
-            id="primaryInfo.firstNameGenitive"
+            id="basic_info.firstNameGenitive"
             placeholder="Иван"
-            {...register("primaryInfo.firstNameGenitive")}
+            {...register("basic_info.firstNameGenitive")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.middleNameGenitive" required>
+          <Label htmlFor="basic_info.middleNameGenitive" required>
             Отчество
           </Label>
           <Input
-            id="primaryInfo.middleNameGenitive"
+            id="basic_info.middleNameGenitive"
             placeholder="Иванович"
-            {...register("primaryInfo.middleNameGenitive")}
+            {...register("basic_info.middleNameGenitive")}
           />
         </div>
 
@@ -110,7 +110,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           <Label>Изменялось ли ФИО</Label>
           <Controller
             control={control}
-            name="primaryInfo.isLastNameChanged"
+            name="basic_info.isLastNameChanged"
             render={({ field }) => (
               <SelectField
                 value={field.value}
@@ -123,20 +123,20 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
 
         {isLastNameChanged && (
           <div className="space-y-2 lg:col-span-2">
-            <Label htmlFor="primaryInfo.changedLastName">Предыдущее ФИО</Label>
+            <Label htmlFor="basic_info.changedLastName">Предыдущее ФИО</Label>
             <Input
-              id="primaryInfo.changedLastName"
+              id="basic_info.changedLastName"
               placeholder="Петров Петр Петрович"
-              {...register("primaryInfo.changedLastName")}
+              {...register("basic_info.changedLastName")}
             />
           </div>
         )}
         <Controller
           control={control}
-          name="primaryInfo.gender"
+          name="basic_info.gender"
           render={({ field }) => (
             <div className="space-y-2">
-              <Label htmlFor="primaryInfo.gender">Пол</Label>
+              <Label htmlFor="basic_info.gender">Пол</Label>
               <SelectField
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
@@ -148,7 +148,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
 
         <Controller
           control={control}
-          name="primaryInfo.birthDate"
+          name="basic_info.birthDate"
           render={({ field }) => (
             <DatePickerInput
               label="Дата рождения *"
@@ -165,20 +165,20 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         />
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.birthPlace">Место рождения</Label>
+          <Label htmlFor="basic_info.birthPlace">Место рождения</Label>
           <Input
-            id="primaryInfo.birthPlace"
+            id="basic_info.birthPlace"
             placeholder="г. Москва"
-            {...register("primaryInfo.birthPlace")}
+            {...register("basic_info.birthPlace")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.snils">СНИЛС</Label>
+          <Label htmlFor="basic_info.snils">СНИЛС</Label>
           <Input
-            id="primaryInfo.snils"
+            id="basic_info.snils"
             placeholder="123-456-789 00"
-            {...register("primaryInfo.snils")}
+            {...register("basic_info.snils")}
           />
         </div>
       </AccordionContent>

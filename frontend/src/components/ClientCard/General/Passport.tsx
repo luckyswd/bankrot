@@ -18,51 +18,51 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
       <AccordionTrigger><h3 className="text-xl font-semibold">Паспорт</h3></AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.passportSeries">Серия паспорта</Label>
+          <Label htmlFor="basic_info.passportSeries">Серия паспорта</Label>
           <Input
-            id="primaryInfo.passportSeries"
+            id="basic_info.passportSeries"
             placeholder="4016"
             maxLength={10}
-            {...register("primaryInfo.passportSeries")}
+            {...register("basic_info.passportSeries")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.passportNumber">Номер паспорта</Label>
+          <Label htmlFor="basic_info.passportNumber">Номер паспорта</Label>
           <Input
-            id="primaryInfo.passportNumber"
+            id="basic_info.passportNumber"
             placeholder="123456"
             maxLength={20}
-            {...register("primaryInfo.passportNumber")}
+            {...register("basic_info.passportNumber")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="primaryInfo.passportDepartmentCode">
+          <Label htmlFor="basic_info.passportDepartmentCode">
             Код подразделения
           </Label>
           <Input
-            id="primaryInfo.passportDepartmentCode"
+            id="basic_info.passportDepartmentCode"
             placeholder="780-089"
             maxLength={20}
-            {...register("primaryInfo.passportDepartmentCode")}
+            {...register("basic_info.passportDepartmentCode")}
           />
         </div>
 
         <div className="space-y-2 lg:col-span-3">
-          <Label htmlFor="primaryInfo.passportIssuedBy">
+          <Label htmlFor="basic_info.passportIssuedBy">
             Кем выдан паспорт
           </Label>
           <Input
-            id="primaryInfo.passportIssuedBy"
+            id="basic_info.passportIssuedBy"
             placeholder="ОУФМС России по СПб и ЛО в Московском районе"
-            {...register("primaryInfo.passportIssuedBy")}
+            {...register("basic_info.passportIssuedBy")}
           />
         </div>
 
         <Controller
           control={control}
-          name="primaryInfo.passportIssuedDate"
+          name="basic_info.passportIssuedDate"
           render={({ field }) => (
             <DatePickerInput
               label="Дата выдачи паспорта"

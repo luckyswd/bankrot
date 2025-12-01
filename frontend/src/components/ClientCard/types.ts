@@ -68,15 +68,15 @@ export type PretrialFields = {
 
 export type IntroductionFields = {
   courtDecisionDate: string
-  gims: string
-  gostechnadzor: string
-  fns: string
+  procedureInitiationMchs: string
+  procedureInitiationGostekhnadzor: string
+  procedureInitiationFns: string
   documentNumber: string
   procedureInitiationCaseNumber: string
   procedureInitiationDuration: string
-  rosaviation: string
-  judge: string
-  bailiff: string
+  procedureInitiationRoszdrav: string
+  procedureInitiationJudge: string
+  procedureInitiationBailiff: string
   executionNumber: string
   executionDate: string
   specialAccountNumber: string
@@ -89,8 +89,8 @@ export type ProcedureFields = {
 }
 
 export type FormSections = {
-  primaryInfo: PrimaryInfoFields
-  pretrial: PretrialFields
+  basic_info: PrimaryInfoFields
+  pre_court: PretrialFields
   judicial_procedure_initiation: IntroductionFields
   judicial_procedure: ProcedureFields
 }
