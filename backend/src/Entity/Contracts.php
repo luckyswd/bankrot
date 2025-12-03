@@ -7,7 +7,8 @@ namespace App\Entity;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
-use App\Service\DateHelperService;
+use App\Service\Templates\PreCourt\PreCourtMethods;
+use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -1369,38 +1370,6 @@ class Contracts extends BaseEntity
         return $this;
     }
 
-    /**
-     * Для шаблона Досудебка. Заявление о признании банкротом
-     */
-    public function getMaritalStatusDescription(): string
-    {
-        $isMarried = $this->maritalStatus === 'married';
-        $wasMarried3YearsAgo = $this->maritalStatus === 'married_3y_ago';
-        $hasChildren = $this->hasMinorChildren === true;
-        $divorceDate = $this->marriageTerminationDate;
-
-        $parts = [];
-
-        if ($isMarried) {
-            $parts[] = 'Должник состоит в браке';
-        } else {
-            $divorceInfo = '';
-            if ($wasMarried3YearsAgo && $divorceDate !== null) {
-                $formattedDate = $divorceDate->format('d.m.Y');
-                $divorceInfo = " (брак расторгнут {$formattedDate}г.)";
-            }
-            $parts[] = 'Должник не состоит в браке' . $divorceInfo;
-        }
-
-        if ($hasChildren) {
-            $parts[] = 'имеет несовершеннолетних детей';
-        } else {
-            $parts[] = 'не имеет несовершеннолетних детей';
-        }
-
-        return implode(', ', $parts) . '.';
-    }
-
     public function getTemplateWork(): string
     {
         if (!$this->work || empty($this->employerName) || empty($this->employerAddress) || empty($this->employerInn)) {
@@ -1415,157 +1384,49 @@ class Contracts extends BaseEntity
         return (int)date('Y');
     }
 
-    /**
-     * Для шаблона Досудебка. Заявление о признании банкротом
-     */
+    public function getMaritalStatusDescription(): string
+    {
+        return PreCourtMethods::maritalStatusDescription(contract: $this);
+    }
+
     public function getWorkDescription(): string
     {
-        if ($this->work) {
-            return 'Должник временно трудоустроен.';
-        } else {
-            return 'Должник временно не трудоустроен.';
-        }
+        return PreCourtMethods::workDescription(contract: $this);
     }
 
-    /**
-     * Для шаблона Досудебка. Заявление о признании банкротом
-     */
     public function getHasEnforcementProceedingsDescription(): string
     {
-        if ($this->hasEnforcementProceedings) {
-            return 'У Должника имеются возбужденные исполнительные производства.';
-        } else {
-            return 'У Должника не имеются возбужденные исполнительные производства.';
-        }
+        return PreCourtMethods::hasEnforcementProceedingsDescription(contract: $this);
     }
 
-    /**
-     * Для шаблона Судебка введение процедуры. отчёт 1. Публикация ЕФРСБ.
-     */
     public function getFinancialManagerReportHearingDescription(): string
     {
-        $hearingDateTime = $this->getEfrsbDateTime();
-
-        if ($hearingDateTime === null || $this->court === null) {
-            return '';
-        }
-
-        $date = $hearingDateTime->format('d');
-        $month = DateHelperService::getMonthNameGenitive($hearingDateTime->format('n'));
-        $year = $hearingDateTime->format('Y');
-        $time = (int)$hearingDateTime->format('G');
-        $minutes = $hearingDateTime->format('i');
-
-        $courtName = $this->court->getShortName();
-        $courtAddress = $this->court->getAddress() ?? '';
-
-        $roomPart = '';
-
-        if ($this->efrsbCabinet !== null && $this->efrsbCabinet !== '') {
-            $roomPart = ', зал ' . $this->efrsbCabinet;
-        }
-
-        return sprintf(
-            'Судебное заседание по рассмотрению отчета финансового управляющего назначено на %s %s %s года в %s час. %s мин. в помещении Арбитражного суда %s по адресу: %s%s',
-            $date,
-            $month,
-            $year,
-            $time,
-            $minutes,
-            $courtName,
-            $courtAddress,
-            $roomPart
-        );
+        return ProcedureInitiationMethods::financialManagerReportHearingDescription(contract: $this);
     }
 
-    /**
-     * Для шаблона Судебка введение процедуры. отчёт 1. Публикация ЕФРСБ.
-     */
-    public function textDeclaredInsolvent(): string
-    {
-        if ($this->gender === 'female') {
-            return 'признана несостоятельной';
-        }
-
-        return 'признан несостоятельным';
-    }
-
-    /**
-     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
-     *
-     * @example '24 июня 2025 г.'
-     */
     public function getProcedureInitiationDateForPublication(): string
     {
-        $date = $this->procedureInitiationDecisionDate ?? $this->procedureInitiationResolutionDate;
-
-        if ($date === null) {
-            return '';
-        }
-
-        $day = $date->format('d');
-        $month = DateHelperService::getMonthNameGenitive($date->format('n'));
-        $year = $date->format('Y');
-
-        return sprintf('«%s» %s %s г.', $day, $month, $year);
+        return ProcedureInitiationMethods::procedureInitiationDateForPublication(contract: $this);
     }
 
-    /**
-     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
-     *
-     * @example '12.12.2025 г. (резолютивная часть объявлена 10.12.2025 г.)'
-     */
     public function getProcedureInitiationDateWithResolution(): string
     {
-        $decisionDate = $this->procedureInitiationDecisionDate;
-        $resolutionDate = $this->procedureInitiationResolutionDate;
-
-        // Если есть обе даты
-        if ($decisionDate !== null && $resolutionDate !== null) {
-            $decisionFormatted = $decisionDate->format('d.m.Y');
-            $resolutionFormatted = $resolutionDate->format('d.m.Y');
-
-            return sprintf('%s г. (резолютивная часть объявлена %s г.)', $decisionFormatted, $resolutionFormatted);
-        }
-
-        // Если есть только дата решения
-        if ($decisionDate !== null) {
-            return $decisionDate->format('d.m.Y') . ' г.';
-        }
-
-        // Если есть только дата резолютивной части
-        if ($resolutionDate !== null) {
-            return $resolutionDate->format('d.m.Y') . ' г. (резолютивная часть)';
-        }
-
-        return '';
+        return ProcedureInitiationMethods::procedureInitiationDateWithResolution(contract: $this);
     }
 
-    /**
-     * Для шаблона Судебка введение процедуры. 2. Заявка на публикацию (газета Коммерсантъ).
-     *
-     * @example 'заседание-25.11.24 в 10:05, зал 3052'
-     */
     public function getEfrsbHearingInfo(): string
     {
-        $efrsbDateTime = $this->getEfrsbDateTime();
+        return ProcedureInitiationMethods::efrsbHearingInfo(contract: $this);
+    }
 
-        if ($efrsbDateTime === null) {
-            return '';
-        }
+    public function getStartNotificationText(): string
+    {
+        return ProcedureInitiationMethods::startNotificationText(contract: $this);
+    }
 
-        $date = $efrsbDateTime->format('d.m.y');
-        $time = $efrsbDateTime->format('H:i');
-
-        $result = sprintf('заседание-%s в %s', $date, $time);
-
-        $cabinet = $this->getEfrsbCabinet();
-
-        if ($cabinet !== null && $cabinet !== '') {
-            $result .= ', зал ' . $cabinet;
-        }
-
-        return $result;
+    public function getResolutionPart(): string
+    {
+        return ProcedureInitiationMethods::resolutionPart(contract: $this);
     }
 
     public function getPhoneAndEmail(): string
