@@ -146,8 +146,6 @@ class ProcedureInitiationMethods
 
     /**
      * 3. Уведомление о введении реализации имущества.
-     *
-     * @example '24 июня 2025 г.'
      */
     public static function resolutionPart(Contracts $contract): string
     {
@@ -160,8 +158,18 @@ class ProcedureInitiationMethods
 
     /**
      * 3. Уведомление о введении реализации имущества.
-     *
-     * @example '24 июня 2025 г.'
+     */
+    public static function spouse(Contracts $contract): string
+    {
+        if ($contract->getGender() === 'female') {
+            return 'супругой (бывшей супругой)';
+        }
+
+        return 'супругом (бывшим супругом)';
+    }
+
+    /**
+     * 3. Уведомление о введении реализации имущества.
      */
     public static function startNotificationText(Contracts $contract): string
     {

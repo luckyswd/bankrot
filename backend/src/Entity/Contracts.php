@@ -1429,6 +1429,11 @@ class Contracts extends BaseEntity
         return ProcedureInitiationMethods::resolutionPart(contract: $this);
     }
 
+    public function getSpouse(): string
+    {
+        return ProcedureInitiationMethods::spouse(contract: $this);
+    }
+
     public function getPhoneAndEmail(): string
     {
         $parts = [];
