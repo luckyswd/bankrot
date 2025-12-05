@@ -85,9 +85,7 @@ export const defaultIntroduction: IntroductionFields = {
 };
 
 export const defaultProcedure: ProcedureFields = {
-  creditorRequirement: "",
-  receivedRequirements: "",
-  principalAmount: "",
+  procedureMainAmount: "",
 };
 
 export const createDefaultFormValues = (): FormValues => ({
