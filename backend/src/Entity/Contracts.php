@@ -448,6 +448,11 @@ class Contracts extends BaseEntity
     )]
     private ?array $procedureInitiationIPEndings = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Основная сумма', type: Types::STRING, example: '777', nullable: true)]
+    private ?string $procedureMainAmount = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -1526,6 +1531,18 @@ class Contracts extends BaseEntity
     public function setProcedureInitiationRosgvardia(?Rosgvardia $procedureInitiationRosgvardia): self
     {
         $this->procedureInitiationRosgvardia = $procedureInitiationRosgvardia;
+
+        return $this;
+    }
+
+    public function getProcedureMainAmount(): ?string
+    {
+        return $this->procedureMainAmount;
+    }
+
+    public function setProcedureMainAmount(?string $procedureMainAmount): self
+    {
+        $this->procedureMainAmount = $procedureMainAmount;
 
         return $this;
     }
