@@ -184,8 +184,8 @@ class ProcedureInitiationMethods
         $isFemale = $contract->getGender() === 'female';
 
         // Текущие формы
-        $current = $isFemale ? 'и его супруга' : 'и её супруг';
-        $former  = $isFemale ? 'и его бывшая супруга' : 'и её бывший супруг';
+        $current = $isFemale ? 'и его супруга' : 'и её супруги';
+        $former  = $isFemale ? 'и его бывшего супруга' : 'и её бывшей супруги';
 
         if ($status === 'married') {
             return $current;
