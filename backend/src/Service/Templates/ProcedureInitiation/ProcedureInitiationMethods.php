@@ -161,15 +161,45 @@ class ProcedureInitiationMethods
      */
     public static function spouse(Contracts $contract): string
     {
-        if ($contract->getGender() === 'female') {
-            return 'супругой (бывшей супругой)';
+        $status = $contract->getMaritalStatus();
+        $isFemale = $contract->getGender() === 'female';
+
+        if ($status === 'married') {
+            return $isFemale ? 'супругой' : 'супругом';
         }
 
-        return 'супругом (бывшим супругом)';
+        if ($status === 'married_3y_ago') {
+            return $isFemale ? 'бывшей супругой' : 'бывшим супругом';
+        }
+
+        return '';
     }
 
     /**
-     * 3. Уведомление о введении реализации имущества.
+     * В мноих шаблонах.
+     */
+    public static function spouseExtended(Contracts $contract): string
+    {
+        $status = $contract->getMaritalStatus();
+        $isFemale = $contract->getGender() === 'female';
+
+        // Текущие формы
+        $current = $isFemale ? 'и её супруг' : 'и его супруга';
+        $former  = $isFemale ? 'и её бывший супруг' : 'и его бывшая супруга';
+
+        if ($status === 'married') {
+            return $current;
+        }
+
+        if ($status === 'married_3y_ago') {
+            return $former;
+        }
+
+        return '';
+    }
+
+    /**
+     * В многих шаблонах.
      */
     public static function startNotificationText(Contracts $contract): string
     {
