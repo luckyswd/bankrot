@@ -24,7 +24,6 @@ interface ProcedureTabProps {
 export const ProcedureTab = ({
   openDocument,
   onDownload,
-  referenceData,
   contractData,
 }: ProcedureTabProps): JSX.Element => {
   const { register } = useFormContext<FormValues>();

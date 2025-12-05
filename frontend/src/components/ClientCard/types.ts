@@ -84,9 +84,7 @@ export type IntroductionFields = {
 }
 
 export type ProcedureFields = {
-  creditorRequirement: string
-  receivedRequirements: string
-  principalAmount: string
+  procedureMainAmount: string
 }
 
 export type FormSections = {
