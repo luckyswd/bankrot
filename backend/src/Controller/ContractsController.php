@@ -959,7 +959,7 @@ class ContractsController extends AbstractController
 
             if (isset($documentsByStage[$stage->value])) {
                 usort($documentsByStage[$stage->value], function ($a, $b) {
-                    return $a['id'] <=> $b['id'];
+                    return $a['name'] <=> $b['name'];
                 });
             }
 
