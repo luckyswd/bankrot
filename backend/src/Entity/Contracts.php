@@ -429,6 +429,25 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Росгвардия', type: 'object', nullable: true)]
     private ?Rosgvardia $procedureInitiationRosgvardia = null;
 
+    /**
+     * @var array<int, array{number: string, date: string}>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Окончания исполнительных производств',
+        type: 'array',
+        items: new OA\Items(
+            properties: [
+                new OA\Property(property: 'number', type: Types::STRING, example: '199465/22/05023-ИП'),
+                new OA\Property(property: 'date', type: Types::STRING, format: 'date', example: '2024-01-15'),
+            ],
+            type: 'object'
+        ),
+        nullable: true
+    )]
+    private ?array $procedureInitiationIPEndings = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -1216,6 +1235,38 @@ class Contracts extends BaseEntity
     public function removeCreditor(Creditor $creditor): self
     {
         $this->creditors->removeElement($creditor);
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, array{number: string, date: string}>|null
+     */
+    public function getProcedureInitiationIPEndings(): ?array
+    {
+        return $this->procedureInitiationIPEndings;
+    }
+
+    /**
+     * @param array<int, array{number: string, date: string}>|null $procedureInitiationIPEndings
+     */
+    public function setProcedureInitiationIPEndings(?array $procedureInitiationIPEndings): self
+    {
+        $this->procedureInitiationIPEndings = $procedureInitiationIPEndings;
+
+        return $this;
+    }
+
+    /**
+     * @param array{number: string, date: string} $ipEnding
+     */
+    public function addIpEnding(array $ipEnding): self
+    {
+        if (null === $this->procedureInitiationIPEndings) {
+            $this->procedureInitiationIPEndings = [];
+        }
+
+        $this->procedureInitiationIPEndings[] = $ipEnding;
 
         return $this;
     }
