@@ -957,6 +957,12 @@ class ContractsController extends AbstractController
                 $result[$stage->value] = [];
             }
 
+            if (isset($documentsByStage[$stage->value])) {
+                usort($documentsByStage[$stage->value], function ($a, $b) {
+                    return $a['id'] <=> $b['id'];
+                });
+            }
+
             $result[$stage->value]['documents'] = $documentsByStage[$stage->value] ?? [];
         }
 
