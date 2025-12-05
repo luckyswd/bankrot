@@ -70,4 +70,47 @@ class Bailiff extends BaseEntity
 
         return $this;
     }
+
+    public function getShortHeadFullName(): ?string
+    {
+        if (empty($this->headFullName)) {
+            return null;
+        }
+
+        $parts = preg_split('/\s+/', trim($this->headFullName));
+
+        if (!$parts) {
+            return null;
+        }
+
+        $count = count($parts);
+
+        if ($count === 1) {
+            return $parts[0];
+        }
+
+        $surname = $parts[0];
+        $name = $parts[1];
+
+        if ($count === 2) {
+
+            return sprintf('%s %s.', $surname, mb_substr($name, 0, 1));
+        }
+
+        $middle = $parts[2];
+
+        $result = sprintf(
+            '%s %s.%s.',
+            $surname,
+            mb_substr($name, 0, 1),
+            mb_substr($middle, 0, 1)
+        );
+
+        return mb_strtoupper($result);
+    }
+
+    public function getFullHeadName(): ?string
+    {
+        return 'Судебному приставу-исполнителю – ' . $this->getShortHeadFullName();
+    }
 }

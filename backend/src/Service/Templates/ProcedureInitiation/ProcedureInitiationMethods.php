@@ -188,4 +188,24 @@ class ProcedureInitiationMethods
             $contract->getProcedureInitiationDuration() ?? '',
         );
     }
+
+    /**
+     * 8. Заявление в ФССП об окончании ИП
+     */
+    public static function IPEndingsStr(Contracts $contract): string
+    {
+        $items = $contract->getProcedureInitiationIPEndings();
+
+        if (!$items) {
+            return '';
+        }
+
+        $parts = [];
+
+        foreach ($items as $IPEnding) {
+            $parts[] = $IPEnding['number'] . ' от ' . $IPEnding['date'];
+        }
+
+        return implode(', ', $parts);
+    }
 }

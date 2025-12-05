@@ -621,6 +621,7 @@ class Contracts extends BaseEntity
         }
 
         $initials = [];
+
         if ($this->firstName) {
             $initials[] = mb_substr($this->firstName, 0, 1) . '.';
         }
@@ -629,6 +630,7 @@ class Contracts extends BaseEntity
         }
 
         $result = $this->lastName;
+
         if ($initials) {
             $result .= ' ' . implode('', $initials);
         }
@@ -1269,6 +1271,11 @@ class Contracts extends BaseEntity
         $this->procedureInitiationIPEndings[] = $ipEnding;
 
         return $this;
+    }
+
+    public function IPEndingsStr(): string
+    {
+        return ProcedureInitiationMethods::IPEndingsStr(contract: $this);
     }
 
     public function getCaseNumber(): ?string
