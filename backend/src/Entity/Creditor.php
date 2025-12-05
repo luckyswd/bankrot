@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\BankruptcyStage;
 use App\Repository\CreditorRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,11 +17,11 @@ class Creditor extends BaseEntity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    #[Groups(['pre_court'])]
+    #[Groups([BankruptcyStage::PRE_COURT->value, BankruptcyStage::JUDICIAL_PROCEDURE->value])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 500)]
-    #[Groups(['pre_court'])]
+    #[Groups([BankruptcyStage::PRE_COURT->value, BankruptcyStage::JUDICIAL_PROCEDURE->value])]
     private string $name;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

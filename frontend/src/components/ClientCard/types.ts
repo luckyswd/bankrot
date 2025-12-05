@@ -83,8 +83,27 @@ export type IntroductionFields = {
   procedureInitiationSpecialAccountNumber: string
 }
 
+export type BasisItem = {
+  number: string
+  date: string
+}
+
+export type CreditorsClaimItem = {
+  id?: number | null
+  creditorId: number
+  debtAmount?: string | null
+  principalAmount?: string | null
+  interest?: string | null
+  penalty?: string | null
+  lateFee?: string | null
+  forfeiture?: string | null
+  stateDuty?: string | null
+  basis?: BasisItem[] | null
+  inclusion?: boolean | null
+}
+
 export type ProcedureFields = {
-  procedureMainAmount: string
+  creditorsClaims?: CreditorsClaimItem[]
 }
 
 export type FormSections = {

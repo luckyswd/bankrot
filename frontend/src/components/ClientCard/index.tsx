@@ -69,7 +69,10 @@ function ClientCard() {
         creditors: currentValues.pre_court?.creditors ?? [],
       },
       judicial_procedure_initiation: currentValues.judicial_procedure_initiation || {},
-      judicial_procedure: currentValues.judicial_procedure || {},
+      judicial_procedure: {
+        ...(currentValues.judicial_procedure || {}),
+        creditorsClaims: currentValues.judicial_procedure?.creditorsClaims ?? [],
+      },
     };
 
     try {

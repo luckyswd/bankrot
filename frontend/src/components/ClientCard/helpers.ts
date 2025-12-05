@@ -84,9 +84,7 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationSpecialAccountNumber: "",
 };
 
-export const defaultProcedure: ProcedureFields = {
-  procedureMainAmount: "",
-};
+export const defaultProcedure: ProcedureFields = {};
 
 export const createDefaultFormValues = (): FormValues => ({
   basic_info: { ...defaultPrimaryInfo },

@@ -311,6 +311,14 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Кредиторы', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
     private Collection $creditors;
 
+    /**
+     * @var Collection<int, ContractsCreditorsClaim>
+     */
+    #[ORM\OneToMany(targetEntity: ContractsCreditorsClaim::class, mappedBy: 'contract', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Требования кредиторов', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
+    private Collection $creditorsClaims;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: '№ Дела', type: Types::STRING, example: 'А56-75258/2025', nullable: true)]
@@ -448,15 +456,11 @@ class Contracts extends BaseEntity
     )]
     private ?array $procedureInitiationIPEndings = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
-    #[OA\Property(description: 'Основная сумма', type: Types::STRING, example: '777', nullable: true)]
-    private ?string $procedureMainAmount = null;
-
     public function __construct()
     {
         parent::__construct();
         $this->creditors = new ArrayCollection();
+        $this->creditorsClaims = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -1247,6 +1251,35 @@ class Contracts extends BaseEntity
     }
 
     /**
+     * @return Collection<int, ContractsCreditorsClaim>
+     */
+    public function getCreditorsClaims(): Collection
+    {
+        return $this->creditorsClaims;
+    }
+
+    public function addCreditorsClaim(ContractsCreditorsClaim $creditorsClaim): self
+    {
+        if (!$this->creditorsClaims->contains($creditorsClaim)) {
+            $this->creditorsClaims->add($creditorsClaim);
+            $creditorsClaim->setContract($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreditorsClaim(ContractsCreditorsClaim $creditorsClaim): self
+    {
+        if ($this->creditorsClaims->removeElement($creditorsClaim)) {
+            if ($creditorsClaim->getContract() === $this) {
+                $creditorsClaim->setContract(new Contracts());
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return array<int, array{number: string, date: string}>|null
      */
     public function getProcedureInitiationIPEndings(): ?array
@@ -1531,18 +1564,6 @@ class Contracts extends BaseEntity
     public function setProcedureInitiationRosgvardia(?Rosgvardia $procedureInitiationRosgvardia): self
     {
         $this->procedureInitiationRosgvardia = $procedureInitiationRosgvardia;
-
-        return $this;
-    }
-
-    public function getProcedureMainAmount(): ?string
-    {
-        return $this->procedureMainAmount;
-    }
-
-    public function setProcedureMainAmount(?string $procedureMainAmount): self
-    {
-        $this->procedureMainAmount = $procedureMainAmount;
 
         return $this;
     }

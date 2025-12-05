@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Contracts;
+use App\Entity\ContractsCreditorsClaim;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\User;
@@ -12,6 +13,7 @@ use App\Repository\ContractsRepository;
 use App\Repository\BailiffRepository;
 use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
+use App\Repository\ContractsCreditorsClaimRepository;
 use App\Repository\FnsRepository;
 use App\Repository\GostekhnadzorRepository;
 use App\Repository\MchsRepository;
@@ -37,6 +39,7 @@ class ContractsController extends AbstractController
         private readonly DocumentTemplateRepository $documentTemplateRepository,
         private readonly CourtRepository $courtRepository,
         private readonly CreditorRepository $creditorRepository,
+        private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
         private readonly MchsRepository $mchsRepository,
         private readonly GostekhnadzorRepository $gostekhnadzorRepository,
         private readonly FnsRepository $fnsRepository,
@@ -1090,6 +1093,89 @@ class ContractsController extends AbstractController
                                 $contract->addCreditor($creditor);
                             }
                         }
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'creditorsClaims') {
+                $contract->getCreditorsClaims()->clear();
+
+                if (is_array($value)) {
+                    foreach ($value as $claimData) {
+                        if (!is_array($claimData)) {
+                            continue;
+                        }
+
+                        $creditorId = $claimData['creditorId'] ?? null;
+                        $id = $claimData['id'] ?? null;
+
+                        if (!is_numeric($creditorId) || (int)$creditorId === 0) {
+                            continue;
+                        }
+
+                        $creditor = $this->creditorRepository->find((int)$creditorId);
+
+                        if ($creditor === null) {
+                            continue;
+                        }
+
+                        $contractCreditorClaim = null;
+
+                        if (is_numeric($id)) {
+                            $contractCreditorClaim = $this->contractsCreditorsClaimRepository->find((int)$id);
+
+                            if ($contractCreditorClaim !== null && $contractCreditorClaim->getContract()->getId() !== $contract->getId()) {
+                                $contractCreditorClaim = null;
+                            }
+                        }
+
+                        if (!$contractCreditorClaim) {
+                            $contractCreditorClaim = new ContractsCreditorsClaim();
+                            $contractCreditorClaim->setContract($contract);
+                            $contractCreditorClaim->setCreditor($creditor);
+
+                            $this->entityManager->persist($contractCreditorClaim);
+                        }
+
+                        if (isset($claimData['debtAmount'])) {
+                            $contractCreditorClaim->setDebtAmount($claimData['debtAmount']);
+                        }
+
+                        if (isset($claimData['principalAmount'])) {
+                            $contractCreditorClaim->setPrincipalAmount($claimData['principalAmount']);
+                        }
+
+                        if (isset($claimData['interest'])) {
+                            $contractCreditorClaim->setInterest($claimData['interest']);
+                        }
+
+                        if (isset($claimData['penalty'])) {
+                            $contractCreditorClaim->setPenalty($claimData['penalty']);
+                        }
+
+                        if (isset($claimData['lateFee'])) {
+                            $contractCreditorClaim->setLateFee($claimData['lateFee']);
+                        }
+
+                        if (isset($claimData['forfeiture'])) {
+                            $contractCreditorClaim->setForfeiture($claimData['forfeiture']);
+                        }
+
+                        if (isset($claimData['stateDuty'])) {
+                            $contractCreditorClaim->setStateDuty($claimData['stateDuty']);
+                        }
+
+                        if (isset($claimData['basis'])) {
+                            $contractCreditorClaim->setBasis($claimData['basis']);
+                        }
+
+                        if (isset($claimData['inclusion'])) {
+                            $contractCreditorClaim->setInclusion((bool)$claimData['inclusion']);
+                        }
+
+                        $contract->addCreditorsClaim($contractCreditorClaim);
                     }
                 }
 
