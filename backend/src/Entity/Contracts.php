@@ -423,6 +423,12 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Номер документа', type: Types::STRING, example: 'Исх. № 236 от «04» июля 2025 г.', nullable: true)]
     private ?string $procedureInitiationDocNumber = null;
 
+    #[ORM\ManyToOne(targetEntity: Rosgvardia::class)]
+    #[ORM\JoinColumn(name: 'procedure_initiation_rosgvardia_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Росгвардия', type: 'object', nullable: true)]
+    private ?Rosgvardia $procedureInitiationRosgvardia = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -1447,5 +1453,17 @@ class Contracts extends BaseEntity
         }
 
         return implode(', ', $parts);
+    }
+
+    public function getProcedureInitiationRosgvardia(): ?Rosgvardia
+    {
+        return $this->procedureInitiationRosgvardia;
+    }
+
+    public function setProcedureInitiationRosgvardia(?Rosgvardia $procedureInitiationRosgvardia): self
+    {
+        $this->procedureInitiationRosgvardia = $procedureInitiationRosgvardia;
+
+        return $this;
     }
 }

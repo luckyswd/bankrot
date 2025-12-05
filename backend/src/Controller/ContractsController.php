@@ -16,6 +16,7 @@ use App\Repository\FnsRepository;
 use App\Repository\GostekhnadzorRepository;
 use App\Repository\MchsRepository;
 use App\Repository\DocumentTemplateRepository;
+use App\Repository\RosgvardiaRepository;
 use App\Service\Serializer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,6 +41,7 @@ class ContractsController extends AbstractController
         private readonly GostekhnadzorRepository $gostekhnadzorRepository,
         private readonly FnsRepository $fnsRepository,
         private readonly BailiffRepository $bailiffRepository,
+        private readonly RosgvardiaRepository $rosgvardiaRepository,
     ) {
     }
 
@@ -1050,6 +1052,20 @@ class ContractsController extends AbstractController
 
                     if ($bailiff !== null) {
                         $contract->setProcedureInitiationBailiff($bailiff);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'procedureInitiationRosgvardia') {
+                if ($value === null) {
+                    $contract->setProcedureInitiationRosgvardia(null);
+                } elseif (is_numeric($value)) {
+                    $rosgvardia = $this->rosgvardiaRepository->find((int)$value);
+
+                    if ($rosgvardia !== null) {
+                        $contract->setProcedureInitiationRosgvardia(procedureInitiationRosgvardia: $rosgvardia);
                     }
                 }
 
