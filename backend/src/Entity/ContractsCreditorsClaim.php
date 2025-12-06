@@ -378,7 +378,7 @@ class ContractsCreditorsClaim extends BaseEntity
 
     /**
      * Возвращает строку с информацией о договоре обслуживания кредитной карты.
-     * Формат: "и договора обслуживания кредитной карты от DD.MM.YYYY г."
+     * Формат: "и договора обслуживания кредитной карты от DD.MM.YYYY г.".
      */
     public function getCardDocument(): string
     {
