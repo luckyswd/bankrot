@@ -84,11 +84,11 @@ class ContractsCreditorsClaim extends BaseEntity
         description: 'Основания (массив с номером и датой)',
         type: 'array',
         items: new OA\Items(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'number', type: Types::STRING, example: '123'),
                 new OA\Property(property: 'date', type: Types::STRING, format: 'date', example: '2025-01-15'),
-            ],
-            type: 'object'
+            ]
         ),
         nullable: true
     )]
@@ -213,7 +213,7 @@ class ContractsCreditorsClaim extends BaseEntity
     }
 
     /**
-     * @return array<int, array{number: string, date: string}>|null
+     * @return array<int, array{number?: string, date?: string}>|null
      */
     public function getBasis(): ?array
     {
@@ -221,7 +221,7 @@ class ContractsCreditorsClaim extends BaseEntity
     }
 
     /**
-     * @param array<int, array{number: string, date: string}>|null $basis
+     * @param array<int, array{number?: string, date?: string}>|null $basis
      */
     public function setBasis(?array $basis): self
     {
@@ -240,5 +240,88 @@ class ContractsCreditorsClaim extends BaseEntity
         $this->inclusion = $inclusion;
 
         return $this;
+    }
+
+    /**
+     * Форматирует основания кредитных договоров в строку.
+     * Возвращает строку вида: "кредитного договора №118270753 от 20.03.2023 г.,"
+     * или "кредитных договоров №118270753 от 20.03.2023 г., №118270754 от 21.03.2023 г.,".
+     */
+    public function getBasisFormatted(): string
+    {
+        $basis = $this->getBasis();
+
+        if ($basis === null || empty($basis)) {
+            return '';
+        }
+
+        $count = count($basis);
+
+        // Определяем форму слова
+        if ($count === 1) {
+            $prefix = 'кредитного договора ';
+        } else {
+            $prefix = 'кредитных договоров ';
+        }
+
+        $result = $prefix;
+
+        // Форматируем дату из формата YYYY-MM-DD в DD.MM.YYYY
+        $formattedBasis = [];
+        foreach ($basis as $item) {
+            /** @var mixed $item */
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $number = '';
+            if (isset($item['number']) && is_string($item['number'])) {
+                $number = trim($item['number']);
+            }
+
+            $date = '';
+            if (isset($item['date']) && is_string($item['date'])) {
+                $date = trim($item['date']);
+            }
+
+            if (empty($number) && empty($date)) {
+                continue;
+            }
+
+            $formattedDate = '';
+            if (!empty($date)) {
+                try {
+                    $dateObj = new \DateTime($date);
+                    $formattedDate = $dateObj->format('d.m.Y') . ' г.';
+                } catch (\Exception $e) {
+                    $formattedDate = $date;
+                }
+            }
+
+            $basisItem = '';
+            if (!empty($number)) {
+                $basisItem = '№' . $number;
+            }
+
+            if (!empty($formattedDate)) {
+                if (!empty($basisItem)) {
+                    $basisItem .= ' от ' . $formattedDate;
+                } else {
+                    $basisItem = 'от ' . $formattedDate;
+                }
+            }
+
+            if (!empty($basisItem)) {
+                $formattedBasis[] = $basisItem;
+            }
+        }
+
+        if (empty($formattedBasis)) {
+            return '';
+        }
+
+        $result .= implode(', ', $formattedBasis) . ',';
+
+        return $result;
     }
 }

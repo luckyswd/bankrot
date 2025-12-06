@@ -39,12 +39,12 @@ class ContractsController extends AbstractController
         private readonly DocumentTemplateRepository $documentTemplateRepository,
         private readonly CourtRepository $courtRepository,
         private readonly CreditorRepository $creditorRepository,
-        private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
         private readonly MchsRepository $mchsRepository,
         private readonly GostekhnadzorRepository $gostekhnadzorRepository,
         private readonly FnsRepository $fnsRepository,
         private readonly BailiffRepository $bailiffRepository,
         private readonly RosgvardiaRepository $rosgvardiaRepository,
+        private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
     ) {
     }
 
@@ -866,8 +866,10 @@ class ContractsController extends AbstractController
             return $this->json(data: ['error' => 'Неверный формат данных'], status: 400);
         }
 
-        foreach ($bankruptcyStages as $bankruptcyStageData) {
-            $this->updateContractFields(contract: $contract, data: $bankruptcyStageData);
+        foreach ($bankruptcyStages as $stageKey => $bankruptcyStageData) {
+            if (is_array($bankruptcyStageData)) {
+                $this->updateContractFields(contract: $contract, data: $bankruptcyStageData);
+            }
         }
 
         $this->entityManager->flush();
@@ -1100,7 +1102,11 @@ class ContractsController extends AbstractController
             }
 
             if ($key === 'creditorsClaims') {
-                $contract->getCreditorsClaims()->clear();
+                // Собираем существующие записи и их ID
+                $existingClaims = $contract->getCreditorsClaims()->toArray();
+                $existingIds = array_map(fn ($claim) => $claim->getId(), $existingClaims);
+                $incomingIds = [];
+                $processedClaims = [];
 
                 if (is_array($value)) {
                     foreach ($value as $claimData) {
@@ -1111,7 +1117,7 @@ class ContractsController extends AbstractController
                         $creditorId = $claimData['creditorId'] ?? null;
                         $id = $claimData['id'] ?? null;
 
-                        if (!is_numeric($creditorId) || (int)$creditorId === 0) {
+                        if ($creditorId === null || !is_numeric($creditorId) || (int)$creditorId === 0) {
                             continue;
                         }
 
@@ -1123,59 +1129,73 @@ class ContractsController extends AbstractController
 
                         $contractCreditorClaim = null;
 
-                        if (is_numeric($id)) {
+                        if ($id !== null && is_numeric($id)) {
                             $contractCreditorClaim = $this->contractsCreditorsClaimRepository->find((int)$id);
 
-                            if ($contractCreditorClaim !== null && $contractCreditorClaim->getContract()->getId() !== $contract->getId()) {
+                            if ($contractCreditorClaim !== null && $contractCreditorClaim->getContract()->getId() === $contract->getId()) {
+                                $incomingIds[] = (int)$id;
+                            } else {
                                 $contractCreditorClaim = null;
                             }
                         }
 
-                        if (!$contractCreditorClaim) {
+                        if ($contractCreditorClaim === null) {
                             $contractCreditorClaim = new ContractsCreditorsClaim();
                             $contractCreditorClaim->setContract($contract);
                             $contractCreditorClaim->setCreditor($creditor);
-
                             $this->entityManager->persist($contractCreditorClaim);
                         }
 
                         if (isset($claimData['debtAmount'])) {
-                            $contractCreditorClaim->setDebtAmount($claimData['debtAmount']);
+                            $contractCreditorClaim->setDebtAmount($claimData['debtAmount'] === '' ? null : $claimData['debtAmount']);
                         }
 
                         if (isset($claimData['principalAmount'])) {
-                            $contractCreditorClaim->setPrincipalAmount($claimData['principalAmount']);
+                            $contractCreditorClaim->setPrincipalAmount($claimData['principalAmount'] === '' ? null : $claimData['principalAmount']);
                         }
 
                         if (isset($claimData['interest'])) {
-                            $contractCreditorClaim->setInterest($claimData['interest']);
+                            $contractCreditorClaim->setInterest($claimData['interest'] === '' ? null : $claimData['interest']);
                         }
 
                         if (isset($claimData['penalty'])) {
-                            $contractCreditorClaim->setPenalty($claimData['penalty']);
+                            $contractCreditorClaim->setPenalty($claimData['penalty'] === '' ? null : $claimData['penalty']);
                         }
 
                         if (isset($claimData['lateFee'])) {
-                            $contractCreditorClaim->setLateFee($claimData['lateFee']);
+                            $contractCreditorClaim->setLateFee($claimData['lateFee'] === '' ? null : $claimData['lateFee']);
                         }
 
                         if (isset($claimData['forfeiture'])) {
-                            $contractCreditorClaim->setForfeiture($claimData['forfeiture']);
+                            $contractCreditorClaim->setForfeiture($claimData['forfeiture'] === '' ? null : $claimData['forfeiture']);
                         }
 
                         if (isset($claimData['stateDuty'])) {
-                            $contractCreditorClaim->setStateDuty($claimData['stateDuty']);
+                            $contractCreditorClaim->setStateDuty($claimData['stateDuty'] === '' ? null : $claimData['stateDuty']);
                         }
 
                         if (isset($claimData['basis'])) {
-                            $contractCreditorClaim->setBasis($claimData['basis']);
+                            $basis = $claimData['basis'];
+                            if (is_array($basis) && empty($basis)) {
+                                $basis = null;
+                            }
+                            $contractCreditorClaim->setBasis($basis);
                         }
 
                         if (isset($claimData['inclusion'])) {
-                            $contractCreditorClaim->setInclusion((bool)$claimData['inclusion']);
+                            $contractCreditorClaim->setInclusion($claimData['inclusion'] === null || $claimData['inclusion'] === '' ? null : (bool)$claimData['inclusion']);
                         }
 
-                        $contract->addCreditorsClaim($contractCreditorClaim);
+                        $processedClaims[] = $contractCreditorClaim;
+                    }
+                }
+
+                // Удаляем записи, которых нет в новых данных
+                foreach ($existingClaims as $existingClaim) {
+                    $existingId = $existingClaim->getId();
+                    if ($existingId !== null && !in_array($existingId, $incomingIds, true)) {
+                        $contract->removeCreditorsClaim($existingClaim);
+                        $this->entityManager->remove($existingClaim);
                     }
                 }
 

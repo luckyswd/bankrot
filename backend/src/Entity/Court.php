@@ -85,6 +85,37 @@ class Court extends BaseEntity
         return trim($name);
     }
 
+    /**
+     * Возвращает название суда в предложном падеже с первой буквой в верхнем регистре.
+     *
+     * @return string Название суда в предложном падеже
+     */
+    public function getNamePrepositional(): string
+    {
+        $name = $this->name;
+
+        // Убираем "В " в начале, если есть
+        if (mb_strpos($name, 'В ') === 0) {
+            $name = mb_substr($name, 2);
+        }
+
+        // Заменяем "Арбитражный суд" на "Арбитражном суде"
+        $name = preg_replace(
+            '/^Арбитражный суд\s+/u',
+            'Арбитражном суде ',
+            $name
+        );
+
+        // Первая буква должна быть заглавной
+        if (mb_strlen($name) > 0) {
+            $firstChar = mb_substr($name, 0, 1);
+            $rest = mb_substr($name, 1);
+            $name = mb_strtoupper($firstChar) . $rest;
+        }
+
+        return trim($name);
+    }
+
     public function getShortName(): string
     {
         $name = $this->name;

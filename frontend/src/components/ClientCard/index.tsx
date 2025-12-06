@@ -71,7 +71,19 @@ function ClientCard() {
       judicial_procedure_initiation: currentValues.judicial_procedure_initiation || {},
       judicial_procedure: {
         ...(currentValues.judicial_procedure || {}),
-        creditorsClaims: currentValues.judicial_procedure?.creditorsClaims ?? [],
+        creditorsClaims: (currentValues.judicial_procedure?.creditorsClaims ?? []).map((claim) => ({
+          id: claim.id,
+          creditorId: claim.creditorId,
+          debtAmount: claim.debtAmount,
+          principalAmount: claim.principalAmount,
+          interest: claim.interest,
+          penalty: claim.penalty,
+          lateFee: claim.lateFee,
+          forfeiture: claim.forfeiture,
+          stateDuty: claim.stateDuty,
+          basis: claim.basis,
+          inclusion: claim.inclusion,
+        })),
       },
     };
 
