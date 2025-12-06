@@ -38,7 +38,7 @@ export const ProcedureTab = ({
   contractData,
   referenceData,
 }: ProcedureTabProps): JSX.Element => {
-  const { register, control, setValue } = useFormContext<FormValues>();
+  const { register, control} = useFormContext<FormValues>();
 
   const {
     fields: creditorsClaimsFields,
