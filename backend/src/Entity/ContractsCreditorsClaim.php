@@ -298,7 +298,7 @@ class ContractsCreditorsClaim extends BaseEntity
      * Возвращает строку вида: "кредитного договора №118270753 от 20.03.2023 г.,"
      * или "кредитных договоров №118270753 от 20.03.2023 г., №118270754 от 21.03.2023 г.,".
      */
-    public function getBasisFormatted(): string
+    public function getBasisString(): string
     {
         $basis = $this->getBasis();
 
@@ -371,8 +371,23 @@ class ContractsCreditorsClaim extends BaseEntity
             return '';
         }
 
-        $result .= implode(', ', $formattedBasis) . ',';
+        $result .= implode(', ', $formattedBasis);
 
         return $result;
+    }
+
+    /**
+     * Возвращает строку с информацией о договоре обслуживания кредитной карты.
+     * Формат: "и договора обслуживания кредитной карты от DD.MM.YYYY г."
+     */
+    public function getCardDocument(): string
+    {
+        if ($this->creditCardDate && $this->getIsCreditCard()) {
+            $formattedDate = $this->creditCardDate->format('d.m.Y');
+
+            return 'и договора обслуживания кредитной карты от ' . $formattedDate . ' г.';
+        }
+
+        return '';
     }
 }
