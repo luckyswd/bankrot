@@ -1101,6 +1101,16 @@ class ContractsController extends AbstractController
                 continue;
             }
 
+            if ($key === 'procedureInitiationIPEndings') {
+                $ipEndings = $value;
+                if (is_array($ipEndings) && empty($ipEndings)) {
+                    $ipEndings = null;
+                }
+                $contract->setProcedureInitiationIPEndings($ipEndings);
+
+                continue;
+            }
+
             if ($key === 'creditorsClaims') {
                 // Собираем существующие записи и их ID
                 $existingClaims = $contract->getCreditorsClaims()->toArray();

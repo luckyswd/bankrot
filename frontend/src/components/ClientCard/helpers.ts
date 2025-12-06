@@ -76,12 +76,13 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationDocNumber: "",
   procedureInitiationCaseNumber: "",
   procedureInitiationDuration: "",
-  procedureInitiationRoszdrav: "",
+  procedureInitiationRosgvardia: "",
   procedureInitiationJudge: "",
   procedureInitiationBailiff: "",
   executionNumber: "",
   executionDate: "",
   procedureInitiationSpecialAccountNumber: "",
+  procedureInitiationIPEndings: [],
 };
 
 export const defaultProcedure: ProcedureFields = {};
@@ -268,7 +269,7 @@ export const convertApiDataToFormValues = (
     },
     judicial_procedure_initiation: {
       ...defaults.judicial_procedure_initiation,
-      ...asPartial<PretrialFields>(apiData.judicial_procedure_initiation),
+      ...asPartial<IntroductionFields>(apiData.judicial_procedure_initiation),
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,

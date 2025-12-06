@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 import type { ReferenceData } from "@/types/reference";
 
@@ -191,19 +193,19 @@ export const IntroductionTab = ({
             </div>
 
             <Controller
-              name="judicial_procedure_initiation.procedureInitiationRoszdrav"
+              name="judicial_procedure_initiation.procedureInitiationRosgvardia"
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationRoszdrav">
-                    Росздрав
+                  <Label htmlFor="judicial_procedure_initiation.procedureInitiationRosgvardia">
+                    Росгвардия
                   </Label>
                   <Select
                     value={toIdString(field.value)}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationRoszdrav">
-                      <SelectValue placeholder="Выберите Росздрав" />
+                    <SelectTrigger id="judicial_procedure_initiation.procedureInitiationRosgvardia">
+                      <SelectValue placeholder="Выберите Росгвардию" />
                     </SelectTrigger>
                     <SelectContent>
                       {referenceData?.rosgvardia?.map((item) => (
@@ -293,6 +295,137 @@ export const IntroductionTab = ({
               <Input
                 id="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber"
                 {...register("judicial_procedure_initiation.procedureInitiationSpecialAccountNumber")}
+              />
+            </div>
+
+            <div className="col-span-full space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-medium">
+                  Окончания исполнительных производств (можно несколько)
+                </Label>
+              </div>
+
+              <Controller
+                control={control}
+                name="judicial_procedure_initiation.procedureInitiationIPEndings"
+                render={({ field: executionTerminationsField }) => {
+                  const executionTerminationsArray = executionTerminationsField.value ?? [];
+
+                  return (
+                    <>
+                      {executionTerminationsArray.length === 0 ? (
+                        <div className="space-y-2">
+                          <Label>Окончание 1</Label>
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <Input
+                              placeholder="Номер"
+                              onChange={(e) => {
+                                const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
+                                  number: "",
+                                  date: ""
+                                };
+                                executionTerminationsField.onChange([
+                                  { ...currentTermination, number: e.target.value },
+                                ]);
+                              }}
+                            />
+                            <DatePickerInput
+                              placeholder="Дата"
+                              onChange={(value) => {
+                                const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
+                                  number: "",
+                                  date: ""
+                                };
+                                executionTerminationsField.onChange([
+                                  { ...currentTermination, date: value },
+                                ]);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {executionTerminationsArray.map(
+                            (
+                              terminationItem: { number: string; date: string },
+                              terminationIndex: number
+                            ) => (
+                              <div
+                                key={terminationIndex}
+                                className="flex items-end gap-3"
+                              >
+                                <div className="flex-1 space-y-2">
+                                  <Label>
+                                    Окончание {terminationIndex + 1}
+                                  </Label>
+                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <Input
+                                      value={terminationItem.number ?? ""}
+                                      placeholder="Номер"
+                                      onChange={(e) => {
+                                        const newTerminations = [
+                                          ...executionTerminationsArray,
+                                        ];
+                                        newTerminations[terminationIndex] = {
+                                          ...terminationItem,
+                                          number: e.target.value,
+                                        };
+                                        executionTerminationsField.onChange(newTerminations);
+                                      }}
+                                    />
+                                    <DatePickerInput
+                                      value={terminationItem.date ?? ""}
+                                      placeholder="Дата"
+                                      onChange={(value) => {
+                                        const newTerminations = [
+                                          ...executionTerminationsArray,
+                                        ];
+                                        newTerminations[terminationIndex] = {
+                                          ...terminationItem,
+                                          date: value,
+                                        };
+                                        executionTerminationsField.onChange(newTerminations);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    const newTerminations = executionTerminationsArray.filter(
+                                      (_: unknown, i: number) =>
+                                        i !== terminationIndex
+                                    );
+                                    executionTerminationsField.onChange(newTerminations);
+                                  }}
+                                  aria-label={`Удалить окончание ${terminationIndex + 1}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const currentTerminations = executionTerminationsField.value ?? [];
+                          executionTerminationsField.onChange([
+                            ...currentTerminations,
+                            { number: "", date: "" },
+                          ]);
+                        }}
+                      >
+                        Добавить окончание
+                      </Button>
+                    </>
+                  );
+                }}
               />
             </div>
           </div>

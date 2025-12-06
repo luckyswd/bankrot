@@ -75,15 +75,21 @@ export type IntroductionFields = {
   procedureInitiationDocNumber: string
   procedureInitiationCaseNumber: string
   procedureInitiationDuration: string
-  procedureInitiationRoszdrav: string
+  procedureInitiationRosgvardia: string
   procedureInitiationJudge: string
   procedureInitiationBailiff: string
   executionNumber: string
   executionDate: string
   procedureInitiationSpecialAccountNumber: string
+  procedureInitiationIPEndings?: ExecutionTerminationItem[] | null
 }
 
 export type BasisItem = {
+  number: string
+  date: string
+}
+
+export type ExecutionTerminationItem = {
   number: string
   date: string
 }
