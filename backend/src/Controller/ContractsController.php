@@ -1114,7 +1114,6 @@ class ContractsController extends AbstractController
             if ($key === 'creditorsClaims') {
                 // Собираем существующие записи и их ID
                 $existingClaims = $contract->getCreditorsClaims()->toArray();
-                $existingIds = array_map(fn ($claim) => $claim->getId(), $existingClaims);
                 $incomingIds = [];
                 $processedClaims = [];
 
