@@ -964,7 +964,7 @@ class ContractsController extends AbstractController
 
             if (isset($documentsByStage[$stage->value])) {
                 usort($documentsByStage[$stage->value], function ($a, $b) {
-                    return $a['name'] <=> $b['name'];
+                    return strnatcasecmp($a['name'], $b['name']);
                 });
             }
 
