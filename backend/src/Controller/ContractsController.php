@@ -866,10 +866,8 @@ class ContractsController extends AbstractController
             return $this->json(data: ['error' => 'Неверный формат данных'], status: 400);
         }
 
-        foreach ($bankruptcyStages as $stageKey => $bankruptcyStageData) {
-            if (is_array($bankruptcyStageData)) {
-                $this->updateContractFields(contract: $contract, data: $bankruptcyStageData);
-            }
+        foreach ($bankruptcyStages as $bankruptcyStageData) {
+            $this->updateContractFields(contract: $contract, data: $bankruptcyStageData);
         }
 
         $this->entityManager->flush();
@@ -1112,10 +1110,7 @@ class ContractsController extends AbstractController
             }
 
             if ($key === 'creditorsClaims') {
-                // Собираем существующие записи и их ID
-                $existingClaims = $contract->getCreditorsClaims()->toArray();
-                $incomingIds = [];
-                $processedClaims = [];
+                $contract->getCreditorsClaims()->clear();
 
                 if (is_array($value)) {
                     foreach ($value as $claimData) {
@@ -1126,7 +1121,7 @@ class ContractsController extends AbstractController
                         $creditorId = $claimData['creditorId'] ?? null;
                         $id = $claimData['id'] ?? null;
 
-                        if ($creditorId === null || !is_numeric($creditorId) || (int)$creditorId === 0) {
+                        if (!is_numeric($creditorId) || (int)$creditorId === 0) {
                             continue;
                         }
 
@@ -1138,22 +1133,22 @@ class ContractsController extends AbstractController
 
                         $contractCreditorClaim = null;
 
-                        if ($id !== null && is_numeric($id)) {
+                        if (is_numeric($id)) {
                             $contractCreditorClaim = $this->contractsCreditorsClaimRepository->find((int)$id);
 
-                            if ($contractCreditorClaim !== null && $contractCreditorClaim->getContract()->getId() === $contract->getId()) {
-                                $incomingIds[] = (int)$id;
-                            } else {
+                            if ($contractCreditorClaim !== null && $contractCreditorClaim->getContract()->getId() !== $contract->getId()) {
                                 $contractCreditorClaim = null;
                             }
                         }
 
-                        if ($contractCreditorClaim === null) {
+                        if (!$contractCreditorClaim) {
                             $contractCreditorClaim = new ContractsCreditorsClaim();
-                            $contractCreditorClaim->setContract($contract);
-                            $contractCreditorClaim->setCreditor($creditor);
+                            $contractCreditorClaim->setContract(contract: $contract);
+
                             $this->entityManager->persist($contractCreditorClaim);
                         }
+
+                        $contractCreditorClaim->setCreditor(creditor: $creditor);
 
                         if (isset($claimData['debtAmount'])) {
                             $contractCreditorClaim->setDebtAmount($claimData['debtAmount'] === '' ? null : $claimData['debtAmount']);
@@ -1217,16 +1212,7 @@ class ContractsController extends AbstractController
                             }
                         }
 
-                        $processedClaims[] = $contractCreditorClaim;
-                    }
-                }
-
-                // Удаляем записи, которых нет в новых данных
-                foreach ($existingClaims as $existingClaim) {
-                    $existingId = $existingClaim->getId();
-                    if ($existingId !== null && !in_array($existingId, $incomingIds, true)) {
-                        $contract->removeCreditorsClaim($existingClaim);
-                        $this->entityManager->remove($existingClaim);
+                        $contract->addCreditorsClaim($contractCreditorClaim);
                     }
                 }
 
