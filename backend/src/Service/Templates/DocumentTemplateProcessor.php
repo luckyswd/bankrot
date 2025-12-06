@@ -209,6 +209,22 @@ readonly class DocumentTemplateProcessor
                 continue;
             }
 
+            if ($block['blockName'] === 'creditors_claims_registry') {
+                $collection = $collection->filter(function ($item) {
+                    return method_exists($item, 'getIsCreditCard') && $item->getIsCreditCard() === true;
+                });
+            }
+
+            if ($collection->isEmpty()) {
+                $templateProcessor->cloneBlock(
+                    blockName: $block['blockName'],
+                    clones: 0,
+                    variableReplacements: [],
+                );
+
+                continue;
+            }
+
             $blockVariables = $this->getBlockVariables(
                 variables: $templateProcessor->getVariables(),
                 itemName: $block['itemName']
