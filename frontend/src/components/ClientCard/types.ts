@@ -100,6 +100,9 @@ export type CreditorsClaimItem = {
   stateDuty?: string | null
   basis?: BasisItem[] | null
   inclusion?: boolean | null
+  isCreditCard?: boolean | null
+  creditCardDate?: string | null
+  judicialActDate?: string | null
 }
 
 export type ProcedureFields = {

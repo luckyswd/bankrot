@@ -1183,7 +1183,29 @@ class ContractsController extends AbstractController
                         }
 
                         if (isset($claimData['inclusion'])) {
-                            $contractCreditorClaim->setInclusion($claimData['inclusion'] === null || $claimData['inclusion'] === '' ? null : (bool)$claimData['inclusion']);
+                            $contractCreditorClaim->setInclusion($claimData['inclusion'] === '' ? null : (bool)$claimData['inclusion']);
+                        }
+
+                        if (isset($claimData['isCreditCard'])) {
+                            $contractCreditorClaim->setIsCreditCard($claimData['isCreditCard'] === '' ? null : (bool)$claimData['isCreditCard']);
+                        }
+
+                        if (isset($claimData['creditCardDate'])) {
+                            $creditCardDate = $claimData['creditCardDate'];
+                            if ($creditCardDate === '') {
+                                $contractCreditorClaim->setCreditCardDate(null);
+                            } else {
+                                $contractCreditorClaim->setCreditCardDate(new \DateTime($creditCardDate));
+                            }
+                        }
+
+                        if (isset($claimData['judicialActDate'])) {
+                            $judicialActDate = $claimData['judicialActDate'];
+                            if ($judicialActDate === '') {
+                                $contractCreditorClaim->setJudicialActDate(null);
+                            } else {
+                                $contractCreditorClaim->setJudicialActDate(new \DateTime($judicialActDate));
+                            }
                         }
 
                         $processedClaims[] = $contractCreditorClaim;

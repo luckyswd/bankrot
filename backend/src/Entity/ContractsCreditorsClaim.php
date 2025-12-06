@@ -99,6 +99,21 @@ class ContractsCreditorsClaim extends BaseEntity
     #[OA\Property(description: 'Требования получено', type: 'boolean', example: true, nullable: true)]
     private ?bool $inclusion = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Кредитная карта', type: 'boolean', example: false, nullable: true)]
+    private ?bool $isCreditCard = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата кредитной карты', type: 'string', format: 'date', example: '2025-01-15', nullable: true)]
+    private ?\DateTimeInterface $creditCardDate = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата конкретного судебного акта', type: 'string', format: 'date', example: '2025-01-15', nullable: true)]
+    private ?\DateTimeInterface $judicialActDate = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -242,6 +257,42 @@ class ContractsCreditorsClaim extends BaseEntity
         return $this;
     }
 
+    public function getIsCreditCard(): ?bool
+    {
+        return $this->isCreditCard;
+    }
+
+    public function setIsCreditCard(?bool $isCreditCard): self
+    {
+        $this->isCreditCard = $isCreditCard;
+
+        return $this;
+    }
+
+    public function getCreditCardDate(): ?\DateTimeInterface
+    {
+        return $this->creditCardDate;
+    }
+
+    public function setCreditCardDate(?\DateTimeInterface $creditCardDate): self
+    {
+        $this->creditCardDate = $creditCardDate;
+
+        return $this;
+    }
+
+    public function getJudicialActDate(): ?\DateTimeInterface
+    {
+        return $this->judicialActDate;
+    }
+
+    public function setJudicialActDate(?\DateTimeInterface $judicialActDate): self
+    {
+        $this->judicialActDate = $judicialActDate;
+
+        return $this;
+    }
+
     /**
      * Форматирует основания кредитных договоров в строку.
      * Возвращает строку вида: "кредитного договора №118270753 от 20.03.2023 г.,"
@@ -251,7 +302,7 @@ class ContractsCreditorsClaim extends BaseEntity
     {
         $basis = $this->getBasis();
 
-        if ($basis === null || empty($basis)) {
+        if (empty($basis)) {
             return '';
         }
 

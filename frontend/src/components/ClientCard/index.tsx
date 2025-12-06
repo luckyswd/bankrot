@@ -83,6 +83,9 @@ function ClientCard() {
           stateDuty: claim.stateDuty,
           basis: claim.basis,
           inclusion: claim.inclusion,
+          isCreditCard: claim.isCreditCard,
+          creditCardDate: claim.creditCardDate,
+          judicialActDate: claim.judicialActDate,
         })),
       },
     };
