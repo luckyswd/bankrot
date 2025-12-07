@@ -187,6 +187,10 @@ function ClientCard() {
     if (!contract) {
       return;
     }
+    // Для шаблона с ID=200 отключаем предпросмотр, только скачивание
+    if (doc.id === 200) {
+      return;
+    }
     openModal("previewDocumentModal", {
       document: {
         documentId: doc.id,
@@ -213,7 +217,8 @@ function ClientCard() {
       const link = window.document.createElement("a");
 
       link.href = downloadUrl;
-      link.download = `${doc?.name}.docx`;
+      // Для шаблона с ID=200 используем расширение .xlsx
+      link.download = `${doc?.name}.${doc.id === 200 ? 'xlsx' : 'docx'}`;
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);

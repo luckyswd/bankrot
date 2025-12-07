@@ -202,7 +202,8 @@ export default function DocumentsPage() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `${template.name}.docx`
+      // Для шаблона с ID=200 используем расширение .xlsx
+      link.download = `${template.name}.${template.id === 200 ? 'xlsx' : 'docx'}`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

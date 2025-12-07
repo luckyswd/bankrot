@@ -40,14 +40,17 @@ export const DocumentsList = ({
               {document.name}
             </div>
             <div className="flex gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={() => onDocumentClick(document)} variant="secondary">
-                    <Eye className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Просмотр документа</TooltipContent>
-              </Tooltip>
+              {/* Для шаблона с ID=200 скрываем кнопку просмотра, только скачивание */}
+              {document.id !== 200 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={() => onDocumentClick(document)} variant="secondary">
+                      <Eye className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Просмотр документа</TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={() => onDownload(document)} variant="secondary">

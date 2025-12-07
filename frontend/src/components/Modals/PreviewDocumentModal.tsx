@@ -65,7 +65,8 @@ export const PreviewDocumentModal = ({
       const link = window.document.createElement("a");
 
       link.href = downloadUrl;
-      link.download = `${document?.documentName}.docx`;
+      // Для шаблона с ID=200 используем расширение .xlsx
+      link.download = `${document?.documentName}.${document?.documentId === 200 ? 'xlsx' : 'docx'}`;
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);

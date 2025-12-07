@@ -10,6 +10,7 @@ use App\Entity\Enum\BankruptcyStage;
 use App\Repository\ContractsRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Service\Templates\DocumentTemplateProcessor;
+use App\Service\Templates\DocumentXlsxService;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
@@ -33,6 +34,7 @@ class DocumentTemplateController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly DocumentTemplateProcessor $templateProcessor,
         private readonly ContractsRepository $contractsRepository,
+        private readonly DocumentXlsxService $documentXlsxService,
     ) {
     }
 
@@ -585,6 +587,10 @@ class DocumentTemplateController extends AbstractController
         }
 
         try {
+            if ($template->getId() === 200) {
+                return $this->documentXlsxService->handle(documentTemplate: $template, contracts: $contract);
+            }
+
             $outputPath = $this->templateProcessor->processTemplate(template: $template, contract: $contract);
         } catch (\Exception $e) {
             return $this->json(data: ['error' => 'Ошибка при обработке шаблона: ' . $e->getMessage()], status: 500);

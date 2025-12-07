@@ -18,3 +18,4 @@ class ContractsCreditorsClaimRepository extends ServiceEntityRepository
         parent::__construct($registry, ContractsCreditorsClaim::class);
     }
 }
+

@@ -8,24 +8,21 @@ use Psr\Cache\CacheItemPoolInterface;
 
 class CacheService
 {
-    public const TTL_ONE_HOUR = 3600;
-    public const TTL_TWO_HOURS = 7200;
-    public const TTL_ONE_DAY = 86400;
-
-    private const PREFIX_CREDITORS = 'creditors';
-    private const PREFIX_CREDITORS_LIST = 'creditors_list';
-    private const PREFIX_COURTS = 'courts';
-    private const PREFIX_COURTS_LIST = 'courts_list';
-    private const PREFIX_BAILIFFS = 'bailiffs';
-    private const PREFIX_BAILIFFS_LIST = 'bailiffs_list';
-    private const PREFIX_FNS = 'fns';
-    private const PREFIX_FNS_LIST = 'fns_list';
-    private const PREFIX_MCHS = 'mchs';
-    private const PREFIX_MCHS_LIST = 'mchs_list';
-    private const PREFIX_ROSGVARDIA = 'rosgvardia';
-    private const PREFIX_ROSGVARDIA_LIST = 'rosgvardia_list';
-    private const PREFIX_GOSTEKHNADZOR = 'gostekhnadzor';
-    private const PREFIX_GOSTEKHNADZOR_LIST = 'gostekhnadzor_list';
+    public const int TTL_ONE_HOUR = 3600;
+    private const string PREFIX_CREDITORS = 'creditors';
+    private const string PREFIX_CREDITORS_LIST = 'creditors_list';
+    private const string PREFIX_COURTS = 'courts';
+    private const string PREFIX_COURTS_LIST = 'courts_list';
+    private const string PREFIX_BAILIFFS = 'bailiffs';
+    private const string PREFIX_BAILIFFS_LIST = 'bailiffs_list';
+    private const string PREFIX_FNS = 'fns';
+    private const string PREFIX_FNS_LIST = 'fns_list';
+    private const string PREFIX_MCHS = 'mchs';
+    private const string PREFIX_MCHS_LIST = 'mchs_list';
+    private const string PREFIX_ROSGVARDIA = 'rosgvardia';
+    private const string PREFIX_ROSGVARDIA_LIST = 'rosgvardia_list';
+    private const string PREFIX_GOSTEKHNADZOR = 'gostekhnadzor';
+    private const string PREFIX_GOSTEKHNADZOR_LIST = 'gostekhnadzor_list';
 
     public function __construct(
         private readonly CacheItemPoolInterface $creditorsCache,
