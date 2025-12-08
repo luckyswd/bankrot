@@ -24,15 +24,16 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
         Долг и исполнительные производства
       </h3></AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.debtAmount">Сумма долга</Label>
           <Input
             id="basic_info.debtAmount"
             type="number"
             step="0.01"
-            placeholder="1500000.50"
+            placeholder="2500000.75"
             {...register("basic_info.debtAmount")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: 2500000.75</p>
         </div>
 
         <div className="space-y-2">

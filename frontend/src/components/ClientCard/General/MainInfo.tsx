@@ -40,70 +40,76 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         <p className="col-span-3 text-xs text-blue-500">
           В именительном падаже
         </p>
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.lastName" required>
             Фамилия
           </Label>
           <Input
             id="basic_info.lastName"
-            placeholder="Иванов"
+            placeholder="Петров"
             {...register("basic_info.lastName")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Петров</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.firstName" required>
             Имя
           </Label>
           <Input
             id="basic_info.firstName"
-            placeholder="Иван"
+            placeholder="Александр"
             {...register("basic_info.firstName")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Александр</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.middleName" required>
             Отчество
           </Label>
           <Input
             id="basic_info.middleName"
-            placeholder="Иванович"
+            placeholder="Сергеевич"
             {...register("basic_info.middleName")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Сергеевич</p>
         </div>
         <p className="col-span-3 text-xs text-blue-500">В родительном падеже</p>
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.lastNameGenitive" required>
             Фамилия
           </Label>
           <Input
             id="basic_info.lastNameGenitive"
-            placeholder="Иванов"
+            placeholder="Петрова"
             {...register("basic_info.lastNameGenitive")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Петрова</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.firstNameGenitive" required>
             Имя
           </Label>
           <Input
             id="basic_info.firstNameGenitive"
-            placeholder="Иван"
+            placeholder="Александра"
             {...register("basic_info.firstNameGenitive")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Александра</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.middleNameGenitive" required>
             Отчество
           </Label>
           <Input
             id="basic_info.middleNameGenitive"
-            placeholder="Иванович"
+            placeholder="Сергеевича"
             {...register("basic_info.middleNameGenitive")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Сергеевича</p>
         </div>
 
         <div className="space-y-2">
@@ -122,13 +128,14 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         </div>
 
         {isLastNameChanged && (
-          <div className="space-y-2 lg:col-span-2">
+          <div className="space-y-1 lg:col-span-2">
             <Label htmlFor="basic_info.changedLastName">Предыдущее ФИО</Label>
             <Input
               id="basic_info.changedLastName"
-              placeholder="Петров Петр Петрович"
+              placeholder="Сидоров Иван Петрович"
               {...register("basic_info.changedLastName")}
             />
+            <p className="text-xs text-muted-foreground/70 italic">Пример: Сидоров Иван Петрович</p>
           </div>
         )}
         <Controller
@@ -164,22 +171,24 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           )}
         />
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.birthPlace">Место рождения</Label>
           <Input
             id="basic_info.birthPlace"
-            placeholder="г. Москва"
+            placeholder="г. Санкт-Петербург, Ленинградская область"
             {...register("basic_info.birthPlace")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: г. Санкт-Петербург, Ленинградская область</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.snils">СНИЛС</Label>
           <Input
             id="basic_info.snils"
-            placeholder="123-456-789 00"
+            placeholder="123-456-789 01"
             {...register("basic_info.snils")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: 123-456-789 01</p>
         </div>
       </AccordionContent>
     </AccordionItem>

@@ -353,23 +353,26 @@ export const ProcedureTab = ({
                               return (
                                   <>
                                     {basisArray.length === 0 ? (
-                                        <div className="space-y-2">
+                                        <div className="space-y-1">
                                           <Label>Основание 1</Label>
                                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            <Input
-                                                placeholder="Номер"
-                                                onChange={(e) => {
-                                                  const currentBasis = basisArray.length > 0 ? basisArray[0] : {
-                                                    number: "",
-                                                    date: ""
-                                                  };
-                                                  basisField.onChange([
-                                                    {...currentBasis, number: e.target.value},
-                                                  ]);
-                                                }}
-                                            />
+                                            <div className="space-y-1">
+                                              <Input
+                                                  placeholder="А56-12345/2024"
+                                                  onChange={(e) => {
+                                                    const currentBasis = basisArray.length > 0 ? basisArray[0] : {
+                                                      number: "",
+                                                      date: ""
+                                                    };
+                                                    basisField.onChange([
+                                                      {...currentBasis, number: e.target.value},
+                                                    ]);
+                                                  }}
+                                              />
+                                              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
+                                            </div>
                                             <DatePickerInput
-                                                placeholder="Дата"
+                                                placeholder="Выберите дату"
                                                 onChange={(value) => {
                                                   const currentBasis = basisArray.length > 0 ? basisArray[0] : {
                                                     number: "",
@@ -393,28 +396,31 @@ export const ProcedureTab = ({
                                                       key={basisIndex}
                                                       className="flex items-end gap-3"
                                                   >
-                                                    <div className="flex-1 space-y-2">
+                                                    <div className="flex-1 space-y-1">
                                                       <Label>
                                                         Основание {basisIndex + 1}
                                                       </Label>
                                                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <Input
-                                                            value={basisItem.number ?? ""}
-                                                            placeholder="Номер"
-                                                            onChange={(e) => {
-                                                              const newBasis = [
-                                                                ...basisArray,
-                                                              ];
-                                                              newBasis[basisIndex] = {
-                                                                ...basisItem,
-                                                                number: e.target.value,
-                                                              };
-                                                              basisField.onChange(newBasis);
-                                                            }}
-                                                        />
+                                                        <div className="space-y-1">
+                                                          <Input
+                                                              value={basisItem.number ?? ""}
+                                                              placeholder="А56-12345/2024"
+                                                              onChange={(e) => {
+                                                                const newBasis = [
+                                                                  ...basisArray,
+                                                                ];
+                                                                newBasis[basisIndex] = {
+                                                                  ...basisItem,
+                                                                  number: e.target.value,
+                                                                };
+                                                                basisField.onChange(newBasis);
+                                                              }}
+                                                          />
+                                                          <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
+                                                        </div>
                                                         <DatePickerInput
                                                             value={basisItem.date ?? ""}
-                                                            placeholder="Дата"
+                                                            placeholder="Выберите дату"
                                                             onChange={(value) => {
                                                               const newBasis = [
                                                                 ...basisArray,

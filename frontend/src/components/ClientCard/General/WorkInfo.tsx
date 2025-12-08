@@ -67,50 +67,54 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
           />
         </div>
 
-        <div className="space-y-2 lg:col-span-2">
+        <div className="space-y-1 lg:col-span-2">
           <Label htmlFor="basic_info.employerName">
             Наименование работодателя
           </Label>
           <Input
             id="basic_info.employerName"
-            placeholder='ООО "Рога и Копыта"'
+            placeholder='ООО "ТехноСтрой"'
             {...register("basic_info.employerName")}
             disabled={!isWorking}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: ООО "ТехноСтрой"</p>
         </div>
 
-        <div className="space-y-2 lg:col-span-2">
+        <div className="space-y-1 lg:col-span-2">
           <Label htmlFor="basic_info.employerAddress">
             Адрес работодателя
           </Label>
           <Input
             id="basic_info.employerAddress"
-            placeholder="г. Москва, ул. Ленина, д. 1"
+            placeholder="г. Санкт-Петербург, ул. Лиговский проспект, д. 50, офис 301"
             {...register("basic_info.employerAddress")}
             disabled={!isWorking}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: г. Санкт-Петербург, ул. Лиговский проспект, д. 50, офис 301</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="basic_info.employerInn">ИНН работодателя</Label>
           <Input
             id="basic_info.employerInn"
-            placeholder="1234567890"
+            placeholder="7812345678"
             maxLength={12}
             {...register("basic_info.employerInn")}
             disabled={!isWorking}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: 7812345678</p>
         </div>
 
-        <div className="space-y-2 lg:col-span-3">
+        <div className="space-y-1 lg:col-span-3">
           <Label htmlFor="basic_info.socialBenefits">
             Пенсии и социальные выплаты
           </Label>
           <Input
             id="basic_info.socialBenefits"
-            placeholder="Алименты, пособие, ЕДВ, прочее"
+            placeholder="Пенсия по старости, ЕДВ инвалида III группы"
             {...register("basic_info.socialBenefits")}
           />
+          <p className="text-xs text-muted-foreground/70 italic">Пример: Пенсия по старости, ЕДВ инвалида III группы</p>
         </div>
       </AccordionContent>
     </AccordionItem>

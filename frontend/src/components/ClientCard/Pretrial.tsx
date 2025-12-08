@@ -256,23 +256,27 @@ export const PretrialTab = ({
                       )}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label>Номер дела</Label>
                     <Input
                       type="text"
-                      placeholder="Номер"
+                      placeholder="А56-12345/2024"
                       {...register("pre_court.caseNumber")}
                     />
+                    <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label>Доверенность</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        type="text"
-                        placeholder="Номер"
-                        {...register("pre_court.powerOfAttorneyNumber")}
-                      />
+                      <div className="space-y-1">
+                        <Input
+                          type="text"
+                          placeholder="ДГ-2024-001234"
+                          {...register("pre_court.powerOfAttorneyNumber")}
+                        />
+                        <p className="text-xs text-muted-foreground/70 italic">Пример: ДГ-2024-001234</p>
+                      </div>
                       <Controller
                         name="pre_court.powerOfAttorneyDate"
                         control={control}
@@ -329,15 +333,16 @@ export const PretrialTab = ({
                     />
                   </div>
                   {hasHearingDateTime && (
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <Label htmlFor="pre_court.efrsbCabinet">
                         Кабинет ЕФРСБ
                       </Label>
                       <Input
                         id="pre_court.efrsbCabinet"
-                        placeholder="Ссылка или идентификатор кабинета"
+                        placeholder="https://cabinet.fedresurs.ru/Person/12345678"
                         {...register("pre_court.efrsbCabinet")}
                       />
+                      <p className="text-xs text-muted-foreground/70 italic">Пример: https://cabinet.fedresurs.ru/Person/12345678</p>
                     </div>
                   )}
                 </div>

@@ -173,23 +173,26 @@ export const IntroductionTab = ({
               )}
             />
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationDocNumber">
                 Номер документа
               </Label>
               <Input
                 id="judicial_procedure_initiation.procedureInitiationDocNumber"
-                placeholder="Укажите номер"
+                placeholder="А56-98765/2024"
                 {...register("judicial_procedure_initiation.procedureInitiationDocNumber")}
               />
+              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-98765/2024</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationCaseNumber">Номер дела</Label>
               <Input
                 id="judicial_procedure_initiation.procedureInitiationCaseNumber"
+                placeholder="А56-98765/2024"
                 {...register("judicial_procedure_initiation.procedureInitiationCaseNumber")}
               />
+              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-98765/2024</p>
             </div>
 
             <Controller
@@ -219,12 +222,14 @@ export const IntroductionTab = ({
               )}
             />
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationJudge">Судья</Label>
               <Input
                 id="judicial_procedure_initiation.procedureInitiationJudge"
+                placeholder="Иванов Иван Иванович"
                 {...register("judicial_procedure_initiation.procedureInitiationJudge")}
               />
+              <p className="text-xs text-muted-foreground/70 italic">Пример: Иванов Иван Иванович</p>
             </div>
 
             <Controller
@@ -288,14 +293,16 @@ export const IntroductionTab = ({
               </div>
             </div> */}
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber">
                 Номер спец счёта
               </Label>
               <Input
                 id="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber"
+                placeholder="40817810099910004312"
                 {...register("judicial_procedure_initiation.procedureInitiationSpecialAccountNumber")}
               />
+              <p className="text-xs text-muted-foreground/70 italic">Пример: 40817810099910004312</p>
             </div>
 
             <div className="col-span-full space-y-3">
@@ -314,23 +321,26 @@ export const IntroductionTab = ({
                   return (
                     <>
                       {executionTerminationsArray.length === 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <Label>Окончание 1</Label>
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <Input
-                              placeholder="Номер"
-                              onChange={(e) => {
-                                const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
-                                  number: "",
-                                  date: ""
-                                };
-                                executionTerminationsField.onChange([
-                                  { ...currentTermination, number: e.target.value },
-                                ]);
-                              }}
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                placeholder="12345/24/77001-ИП"
+                                onChange={(e) => {
+                                  const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
+                                    number: "",
+                                    date: ""
+                                  };
+                                  executionTerminationsField.onChange([
+                                    { ...currentTermination, number: e.target.value },
+                                  ]);
+                                }}
+                              />
+                              <p className="text-xs text-muted-foreground/70 italic">Пример: 12345/24/77001-ИП</p>
+                            </div>
                             <DatePickerInput
-                              placeholder="Дата"
+                              placeholder="Выберите дату"
                               onChange={(value) => {
                                 const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
                                   number: "",
@@ -354,28 +364,31 @@ export const IntroductionTab = ({
                                 key={terminationIndex}
                                 className="flex items-end gap-3"
                               >
-                                <div className="flex-1 space-y-2">
+                                <div className="flex-1 space-y-1">
                                   <Label>
                                     Окончание {terminationIndex + 1}
                                   </Label>
                                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <Input
-                                      value={terminationItem.number ?? ""}
-                                      placeholder="Номер"
-                                      onChange={(e) => {
-                                        const newTerminations = [
-                                          ...executionTerminationsArray,
-                                        ];
-                                        newTerminations[terminationIndex] = {
-                                          ...terminationItem,
-                                          number: e.target.value,
-                                        };
-                                        executionTerminationsField.onChange(newTerminations);
-                                      }}
-                                    />
+                                    <div className="space-y-1">
+                                      <Input
+                                        value={terminationItem.number ?? ""}
+                                        placeholder="12345/24/77001-ИП"
+                                        onChange={(e) => {
+                                          const newTerminations = [
+                                            ...executionTerminationsArray,
+                                          ];
+                                          newTerminations[terminationIndex] = {
+                                            ...terminationItem,
+                                            number: e.target.value,
+                                          };
+                                          executionTerminationsField.onChange(newTerminations);
+                                        }}
+                                      />
+                                      <p className="text-xs text-muted-foreground/70 italic">Пример: 12345/24/77001-ИП</p>
+                                    </div>
                                     <DatePickerInput
                                       value={terminationItem.date ?? ""}
-                                      placeholder="Дата"
+                                      placeholder="Выберите дату"
                                       onChange={(value) => {
                                         const newTerminations = [
                                           ...executionTerminationsArray,
