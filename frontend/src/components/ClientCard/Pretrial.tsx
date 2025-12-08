@@ -37,6 +37,7 @@ interface PretrialTabProps {
   onDownload: (document: { id: number; name: string }) => void;
   referenceData?: ReferenceData;
   contractData?: Record<string, unknown> | null;
+  onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
 }
 
 export const PretrialTab = ({
@@ -44,6 +45,7 @@ export const PretrialTab = ({
   onDownload,
   referenceData,
   contractData,
+  onNavigateToField,
 }: PretrialTabProps): JSX.Element => {
   const { register, control, watch } = useFormContext<FormValues>();
   const toIdString = (value: unknown) => {
@@ -353,8 +355,11 @@ export const PretrialTab = ({
           <DocumentsList
             documents={documents}
             title="Документы досудебного этапа:"
+            category="pre_court"
+            formValues={watch()}
             onDocumentClick={openDocument}
             onDownload={onDownload}
+            onNavigateToField={onNavigateToField}
           />
         </CardContent>
       </Card>

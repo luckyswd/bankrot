@@ -30,6 +30,7 @@ interface IntroductionTabProps {
   onDownload: (document: { id: number; name: string }) => void;
   referenceData?: ReferenceData;
   contractData?: Record<string, unknown> | null;
+  onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
 }
 
 export const IntroductionTab = ({
@@ -37,8 +38,9 @@ export const IntroductionTab = ({
   onDownload,
   referenceData,
   contractData,
+  onNavigateToField,
 }: IntroductionTabProps): JSX.Element => {
-  const { register, control } = useFormContext<FormValues>();
+  const { register, control, watch } = useFormContext<FormValues>();
   const toIdString = (value: unknown) => {
     if (typeof value === "string" || typeof value === "number") {
       return String(value);
@@ -68,30 +70,34 @@ export const IntroductionTab = ({
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Controller
-                name="judicial_procedure_initiation.procedureInitiationDecisionDate"
-                control={control}
-                render={({ field }) => (
-                  <DatePickerInput
-                    label="Дата принятия судебного решения"
-                    value={(field.value as string) ?? ""}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+            <Controller
+              name="judicial_procedure_initiation.procedureInitiationDecisionDate"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput
+                  id="judicial_procedure_initiation.procedureInitiationDecisionDate"
+                  name="judicial_procedure_initiation.procedureInitiationDecisionDate"
+                  label="Дата принятия судебного решения"
+                  value={(field.value as string) ?? ""}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             </div>
                             <div className="space-y-2">
-              <Controller
-                name="judicial_procedure_initiation.procedureInitiationResolutionDate"
-                control={control}
-                render={({ field }) => (
-                  <DatePickerInput
-                    label="Дата объявления резолютивной части судебного решения"
-                    value={(field.value as string) ?? ""}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+            <Controller
+              name="judicial_procedure_initiation.procedureInitiationResolutionDate"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput
+                  id="judicial_procedure_initiation.procedureInitiationResolutionDate"
+                  name="judicial_procedure_initiation.procedureInitiationResolutionDate"
+                  label="Дата объявления резолютивной части судебного решения"
+                  value={(field.value as string) ?? ""}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             </div>
 
             <Controller
@@ -446,8 +452,11 @@ export const IntroductionTab = ({
           <DocumentsList
             documents={documents}
             title="Документы этапа введения:"
+            category="judicial_procedure_initiation"
+            formValues={watch()}
             onDocumentClick={openDocument}
             onDownload={onDownload}
+            onNavigateToField={onNavigateToField}
           />
         </CardContent>
       </Card>

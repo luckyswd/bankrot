@@ -112,6 +112,8 @@ export const FamilyInfo: FC<Props> = ({
               name="basic_info.spouseBirthDate"
               render={({ field }) => (
                 <DatePickerInput
+                  id="basic_info.spouseBirthDate"
+                  name="basic_info.spouseBirthDate"
                   label="Дата рождения супруга"
                   value={
                     field.value
@@ -130,6 +132,8 @@ export const FamilyInfo: FC<Props> = ({
                 name="basic_info.marriageTerminationDate"
                 render={({ field }) => (
                   <DatePickerInput
+                    id="basic_info.marriageTerminationDate"
+                    name="basic_info.marriageTerminationDate"
                     label="Дата расторжения брака"
                     value={
                       field.value
@@ -279,6 +283,8 @@ export const FamilyInfo: FC<Props> = ({
                     name={`basic_info.children.${index}.birthDate`}
                     render={({ field }) => (
                       <DatePickerInput
+                        id={`basic_info.children.${index}.birthDate`}
+                        name={`basic_info.children.${index}.birthDate`}
                         label="Дата рождения *"
                         value={
                           field.value

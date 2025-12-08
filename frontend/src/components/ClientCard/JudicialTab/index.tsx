@@ -11,6 +11,7 @@ interface JudicialTabProps {
   onDownload: (document: { id: number; name: string }) => void;
   referenceData?: ReferenceData;
   contractData?: Record<string, unknown> | null;
+  onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
 }
 
 export const JudicialTab = ({
@@ -18,6 +19,7 @@ export const JudicialTab = ({
   onDownload,
   referenceData,
   contractData,
+  onNavigateToField,
 }: JudicialTabProps): JSX.Element => {
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -65,17 +67,20 @@ export const JudicialTab = ({
             onDownload={onDownload}
             referenceData={referenceData}
             contractData={contractData}
+            onNavigateToField={onNavigateToField}
           />
           <ProcedureTab
             openDocument={openDocument}
             onDownload={onDownload}
             referenceData={referenceData}
             contractData={contractData}
+            onNavigateToField={onNavigateToField}
           />
           <ReportTab
             openDocument={openDocument}
             onDownload={onDownload}
             contractData={contractData}
+            onNavigateToField={onNavigateToField}
           />
         </div>
       </Tabs>

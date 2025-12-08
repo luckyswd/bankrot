@@ -30,6 +30,7 @@ interface ProcedureTabProps {
   onDownload: (document: { id: number; name: string }) => void;
   referenceData?: ReferenceData;
   contractData?: Record<string, unknown> | null;
+  onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
 }
 
 export const ProcedureTab = ({
@@ -37,8 +38,10 @@ export const ProcedureTab = ({
   onDownload,
   contractData,
   referenceData,
+  onNavigateToField,
 }: ProcedureTabProps): JSX.Element => {
-  const { register, control} = useFormContext<FormValues>();
+  const { register, control, watch } = useFormContext<FormValues>();
+  const formValues = watch();
 
   const {
     fields: creditorsClaimsFields,
@@ -483,8 +486,11 @@ export const ProcedureTab = ({
           <DocumentsList
               documents={documents}
               title="Документы процедуры:"
+              category="judicial_procedure"
+              formValues={formValues}
               onDocumentClick={openDocument}
               onDownload={onDownload}
+              onNavigateToField={onNavigateToField}
           />
         </CardContent>
       </Card>

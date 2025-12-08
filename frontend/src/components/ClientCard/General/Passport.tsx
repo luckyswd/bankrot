@@ -69,6 +69,8 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
           name="basic_info.passportIssuedDate"
           render={({ field }) => (
             <DatePickerInput
+              id="basic_info.passportIssuedDate"
+              name="basic_info.passportIssuedDate"
               label="Дата выдачи паспорта"
               value={
                 field.value

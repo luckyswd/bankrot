@@ -158,6 +158,8 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           name="basic_info.birthDate"
           render={({ field }) => (
             <DatePickerInput
+              id="basic_info.birthDate"
+              name="basic_info.birthDate"
               label="Дата рождения *"
               value={
                 field.value

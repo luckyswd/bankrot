@@ -263,6 +263,152 @@ function ClientCard() {
     setSearchParams(newParams, { replace: true });
   };
 
+  // Функция навигации к полю
+  const navigateToField = (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => {
+    // Переключаем таб
+    handleTabChange(fieldInfo.tab);
+
+    // Если есть аккордеон, открываем его и устанавливаем subTab для judicial
+    if (fieldInfo.accordion) {
+      if (fieldInfo.tab === "judicial") {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set("tab", fieldInfo.tab);
+        newParams.set("subTab", fieldInfo.accordion);
+        setSearchParams(newParams, { replace: true });
+      }
+
+      // Открываем аккордеон через клик на триггер
+      setTimeout(() => {
+        // Ищем AccordionItem по значению и находим его триггер
+        const accordionItems = document.querySelectorAll('[data-radix-accordion-item]');
+        let accordionTrigger: HTMLElement | null = null;
+        
+        accordionItems.forEach((item) => {
+          const value = item.getAttribute('data-radix-accordion-item');
+          if (value === fieldInfo.accordion) {
+            const trigger = item.querySelector('button[data-radix-accordion-trigger]') as HTMLElement;
+            if (trigger && trigger.getAttribute('aria-expanded') === 'false') {
+              accordionTrigger = trigger;
+            }
+          }
+        });
+
+        // Если не нашли через data-атрибуты, ищем через aria-controls
+        if (!accordionTrigger) {
+          const allTriggers = document.querySelectorAll('button[data-radix-accordion-trigger]');
+          allTriggers.forEach((trigger) => {
+            const controls = trigger.getAttribute('aria-controls');
+            if (controls && controls.includes(fieldInfo.accordion) && trigger.getAttribute('aria-expanded') === 'false') {
+              accordionTrigger = trigger as HTMLElement;
+            }
+          });
+        }
+
+        if (accordionTrigger) {
+          accordionTrigger.click();
+        }
+
+        // Устанавливаем фокус на поле
+        setTimeout(() => {
+          let fieldElement: HTMLElement | null = null;
+          
+          // Сначала пробуем найти по точному ID
+          fieldElement = document.getElementById(fieldInfo.fieldId);
+          
+          // Если не нашли по ID, пробуем найти по name
+          if (!fieldElement) {
+            fieldElement = document.querySelector(`input[name="${fieldInfo.fieldId}"]`) as HTMLElement;
+          }
+          
+          // Если все еще не нашли, пробуем найти по частичному совпадению ID
+          if (!fieldElement) {
+            const allInputs = document.querySelectorAll('input');
+            for (const input of Array.from(allInputs)) {
+              const inputId = input.getAttribute('id') || '';
+              const inputName = input.getAttribute('name') || '';
+              // Проверяем точное совпадение или вхождение части fieldId
+              if (inputId === fieldInfo.fieldId || 
+                  inputName === fieldInfo.fieldId ||
+                  inputId.includes(fieldInfo.fieldId) ||
+                  inputName.includes(fieldInfo.fieldId)) {
+                fieldElement = input as HTMLElement;
+                break;
+              }
+            }
+          }
+          
+          // Если все еще не нашли, пробуем найти по последней части fieldId (имя поля)
+          if (!fieldElement) {
+            const fieldName = fieldInfo.fieldId.split('.').pop() || '';
+            fieldElement = document.querySelector(`input[id*="${fieldName}"], input[name*="${fieldName}"]`) as HTMLElement;
+          }
+          
+          if (fieldElement) {
+            fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Небольшая задержка перед фокусом для корректной прокрутки
+            setTimeout(() => {
+              fieldElement?.focus();
+              // Подсвечиваем поле
+              fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
+              setTimeout(() => {
+                fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+              }, 2000);
+            }, 100);
+          }
+        }, 400);
+      }, 300);
+    } else {
+      // Если нет аккордеона, просто устанавливаем фокус на поле
+      setTimeout(() => {
+        let fieldElement: HTMLElement | null = null;
+        
+        // Сначала пробуем найти по точному ID
+        fieldElement = document.getElementById(fieldInfo.fieldId);
+        
+        // Если не нашли по ID, пробуем найти по name
+        if (!fieldElement) {
+          fieldElement = document.querySelector(`input[name="${fieldInfo.fieldId}"]`) as HTMLElement;
+        }
+        
+        // Если все еще не нашли, пробуем найти по частичному совпадению ID
+        if (!fieldElement) {
+          const allInputs = document.querySelectorAll('input');
+          for (const input of Array.from(allInputs)) {
+            const inputId = input.getAttribute('id') || '';
+            const inputName = input.getAttribute('name') || '';
+            // Проверяем точное совпадение или вхождение части fieldId
+            if (inputId === fieldInfo.fieldId || 
+                inputName === fieldInfo.fieldId ||
+                inputId.includes(fieldInfo.fieldId) ||
+                inputName.includes(fieldInfo.fieldId)) {
+              fieldElement = input as HTMLElement;
+              break;
+            }
+          }
+        }
+        
+        // Если все еще не нашли, пробуем найти по последней части fieldId (имя поля)
+        if (!fieldElement) {
+          const fieldName = fieldInfo.fieldId.split('.').pop() || '';
+          fieldElement = document.querySelector(`input[id*="${fieldName}"], input[name*="${fieldName}"]`) as HTMLElement;
+        }
+        
+        if (fieldElement) {
+          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Небольшая задержка перед фокусом для корректной прокрутки
+          setTimeout(() => {
+            fieldElement?.focus();
+            // Подсвечиваем поле
+            fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
+            setTimeout(() => {
+              fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+            }, 2000);
+          }, 100);
+        }
+      }, 300);
+    }
+  };
+
   return (
     <SaveContext.Provider value={saveContract}>
       <FormProvider {...form}>
@@ -317,18 +463,21 @@ function ClientCard() {
                 contractData={contractData}
                 openDocument={openDocument}
                 onDownload={onDownload}
+                onNavigateToField={navigateToField}
               />
               <PretrialTab
                 openDocument={openDocument}
                 onDownload={onDownload}
                 referenceData={referenceData}
                 contractData={contractData}
+                onNavigateToField={navigateToField}
               />
               <JudicialTab
                 openDocument={openDocument}
                 onDownload={onDownload}
                 referenceData={referenceData}
                 contractData={contractData}
+                onNavigateToField={navigateToField}
               />
             </div>
           </Tabs>

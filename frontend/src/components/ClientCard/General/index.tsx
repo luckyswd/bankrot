@@ -30,14 +30,17 @@ interface GeneralTabProps {
   contractData?: Record<string, unknown> | null;
   openDocument: (document: { id: number; name: string }) => void;
   onDownload: (document: { id: number; name: string }) => void;
+  onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
 }
 
 export const GeneralTab = ({
   contractData,
   openDocument,
   onDownload,
+  onNavigateToField,
 }: GeneralTabProps): JSX.Element => {
-  const { register, control } = useFormContext<FormValues>();
+  const { register, control, watch } = useFormContext<FormValues>();
+  const formValues = watch();
 
   const documents =
     (
@@ -69,7 +72,7 @@ export const GeneralTab = ({
                 register={register}
                 control={control}
                 useWatch={useWatch}
-                watch={useFormContext().watch}
+                watch={watch}
               />
               <WorkInfo register={register} control={control} />
               <ContactInfo register={register} />
@@ -79,8 +82,11 @@ export const GeneralTab = ({
             <DocumentsList
               documents={documents}
               title="Документы основной информации:"
+              category="basic_info"
+              formValues={formValues}
               onDocumentClick={openDocument}
               onDownload={onDownload}
+              onNavigateToField={onNavigateToField}
             />
         </CardContent>
       </Card>
