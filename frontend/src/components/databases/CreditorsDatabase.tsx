@@ -9,7 +9,6 @@ import { Input } from '../ui/input'
 import { notify } from '../ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useModalStore } from '../Modals/ModalProvider'
-import { CREDITOR_TYPES } from './constants'
 interface Creditor {
   id: number
   name: string
@@ -20,11 +19,6 @@ interface Creditor {
   ogrn?: string | null
   type?: string | null
   [key: string]: unknown
-}
-
-const getTypeLabel = (type?: string | null) => {
-  const found = CREDITOR_TYPES.find((t) => t.value === type)
-  return found ? found.label : type || '-'
 }
 
 export default function CreditorsDatabase() {
@@ -52,7 +46,7 @@ export default function CreditorsDatabase() {
     if (!term) return creditors
 
     return creditors.filter((c) =>
-      [c.name, c.inn, c.ogrn, c.address]
+      [c.name, c.address, c.headFullName, c.bankDetails]
         .filter(Boolean)
         .some((field) => String(field).toLowerCase().includes(term))
     )
@@ -159,17 +153,16 @@ export default function CreditorsDatabase() {
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="bg-card">
                   <TableHead className="sticky top-0 bg-card">Наименование</TableHead>
-                  <TableHead className="sticky top-0 bg-card">ИНН</TableHead>
-                  <TableHead className="sticky top-0 bg-card">ОГРН</TableHead>
-                  <TableHead className="sticky top-0 bg-card">Тип</TableHead>
                   <TableHead className="sticky top-0 bg-card">Адрес</TableHead>
+                  <TableHead className="sticky top-0 bg-card">ФИО руководителя</TableHead>
+                  <TableHead className="sticky top-0 bg-card">Банковские реквизиты</TableHead>
                   <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                       {debouncedSearch ? 'Кредиторы не найдены' : 'Нет кредиторов. Добавьте первого кредитора!'}
                     </TableCell>
                   </TableRow>
@@ -177,10 +170,9 @@ export default function CreditorsDatabase() {
                   paginated.map((creditor) => (
                     <TableRow key={creditor.id}>
                       <TableCell className="font-medium">{creditor.name}</TableCell>
-                      <TableCell className="font-mono text-sm">{creditor.inn || '-'}</TableCell>
-                      <TableCell className="font-mono text-sm">{creditor.ogrn || '-'}</TableCell>
-                      <TableCell>{getTypeLabel(creditor.type)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{creditor.address || '-'}</TableCell>
+                      <TableCell>{creditor.headFullName || '-'}</TableCell>
+                      <TableCell className="text-sm">{creditor.bankDetails || '-'}</TableCell>
                       <TableCell>
                         <div className="flex">
                           <Button
