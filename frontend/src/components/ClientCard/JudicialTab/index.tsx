@@ -21,11 +21,28 @@ export const JudicialTab = ({
   return (
     <TabsContent value="judicial" className="mt-0 p-0 border-0">
       <Tabs defaultValue="introduction">
-        <TabsList className="grid w-full grid-cols-3 h-11 rounded-t-none border-t-0 bg-muted">
-          <TabsTrigger value="introduction">Введение процедуры</TabsTrigger>
-          <TabsTrigger value="procedure">Процедура</TabsTrigger>
-          <TabsTrigger value="report">Отчет</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col">
+          <TabsList className="grid w-full grid-cols-3 h-12 rounded-t-none p-0 gap-0.5">
+            <TabsTrigger 
+              value="introduction"
+              className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+            >
+              Введение процедуры
+            </TabsTrigger>
+            <TabsTrigger 
+              value="procedure"
+              className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+            >
+              Процедура
+            </TabsTrigger>
+            <TabsTrigger 
+              value="report"
+              className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+            >
+              Отчет
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <div className="mt-6">
           <IntroductionTab

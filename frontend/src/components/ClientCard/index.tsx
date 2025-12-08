@@ -273,14 +273,23 @@ function ClientCard() {
 
           <Tabs defaultValue="primary">
             <div className="flex flex-col">
-              <TabsList className="grid w-full grid-cols-3 h-11 rounded-b-none border-b-0">
-                <TabsTrigger value="primary" className="text-sm font-medium">
+              <TabsList className="grid w-full grid-cols-3 h-12 rounded-b-none p-0 gap-0.5">
+                <TabsTrigger 
+                  value="primary" 
+                  className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+                >
                   Основная информация
                 </TabsTrigger>
-                <TabsTrigger value="pre_court" className="text-sm font-medium">
+                <TabsTrigger 
+                  value="pre_court" 
+                  className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+                >
                   Досудебка
                 </TabsTrigger>
-                <TabsTrigger value="judicial" className="text-sm font-medium">
+                <TabsTrigger 
+                  value="judicial" 
+                  className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+                >
                   Судебка
                 </TabsTrigger>
               </TabsList>
