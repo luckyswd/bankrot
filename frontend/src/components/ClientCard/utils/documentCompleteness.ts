@@ -451,40 +451,289 @@ const calculateJudicialProcedureCompleteness = (data: ProcedureFields): Document
   };
 };
 
+// Маппинг документов к их обязательным полям из всех категорий
+// Ключ - ID документа или категория (если документ не указан)
+// Значение - массив полей из разных категорий
+const documentFieldsMap: Record<string | number, string[]> = {
+  // Документы основной информации требуют только поля basic_info
+  basic_info: [
+    "lastName",
+    "firstName",
+    "middleName",
+    "lastNameGenitive",
+    "firstNameGenitive",
+    "middleNameGenitive",
+    "birthDate",
+    "snils",
+    "passportSeries",
+    "passportNumber",
+    "passportIssuedBy",
+    "passportIssuedDate",
+    "passportDepartmentCode",
+    "registrationRegion",
+    "registrationCity",
+    "registrationStreet",
+    "registrationHouse",
+    "postalCode",
+  ],
+  // Документы досудебки требуют поля pre_court + базовые поля из basic_info
+  pre_court: [
+    // Поля из pre_court
+    "court",
+    "creditors",
+    "powerOfAttorneyNumber",
+    "caseNumber",
+    "powerOfAttorneyDate",
+    "hearingDateTime",
+    // Базовые поля из basic_info (обычно нужны для всех документов)
+    "lastName",
+    "firstName",
+    "middleName",
+    "birthDate",
+    "passportSeries",
+    "passportNumber",
+    "passportIssuedBy",
+    "passportIssuedDate",
+    "registrationRegion",
+    "registrationCity",
+    "registrationStreet",
+    "registrationHouse",
+  ],
+  // Документы введения процедуры требуют поля judicial_procedure_initiation + базовые поля
+  judicial_procedure_initiation: [
+    // Поля из judicial_procedure_initiation
+    "procedureInitiationDecisionDate",
+    "procedureInitiationResolutionDate",
+    "procedureInitiationMchs",
+    "procedureInitiationGostekhnadzor",
+    "procedureInitiationFns",
+    "procedureInitiationDocNumber",
+    "procedureInitiationCaseNumber",
+    "procedureInitiationDuration",
+    "procedureInitiationRosgvardia",
+    "procedureInitiationJudge",
+    "procedureInitiationBailiff",
+    "procedureInitiationSpecialAccountNumber",
+    // Базовые поля из basic_info
+    "lastName",
+    "firstName",
+    "middleName",
+    "birthDate",
+    "passportSeries",
+    "passportNumber",
+    "passportIssuedBy",
+    "passportIssuedDate",
+    "registrationRegion",
+    "registrationCity",
+    "registrationStreet",
+    "registrationHouse",
+  ],
+  // Документы процедуры требуют поля judicial_procedure + базовые поля
+  judicial_procedure: [
+    // Поля из judicial_procedure
+    "creditorsClaims",
+    // Базовые поля из basic_info
+    "lastName",
+    "firstName",
+    "middleName",
+    "birthDate",
+    "passportSeries",
+    "passportNumber",
+    "passportIssuedBy",
+    "passportIssuedDate",
+    "registrationRegion",
+    "registrationCity",
+    "registrationStreet",
+    "registrationHouse",
+  ],
+  // Документы отчетов требуют данные процедуры + базовые поля
+  judicial_report: [
+    "creditorsClaims",
+    "lastName",
+    "firstName",
+    "middleName",
+    "birthDate",
+    "passportSeries",
+    "passportNumber",
+    "passportIssuedBy",
+    "passportIssuedDate",
+    "registrationRegion",
+    "registrationCity",
+    "registrationStreet",
+    "registrationHouse",
+  ],
+};
+
+// Функция для получения категории поля по его имени
+const getFieldCategory = (fieldName: string): string => {
+  // Если поле содержит точку, извлекаем категорию из префикса
+  if (fieldName.includes(".")) {
+    if (fieldName.startsWith("basic_info.")) return "basic_info";
+    if (fieldName.startsWith("pre_court.")) return "pre_court";
+    if (fieldName.startsWith("judicial_procedure_initiation.")) return "judicial_procedure_initiation";
+    if (fieldName.startsWith("judicial_procedure.")) return "judicial_procedure";
+  }
+  
+  // Определяем по имени поля через fieldLocations
+  if (fieldLocations[fieldName]) {
+    const location = fieldLocations[fieldName];
+    if (location.tab === "primary") return "basic_info";
+    if (location.tab === "pre_court") return "pre_court";
+    if (location.tab === "judicial") {
+      if (location.accordion === "introduction") return "judicial_procedure_initiation";
+      if (location.accordion === "procedure") return "judicial_procedure";
+      return "judicial_report";
+    }
+  }
+  
+  // По умолчанию считаем, что поле из basic_info
+  return "basic_info";
+};
+
+// Функция для получения значения поля из formValues
+const getFieldValue = (fieldName: string, formValues: FormValues): unknown => {
+  const category = getFieldCategory(fieldName);
+  // Извлекаем имя поля без префикса категории
+  const actualFieldName = fieldName.includes(".") ? fieldName.split(".").pop() || fieldName : fieldName;
+  
+  switch (category) {
+    case "basic_info":
+      return (formValues.basic_info as Record<string, unknown>)[actualFieldName];
+    case "pre_court":
+      return (formValues.pre_court as Record<string, unknown>)[actualFieldName];
+    case "judicial_procedure_initiation":
+      return (formValues.judicial_procedure_initiation as Record<string, unknown>)[actualFieldName];
+    case "judicial_procedure":
+      return (formValues.judicial_procedure as Record<string, unknown>)[actualFieldName];
+    default:
+      return undefined;
+  }
+};
+
 // Основная функция для вычисления заполненности документа
 export const calculateDocumentCompleteness = (
   category: string,
-  formValues: FormValues
+  formValues: FormValues,
+  documentId?: number
 ): DocumentCompleteness => {
-  switch (category) {
-    case "basic_info":
-      return calculateBasicInfoCompleteness(formValues.basic_info);
-    case "pre_court":
-      return calculatePreCourtCompleteness(formValues.pre_court);
-    case "judicial_procedure_initiation":
-      return calculateJudicialProcedureInitiationCompleteness(formValues.judicial_procedure_initiation);
-    case "judicial_procedure":
-      return calculateJudicialProcedureCompleteness(formValues.judicial_procedure);
-    case "judicial_report":
-      // Для отчета пока считаем как полную заполненность, если есть данные процедуры
-      const hasClaims = formValues.judicial_procedure?.creditorsClaims && formValues.judicial_procedure.creditorsClaims.length > 0;
-      return {
-        status: hasClaims ? "complete" : "empty",
-        percentage: hasClaims ? 100 : 0,
-        missingFields: hasClaims ? [] : [{
-          label: "Требования кредиторов",
-          fieldName: "creditorsClaims",
-          tab: "judicial",
-          accordion: "procedure",
-          fieldId: "judicial_procedure.creditorsClaims",
-        }],
-      };
-    default:
-      return {
-        status: "empty",
-        percentage: 0,
-        missingFields: [],
-      };
+  // Получаем список обязательных полей для документа
+  // Если documentId указан и есть в маппинге, используем его, иначе используем category
+  const requiredFields = documentFieldsMap[documentId || category] || documentFieldsMap[category] || [];
+  
+  if (requiredFields.length === 0) {
+    // Fallback к старой логике, если документ не найден в маппинге
+    switch (category) {
+      case "basic_info":
+        return calculateBasicInfoCompleteness(formValues.basic_info);
+      case "pre_court":
+        return calculatePreCourtCompleteness(formValues.pre_court);
+      case "judicial_procedure_initiation":
+        return calculateJudicialProcedureInitiationCompleteness(formValues.judicial_procedure_initiation);
+      case "judicial_procedure":
+        return calculateJudicialProcedureCompleteness(formValues.judicial_procedure);
+      case "judicial_report":
+        const hasClaims = formValues.judicial_procedure?.creditorsClaims && formValues.judicial_procedure.creditorsClaims.length > 0;
+        return {
+          status: hasClaims ? "complete" : "empty",
+          percentage: hasClaims ? 100 : 0,
+          missingFields: hasClaims ? [] : [{
+            label: "Требования кредиторов",
+            fieldName: "creditorsClaims",
+            tab: "judicial",
+            accordion: "procedure",
+            fieldId: "judicial_procedure.creditorsClaims",
+          }],
+        };
+      default:
+        return {
+          status: "empty",
+          percentage: 0,
+          missingFields: [],
+        };
+    }
   }
+
+  // Проверяем все поля из списка
+  const missingFields: MissingField[] = [];
+
+  requiredFields.forEach((field) => {
+    const value = getFieldValue(field, formValues);
+    
+    // Специальная обработка для creditorsClaims
+    if (field === "creditorsClaims") {
+      const claims = formValues.judicial_procedure?.creditorsClaims;
+      if (!claims || claims.length === 0) {
+        const location = fieldLocations[field];
+        if (location) {
+          missingFields.push({
+            label: location.label,
+            fieldName: field,
+            tab: location.tab,
+            accordion: location.accordion,
+            fieldId: location.fieldId,
+          });
+        }
+      } else {
+        // Проверяем, что есть хотя бы одно валидное требование
+        const hasValidClaim = claims.some((claim: any) => 
+          claim && 
+          claim.creditorId && 
+          (claim.debtAmount || claim.principalAmount)
+        );
+        if (!hasValidClaim) {
+          const location = fieldLocations[field];
+          if (location) {
+            missingFields.push({
+              label: location.label,
+              fieldName: field,
+              tab: location.tab,
+              accordion: location.accordion,
+              fieldId: location.fieldId,
+            });
+          }
+        }
+      }
+    } else if (!isFieldFilled(value)) {
+      const location = fieldLocations[field];
+      if (location) {
+        missingFields.push({
+          label: location.label,
+          fieldName: field,
+          tab: location.tab,
+          accordion: location.accordion,
+          fieldId: location.fieldId,
+        });
+      } else {
+        // Fallback для полей, которых нет в маппинге
+        const category = getFieldCategory(field);
+        const fieldId = category === "basic_info" ? `basic_info.${field}` :
+                       category === "pre_court" ? `pre_court.${field}` :
+                       category === "judicial_procedure_initiation" ? `judicial_procedure_initiation.${field}` :
+                       `judicial_procedure.${field}`;
+        missingFields.push({
+          label: fieldLabels[field] || field,
+          fieldName: field,
+          tab: category === "basic_info" ? "primary" : category === "pre_court" ? "pre_court" : "judicial",
+          fieldId,
+        });
+      }
+    }
+  });
+
+  const filledCount = requiredFields.length - missingFields.length;
+  const percentage = Math.round((filledCount / requiredFields.length) * 100);
+
+  let status: DocumentStatus = "empty";
+  if (percentage === 100) {
+    status = "complete";
+  } else if (percentage > 0) {
+    status = "partial";
+  }
+
+  return {
+    status,
+    percentage,
+    missingFields,
+  };
 };
 

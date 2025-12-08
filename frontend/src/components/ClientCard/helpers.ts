@@ -233,6 +233,7 @@ export const convertApiDataToFormValues = (
       registrationHouse: basicInfo.registrationHouse ?? null,
       registrationBuilding: basicInfo.registrationBuilding ?? null,
       registrationApartment: basicInfo.registrationApartment ?? null,
+      postalCode: basicInfo.postalCode ?? null,
       passportSeries: basicInfo.passportSeries ?? null,
       passportNumber: basicInfo.passportNumber ?? null,
       passportIssuedBy: basicInfo.passportIssuedBy ?? null,

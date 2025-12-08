@@ -70,7 +70,7 @@ export const DocumentsList = ({
         </CardHeader>
         <CardContent className="space-y-3">
           {documents.map((document) => {
-            const completeness = calculateDocumentCompleteness(category, formValues);
+            const completeness = calculateDocumentCompleteness(category, formValues, document.id);
             
             // Определяем цвет границы в зависимости от статуса
             const borderColorClass = 

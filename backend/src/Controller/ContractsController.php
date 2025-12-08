@@ -1252,6 +1252,11 @@ class ContractsController extends AbstractController
                 continue;
             }
 
+            // Обработка пустых строк для строковых полей - преобразуем в null
+            if ($value === '') {
+                $value = null;
+            }
+
             $method->invoke($contract, $value);
         }
     }
