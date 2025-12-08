@@ -67,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
         <aside 
-          className={`transition-all duration-300 border-r border-border bg-card flex flex-col ${
+          className={`transition-all border-r border-border bg-card flex flex-col ${
             sidebarOpen ? 'w-64' : 'w-16'
           }`}
         >

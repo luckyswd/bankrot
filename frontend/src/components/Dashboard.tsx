@@ -251,7 +251,7 @@ function Dashboard() {
             </div>
           ) : (
             <>
-              <div className="relative max-h-[64vh] overflow-auto">
+              <div className="relative max-h-[59.5vh] overflow-auto">
                 <Table>
                   <TableHeader className="sticky top-0 z-10 bg-card">
                     <TableRow className="bg-card">
