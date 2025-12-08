@@ -264,7 +264,7 @@ export const IntroductionTab = ({
                 </div>
               )}
             />
-{/* 
+
             <div className="space-y-2">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationDuration">
                 Продолжительность процедуры
@@ -277,27 +277,6 @@ export const IntroductionTab = ({
                 )}
               />
             </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label>Окончание исполнительных производств</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder="Номер"
-                  {...register("judicial_procedure_initiation.executionNumber")}
-                />
-                <Controller
-                  name="judicial_procedure_initiation.executionDate"
-                  control={control}
-                  render={({ field }) => (
-                    <DatePickerInput
-                      value={(field.value as string) ?? ""}
-                      onChange={field.onChange}
-                      className="space-y-1 flex-1"
-                    />
-                  )}
-                />
-              </div>
-            </div> */}
 
             <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber">
@@ -368,7 +347,7 @@ export const IntroductionTab = ({
                             ) => (
                               <div
                                 key={terminationIndex}
-                                className="flex items-end gap-3"
+                                className="flex items-center gap-3"
                               >
                                 <div className="flex-1 space-y-1">
                                   <Label>
@@ -412,6 +391,7 @@ export const IntroductionTab = ({
                                   type="button"
                                   variant="ghost"
                                   size="icon"
+                                  className="text-red-400"
                                   onClick={() => {
                                     const newTerminations = executionTerminationsArray.filter(
                                       (_: unknown, i: number) =>

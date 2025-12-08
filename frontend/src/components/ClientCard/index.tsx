@@ -353,11 +353,11 @@ function ClientCard() {
               fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
               setTimeout(() => {
                 fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
-              }, 2000);
+              }, 100);
             }, 100);
           }
-        }, 400);
-      }, 300);
+        }, 100);
+      }, 100);
     } else {
       // Если нет аккордеона, просто устанавливаем фокус на поле
       setTimeout(() => {
@@ -403,10 +403,10 @@ function ClientCard() {
             fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
             setTimeout(() => {
               fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
-            }, 2000);
+            }, 100);
           }, 100);
         }
-      }, 300);
+      }, 100);
     }
   };
 
@@ -459,7 +459,7 @@ function ClientCard() {
               </TabsList>
             </div>
 
-            <div className="mt-6 pb-24">
+            <div className="pb-24 mt-0">
               <GeneralTab
                 contractData={contractData}
                 openDocument={openDocument}
