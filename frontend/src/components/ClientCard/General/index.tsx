@@ -57,7 +57,7 @@ export const GeneralTab = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <Accordion type="multiple" defaultValue={["mainInfo"]}>
+            <Accordion type="multiple" defaultValue={["mainInfo", "addressInfo", "passportInfo", "familyInfo", "workInfo", "contactInfo", "deptsInfo"]}>
               <MainInfo
                 register={register}
                 useWatch={useWatch}

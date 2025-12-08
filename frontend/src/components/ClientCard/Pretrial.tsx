@@ -110,7 +110,7 @@ export const PretrialTab = ({
           <Accordion
             type="multiple"
             className="mb-6"
-            defaultValue={["creditorsInfo"]}
+            defaultValue={["creditorsInfo", "courtInfo"]}
           >
             <AccordionItem value="creditorsInfo">
               <AccordionTrigger>
