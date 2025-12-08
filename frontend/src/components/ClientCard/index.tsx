@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { ArrowLeft, Save } from "lucide-react";
 import { notify } from "@/components/ui/toast";
@@ -22,6 +22,7 @@ import { useModalStore } from "../Modals/ModalProvider";
 function ClientCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { referenceData } = useApp();
   const [contract, setContract] = useState<{
     id: number;
@@ -246,6 +247,22 @@ function ClientCard() {
 
   const isDirty = form.formState.isDirty;
 
+  // Получаем текущий таб из URL или используем значение по умолчанию
+  const currentTab = searchParams.get("tab") || "primary";
+  const validTabs = ["primary", "pre_court", "judicial"];
+  const activeTab = validTabs.includes(currentTab) ? currentTab : "primary";
+
+  // Обработчик изменения таба
+  const handleTabChange = (value: string) => {
+    const newParams = new URLSearchParams();
+    newParams.set("tab", value);
+    // Удаляем subTab если переключаемся не на judicial
+    if (value !== "judicial") {
+      newParams.delete("subTab");
+    }
+    setSearchParams(newParams, { replace: true });
+  };
+
   return (
     <SaveContext.Provider value={saveContract}>
       <FormProvider {...form}>
@@ -271,7 +288,7 @@ function ClientCard() {
             </div>
           </div>
 
-          <Tabs defaultValue="primary">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <div className="flex flex-col">
               <TabsList className="grid w-full grid-cols-3 h-12 rounded-b-none p-0 gap-0.5">
                 <TabsTrigger 

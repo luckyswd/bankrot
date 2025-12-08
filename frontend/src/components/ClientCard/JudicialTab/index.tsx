@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IntroductionTab } from "./Introduction";
 import { ProcedureTab } from "./Procedure";
@@ -18,9 +19,23 @@ export const JudicialTab = ({
   referenceData,
   contractData,
 }: JudicialTabProps): JSX.Element => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Получаем текущий вложенный таб из URL или используем значение по умолчанию
+  const currentSubTab = searchParams.get("subTab") || "introduction";
+  const validSubTabs = ["introduction", "procedure", "report"];
+  const activeSubTab = validSubTabs.includes(currentSubTab) ? currentSubTab : "introduction";
+
+  // Обработчик изменения вложенного таба
+  const handleSubTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("subTab", value);
+    setSearchParams(newParams, { replace: true });
+  };
+
   return (
     <TabsContent value="judicial" className="mt-0 p-0 border-0">
-      <Tabs defaultValue="introduction">
+      <Tabs value={activeSubTab} onValueChange={handleSubTabChange}>
         <div className="flex flex-col">
           <TabsList className="grid w-full grid-cols-3 h-12 rounded-t-none p-0 gap-0.5">
             <TabsTrigger 
