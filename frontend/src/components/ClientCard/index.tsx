@@ -294,14 +294,15 @@ function ClientCard() {
         });
 
         // Если не нашли через data-атрибуты, ищем через aria-controls
-        if (!accordionTrigger) {
+        if (!accordionTrigger && fieldInfo.accordion) {
           const allTriggers = document.querySelectorAll('button[data-radix-accordion-trigger]');
-          allTriggers.forEach((trigger) => {
+          for (const trigger of Array.from(allTriggers)) {
             const controls = trigger.getAttribute('aria-controls');
-            if (controls && controls.includes(fieldInfo.accordion) && trigger.getAttribute('aria-expanded') === 'false') {
+            if (controls && fieldInfo.accordion && controls.includes(fieldInfo.accordion) && trigger.getAttribute('aria-expanded') === 'false') {
               accordionTrigger = trigger as HTMLElement;
+              break;
             }
-          });
+          }
         }
 
         if (accordionTrigger) {
