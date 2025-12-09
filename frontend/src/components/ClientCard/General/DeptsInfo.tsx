@@ -33,7 +33,6 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
             placeholder="2500000.75"
             {...register("basic_info.debtAmount")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 2500000.75</p>
         </div>
 
         <div className="space-y-2">

@@ -265,7 +265,6 @@ export const PretrialTab = ({
                       placeholder="А56-12345/2024"
                       {...register("pre_court.caseNumber")}
                     />
-                    <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
                   </div>
 
                   <div className="space-y-1">
@@ -277,7 +276,6 @@ export const PretrialTab = ({
                           placeholder="ДГ-2024-001234"
                           {...register("pre_court.powerOfAttorneyNumber")}
                         />
-                        <p className="text-xs text-muted-foreground/70 italic">Пример: ДГ-2024-001234</p>
                       </div>
                       <Controller
                         name="pre_court.powerOfAttorneyDate"
@@ -344,7 +342,6 @@ export const PretrialTab = ({
                         placeholder="https://cabinet.fedresurs.ru/Person/12345678"
                         {...register("pre_court.efrsbCabinet")}
                       />
-                      <p className="text-xs text-muted-foreground/70 italic">Пример: https://cabinet.fedresurs.ru/Person/12345678</p>
                     </div>
                   )}
                 </div>

@@ -25,7 +25,6 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
             maxLength={10}
             {...register("basic_info.passportSeries")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 4512</p>
         </div>
 
         <div className="space-y-1">
@@ -36,7 +35,6 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
             maxLength={20}
             {...register("basic_info.passportNumber")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 878508</p>
         </div>
 
         <div className="space-y-1">
@@ -49,7 +47,6 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
             maxLength={20}
             {...register("basic_info.passportDepartmentCode")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 780-001</p>
         </div>
 
         <div className="space-y-1 lg:col-span-3">
@@ -61,7 +58,6 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
             placeholder="Отделом УФМС России по Санкт-Петербургу и Ленинградской области в Центральном районе"
             {...register("basic_info.passportIssuedBy")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Отделом УФМС России по Санкт-Петербургу и Ленинградской области в Центральном районе</p>
         </div>
 
         <Controller

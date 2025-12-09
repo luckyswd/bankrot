@@ -372,7 +372,6 @@ export const ProcedureTab = ({
                                                     ]);
                                                   }}
                                               />
-                                              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
                                             </div>
                                             <DatePickerInput
                                                 placeholder="Выберите дату"
@@ -419,7 +418,6 @@ export const ProcedureTab = ({
                                                                 basisField.onChange(newBasis);
                                                               }}
                                                           />
-                                                          <p className="text-xs text-muted-foreground/70 italic">Пример: А56-12345/2024</p>
                                                         </div>
                                                         <DatePickerInput
                                                             value={basisItem.date ?? ""}

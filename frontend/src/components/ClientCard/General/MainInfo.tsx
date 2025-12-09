@@ -49,7 +49,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Петров"
             {...register("basic_info.lastName")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Петров</p>
         </div>
 
         <div className="space-y-1">
@@ -61,7 +60,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Александр"
             {...register("basic_info.firstName")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Александр</p>
         </div>
 
         <div className="space-y-1">
@@ -73,7 +71,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Сергеевич"
             {...register("basic_info.middleName")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Сергеевич</p>
         </div>
         <p className="col-span-3 text-xs text-blue-500">В родительном падеже</p>
         <div className="space-y-1">
@@ -85,7 +82,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Петрова"
             {...register("basic_info.lastNameGenitive")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Петрова</p>
         </div>
 
         <div className="space-y-1">
@@ -97,7 +93,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Александра"
             {...register("basic_info.firstNameGenitive")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Александра</p>
         </div>
 
         <div className="space-y-1">
@@ -109,7 +104,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="Сергеевича"
             {...register("basic_info.middleNameGenitive")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Сергеевича</p>
         </div>
 
         <div className="space-y-2">
@@ -135,7 +129,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
               placeholder="Сидоров Иван Петрович"
               {...register("basic_info.changedLastName")}
             />
-            <p className="text-xs text-muted-foreground/70 italic">Пример: Сидоров Иван Петрович</p>
           </div>
         )}
         <Controller
@@ -180,7 +173,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="г. Санкт-Петербург, Ленинградская область"
             {...register("basic_info.birthPlace")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: г. Санкт-Петербург, Ленинградская область</p>
         </div>
 
         <div className="space-y-1">
@@ -190,7 +182,6 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             placeholder="123-456-789 01"
             {...register("basic_info.snils")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 123-456-789 01</p>
         </div>
       </AccordionContent>
     </AccordionItem>

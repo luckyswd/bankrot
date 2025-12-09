@@ -77,7 +77,6 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
             {...register("basic_info.employerName")}
             disabled={!isWorking}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: ООО "ТехноСтрой"</p>
         </div>
 
         <div className="space-y-1 lg:col-span-2">
@@ -90,7 +89,6 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
             {...register("basic_info.employerAddress")}
             disabled={!isWorking}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: г. Санкт-Петербург, ул. Лиговский проспект, д. 50, офис 301</p>
         </div>
 
         <div className="space-y-1">
@@ -102,7 +100,6 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
             {...register("basic_info.employerInn")}
             disabled={!isWorking}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 7812345678</p>
         </div>
 
         <div className="space-y-1 lg:col-span-3">
@@ -114,7 +111,6 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
             placeholder="Пенсия по старости, ЕДВ инвалида III группы"
             {...register("basic_info.socialBenefits")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: Пенсия по старости, ЕДВ инвалида III группы</p>
         </div>
       </AccordionContent>
     </AccordionItem>

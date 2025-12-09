@@ -188,7 +188,6 @@ export const IntroductionTab = ({
                 placeholder="А56-98765/2024"
                 {...register("judicial_procedure_initiation.procedureInitiationDocNumber")}
               />
-              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-98765/2024</p>
             </div>
 
             <div className="space-y-1">
@@ -198,7 +197,6 @@ export const IntroductionTab = ({
                 placeholder="А56-98765/2024"
                 {...register("judicial_procedure_initiation.procedureInitiationCaseNumber")}
               />
-              <p className="text-xs text-muted-foreground/70 italic">Пример: А56-98765/2024</p>
             </div>
 
             <Controller
@@ -235,7 +233,6 @@ export const IntroductionTab = ({
                 placeholder="Иванов Иван Иванович"
                 {...register("judicial_procedure_initiation.procedureInitiationJudge")}
               />
-              <p className="text-xs text-muted-foreground/70 italic">Пример: Иванов Иван Иванович</p>
             </div>
 
             <Controller
@@ -287,7 +284,6 @@ export const IntroductionTab = ({
                 placeholder="40817810099910004312"
                 {...register("judicial_procedure_initiation.procedureInitiationSpecialAccountNumber")}
               />
-              <p className="text-xs text-muted-foreground/70 italic">Пример: 40817810099910004312</p>
             </div>
 
             <div className="col-span-full space-y-3">
@@ -322,7 +318,6 @@ export const IntroductionTab = ({
                                   ]);
                                 }}
                               />
-                              <p className="text-xs text-muted-foreground/70 italic">Пример: 12345/24/77001-ИП</p>
                             </div>
                             <DatePickerInput
                               placeholder="Выберите дату"
@@ -369,7 +364,6 @@ export const IntroductionTab = ({
                                           executionTerminationsField.onChange(newTerminations);
                                         }}
                                       />
-                                      <p className="text-xs text-muted-foreground/70 italic">Пример: 12345/24/77001-ИП</p>
                                     </div>
                                     <DatePickerInput
                                       value={terminationItem.date ?? ""}

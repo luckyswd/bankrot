@@ -104,7 +104,6 @@ export const FamilyInfo: FC<Props> = ({
                 placeholder="Петрова Елена Сергеевна"
                 {...register("basic_info.spouseFullName")}
               />
-              <p className="text-xs text-muted-foreground/70 italic">Пример: Петрова Елена Сергеевна</p>
             </div>
 
             <Controller
@@ -218,7 +217,6 @@ export const FamilyInfo: FC<Props> = ({
                       placeholder="Петров"
                       {...register(`basic_info.children.${index}.lastName`)}
                     />
-                    <p className="text-xs text-muted-foreground/70 italic">Пример: Петров</p>
                   </div>
 
                   <div className="space-y-1">
@@ -230,7 +228,6 @@ export const FamilyInfo: FC<Props> = ({
                       placeholder="Дмитрий"
                       {...register(`basic_info.children.${index}.firstName`)}
                     />
-                    <p className="text-xs text-muted-foreground/70 italic">Пример: Дмитрий</p>
                   </div>
 
                   <div className="space-y-1">
@@ -242,7 +239,6 @@ export const FamilyInfo: FC<Props> = ({
                       placeholder="Александрович"
                       {...register(`basic_info.children.${index}.middleName`)}
                     />
-                    <p className="text-xs text-muted-foreground/70 italic">Пример: Александрович</p>
                   </div>
 
                   <div className="space-y-2">
@@ -274,7 +270,6 @@ export const FamilyInfo: FC<Props> = ({
                           `basic_info.children.${index}.changedLastName`
                         )}
                       />
-                      <p className="text-xs text-muted-foreground/70 italic">Пример: Сидоров Дмитрий Александрович</p>
                     </div>
                   )}
 

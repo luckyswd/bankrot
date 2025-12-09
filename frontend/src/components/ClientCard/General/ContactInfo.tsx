@@ -24,7 +24,6 @@ export const ContactInfo: FC<Props> = ({ register }) => {
             placeholder="+7 (921) 345-67-89"
             {...register("basic_info.phone")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: +7 (921) 345-67-89</p>
         </div>
 
         <div className="space-y-1">
@@ -35,7 +34,6 @@ export const ContactInfo: FC<Props> = ({ register }) => {
             placeholder="ivan.petrov@yandex.ru"
             {...register("basic_info.email")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: ivan.petrov@yandex.ru</p>
         </div>
 
         <div className="space-y-1 lg:col-span-3">
@@ -47,7 +45,6 @@ export const ContactInfo: FC<Props> = ({ register }) => {
             placeholder="191186, г. Санкт-Петербург, Невский проспект, д. 28, кв. 45"
             {...register("basic_info.mailingAddress")}
           />
-          <p className="text-xs text-muted-foreground/70 italic">Пример: 191186, г. Санкт-Петербург, Невский проспект, д. 28, кв. 45</p>
         </div>
       </AccordionContent>
     </AccordionItem>
