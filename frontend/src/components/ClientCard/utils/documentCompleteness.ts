@@ -46,6 +46,7 @@ const fieldLocations: Record<string, FieldLocation> = {
   registrationBuilding: { label: "Корпус", tab: "primary", accordion: "addressInfo", fieldId: "basic_info.registrationBuilding" },
   registrationApartment: { label: "Квартира", tab: "primary", accordion: "addressInfo", fieldId: "basic_info.registrationApartment" },
   postalCode: { label: "Почтовый индекс", tab: "primary", accordion: "addressInfo", fieldId: "basic_info.postalCode" },
+  actualPlaceResidence: { label: "Фактическое место проживания", tab: "primary", accordion: "addressInfo", fieldId: "basic_info.actualPlaceResidence"},
   // Basic Info - PassportInfo
   passportSeries: { label: "Серия паспорта", tab: "primary", accordion: "passportInfo", fieldId: "basic_info.passportSeries" },
   passportNumber: { label: "Номер паспорта", tab: "primary", accordion: "passportInfo", fieldId: "basic_info.passportNumber" },

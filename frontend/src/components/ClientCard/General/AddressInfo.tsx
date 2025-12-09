@@ -100,6 +100,16 @@ export const AddressInfo: FC<Props> = ({ register }) => {
             {...register("basic_info.postalCode")}
           />
         </div>
+        <div className="space-y-1 col-span-3">
+          <Label htmlFor="basic_info.actualPlaceResidence">
+            Фактическое место проживания
+          </Label>
+          <Input
+            id="basic_info.actualPlaceResidence"
+            placeholder="Воронеж, Район 20 район, г. Воронеж, ул. Центральная, д. 69, кв. 257"
+            {...register("basic_info.actualPlaceResidence")}
+          />
+        </div>
       </AccordionContent>
     </AccordionItem>
   );

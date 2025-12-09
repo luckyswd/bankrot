@@ -28,6 +28,7 @@ export type PrimaryInfoFields = {
   registrationHouse?: string | null
   registrationBuilding?: string | null
   registrationApartment?: string | null
+  actualPlaceResidence?: string | null
   postalCode?: string | null
   passportSeries?: string | null
   passportNumber?: string | null
