@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { ArrowLeft, Save } from "lucide-react";
 import { notify } from "@/components/ui/toast";
@@ -22,6 +22,7 @@ import { useModalStore } from "../Modals/ModalProvider";
 function ClientCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { referenceData } = useApp();
   const [contract, setContract] = useState<{
@@ -35,7 +36,7 @@ function ClientCard() {
   > | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { openModal } = useModalStore();
+  const { openModal, closeModal } = useModalStore();
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: createDefaultFormValues(),
@@ -47,6 +48,9 @@ function ClientCard() {
     useWatch<FormValues>({
       control: form.control,
     }) ?? form.getValues();
+  const isDirty = form.formState.isDirty;
+  const currentPathRef = useRef(`${location.pathname}${location.search}`);
+  const pendingPathRef = useRef<string | null>(null);
   // Функция для ручного сохранения
   const saveContract = useCallback(async () => {
     if (!contract || loading) return;
@@ -157,7 +161,93 @@ function ClientCard() {
     loadContract();
   }, [id, form]);
 
-  // Автосохранение отключено - сохранение только по кнопке
+  useEffect(() => {
+    currentPathRef.current = `${location.pathname}${location.search}`;
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const openUnsavedModal = (nextPath: string) => {
+      pendingPathRef.current = nextPath;
+      openModal("unsavedChanges", {
+        onSaveAndExit: async () => {
+          await saveContract();
+          closeModal("unsavedChanges");
+          const target = pendingPathRef.current;
+          pendingPathRef.current = null;
+          if (target) {
+            navigate(target);
+          }
+        },
+        onConfirm: () => {
+          closeModal("unsavedChanges");
+          const target = pendingPathRef.current;
+          pendingPathRef.current = null;
+          if (target) {
+            navigate(target);
+          }
+        },
+        onClose: () => {
+          closeModal("unsavedChanges");
+          pendingPathRef.current = null;
+        },
+      });
+    };
+
+    const handleLinkClick = (event: MouseEvent) => {
+      const anchor = (event.target as HTMLElement | null)?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      const nextUrl = new URL(href, window.location.href);
+      const currentUrl = new URL(window.location.href);
+      if (nextUrl.origin !== currentUrl.origin) return;
+
+      const nextPath = `${nextUrl.pathname}${nextUrl.search}`;
+      const currentPath = currentPathRef.current;
+      if (nextPath === currentPath) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      openUnsavedModal(nextPath);
+    };
+
+    const handlePopState = () => {
+      const nextPath = `${window.location.pathname}${window.location.search}`;
+      const currentPath = currentPathRef.current;
+      if (nextPath === currentPath) return;
+
+      window.history.pushState(null, "", currentPath);
+      openUnsavedModal(nextPath);
+    };
+
+    document.addEventListener("click", handleLinkClick, true);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      document.removeEventListener("click", handleLinkClick, true);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isDirty, openModal, closeModal, navigate]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      event.preventDefault();
+      event.returnValue = "У вас есть несохраненные изменения. Выйти без сохранения?";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+  
 
   if (loading) {
     return (
@@ -172,7 +262,7 @@ function ClientCard() {
       <div className="flex h-full items-center justify-center">
         <Card className="p-8 text-center">
           <p className="mb-4 text-lg">{error || "Договор не найден"}</p>
-          <Button onClick={() => navigate("/contracts")}>
+          <Button onClick={() => confirmAndNavigateAway("/contracts")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Вернуться к списку
           </Button>
@@ -245,8 +335,6 @@ function ClientCard() {
     contract?.contractNumber ||
     "Новый договор";
 
-  const isDirty = form.formState.isDirty;
-
   // Получаем текущий таб из URL или используем значение по умолчанию
   const currentTab = searchParams.get("tab") || "primary";
   const validTabs = ["primary", "pre_court", "judicial"];
@@ -262,6 +350,29 @@ function ClientCard() {
     }
     setSearchParams(newParams, { replace: true });
   };
+
+  const confirmAndNavigateAway = (path: string) => {
+    if (!isDirty) {
+      navigate(path);
+      return;
+    }
+
+    openModal("unsavedChanges", {
+      onSaveAndExit: async () => {
+        await saveContract();
+        closeModal("unsavedChanges");
+        navigate(path);
+      },
+      onConfirm: () => {
+        closeModal("unsavedChanges");
+        navigate(path);
+      },
+      onClose: () => {
+        closeModal("unsavedChanges");
+      },
+    });
+  };
+
 
   // Функция навигации к полю
   const navigateToField = (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => {
@@ -419,7 +530,7 @@ function ClientCard() {
               <Button
                 className="text-center p-2"
                 variant="outline"
-                onClick={() => navigate("/contracts")}
+                onClick={() => confirmAndNavigateAway("/contracts")}
               >
                 <ArrowLeft className="size-4" />
               </Button>
@@ -490,7 +601,7 @@ function ClientCard() {
               onClick={saveContract}
               disabled={!isDirty || loading}
               size="lg"
-              className="shadow-lg text-base px-6 py-6 bg-green-600"
+              className="shadow-2xl text-base px-8 py-8 bg-green-600"
             >
               <Save className="h-5 w-5 mr-2" />
               Сохранить

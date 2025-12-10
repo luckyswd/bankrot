@@ -9,6 +9,7 @@ import { FnsBranchModal } from "./FnsBranchModal"
 import { MchsBranchModal } from "./MchsBranchModal"
 import { RosgvardiaBranchModal } from "./RosgvardiaBranchModal"
 import { PreviewDocumentModal } from "./PreviewDocumentModal"
+import { UnsavedChangesModal } from "./UnsavedChangesModal"
 
 export type ModalKey =
   | "confirm"
@@ -20,6 +21,7 @@ export type ModalKey =
   | "mchsForm"
   | "rosgvardiaForm"
   | "previewDocumentModal"
+  | "unsavedChanges"
 
 type ModalState = {
   isOpen: boolean
@@ -55,6 +57,7 @@ const modalComponents: ModalComponentMap = {
   mchsForm: MchsBranchModal,
   rosgvardiaForm: RosgvardiaBranchModal,
   previewDocumentModal: PreviewDocumentModal,
+  unsavedChanges: UnsavedChangesModal,
 }
 
 interface ModalRendererProps {
