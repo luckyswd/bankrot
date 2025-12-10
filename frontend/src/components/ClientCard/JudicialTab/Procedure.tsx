@@ -24,6 +24,7 @@ import { Trash2 } from "lucide-react";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
 import type { ReferenceData } from "@/types/reference";
+import { useEffect } from "react";
 
 interface ProcedureTabProps {
   openDocument: (document: { id: number; name: string }) => void;
@@ -55,7 +56,11 @@ export const ProcedureTab = ({
     control,
     name: "judicial_procedure.creditorsClaims",
   });
-
+  useEffect(() => {
+    if(!creditorsClaimsFields.length) {
+      appendCreditorsClaim(createEmptyCreditorsClaim())
+    }
+  }, [])
   const documents =
     (
       contractData?.judicial_procedure as {
