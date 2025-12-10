@@ -120,7 +120,7 @@ export function GenericDatabase({ dbKey, title, description, fields }: GenericDa
                         <Button variant="ghost" size="icon">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" className="text-red-400">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

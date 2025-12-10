@@ -350,8 +350,8 @@ export const ProcedureTab = ({
 
                         <div className="col-span-full space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label className="font-medium">
-                              Основания
+                            <Label className="font-medium text-lg">
+                              Основания:
                             </Label>
                           </div>
 
@@ -463,6 +463,7 @@ export const ProcedureTab = ({
                                               type="button"
                                               variant="ghost"
                                               size="icon"
+                                              className="text-red-400"
                                               onClick={() => {
                                                 const newBasis =
                                                   basisArray.filter(

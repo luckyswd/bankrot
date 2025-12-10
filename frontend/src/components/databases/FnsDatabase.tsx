@@ -1,126 +1,149 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { apiRequest } from '../../config/api'
-import { useApp } from '@/context/AppContext'
-import { Button } from '@ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ui/table'
-import { Input } from '@ui/input'
-import { notify } from '@ui/toast'
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search} from 'lucide-react'
-import { useModalStore } from '../Modals/ModalProvider'
-import type { ReferenceItem } from '@/types/reference'
+import { apiRequest } from "../../config/api";
+import { useApp } from "@/context/AppContext";
+import { Button } from "@ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ui/table";
+import { Input } from "@ui/input";
+import { notify } from "@ui/toast";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from "lucide-react";
+import { useModalStore } from "../Modals/ModalProvider";
+import type { ReferenceItem } from "@/types/reference";
 
 interface FnsItem {
-  id: number
-  name: string
-  address: string
-  directorName: string
-  bankDetails: string
-  code?: string | null
-  [key: string]: unknown
+  id: number;
+  name: string;
+  address: string;
+  directorName: string;
+  bankDetails: string;
+  code?: string | null;
+  [key: string]: unknown;
 }
 
 export function FnsDatabase() {
-  const { referenceData } = useApp()
-  const queryClient = useQueryClient()
-  const { openModal } = useModalStore()
+  const { referenceData } = useApp();
+  const queryClient = useQueryClient();
+  const { openModal } = useModalStore();
 
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const limit = 10
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 10;
   const fns = useMemo<FnsItem[]>(() => {
-    const list = (referenceData.fns as Array<ReferenceItem | FnsItem> | undefined) ?? []
+    const list =
+      (referenceData.fns as Array<ReferenceItem | FnsItem> | undefined) ?? [];
     return list.map((item) => ({
       id: Number(item.id ?? Date.now()),
-      name: item.name ?? '',
-      address: (item as any).address ?? '',
-      directorName: (item as any).directorName ?? '',
-      bankDetails: (item as any).bankDetails ?? '',
+      name: item.name ?? "",
+      address: (item as any).address ?? "",
+      directorName: (item as any).directorName ?? "",
+      bankDetails: (item as any).bankDetails ?? "",
       code: (item as any).code ?? null,
-    }))
-  }, [referenceData.fns])
+    }));
+  }, [referenceData.fns]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 200)
-    return () => clearTimeout(timer)
-  }, [search])
+      setDebouncedSearch(search);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const filteredFns = useMemo(() => {
-    const term = debouncedSearch.trim().toLowerCase()
-    if (!term) return fns
+    const term = debouncedSearch.trim().toLowerCase();
+    if (!term) return fns;
     return fns.filter((item) =>
       [item.name, item.address, item.code]
         .filter(Boolean)
         .some((field) => String(field).toLowerCase().includes(term))
-    )
-  }, [fns, debouncedSearch])
+    );
+  }, [fns, debouncedSearch]);
 
-  const total = filteredFns.length
-  const pages = Math.max(1, Math.ceil(total / limit))
-  const pageSafe = Math.min(page, pages)
+  const total = filteredFns.length;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  const pageSafe = Math.min(page, pages);
   const paginated = useMemo(
     () => filteredFns.slice((pageSafe - 1) * limit, pageSafe * limit),
     [filteredFns, pageSafe, limit]
-  )
+  );
 
   useEffect(() => {
-    setPage(1)
-  }, [debouncedSearch])
+    setPage(1);
+  }, [debouncedSearch]);
 
   useEffect(() => {
-    if (page > pages) setPage(pages)
-  }, [page, pages])
+    if (page > pages) setPage(pages);
+  }, [page, pages]);
 
   const refreshReferences = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["references", "all"] })
-  }
+    await queryClient.invalidateQueries({ queryKey: ["references", "all"] });
+  };
 
   const handleCreateClick = () => {
-    openModal('fnsForm', {
+    openModal("fnsForm", {
       onSuccess: async (message: string) => {
-        notify({ message, type: 'success' })
-        await refreshReferences()
+        notify({ message, type: "success" });
+        await refreshReferences();
       },
-      onError: (message: string) => notify({ message, type: 'error' }),
-    })
-  }
+      onError: (message: string) => notify({ message, type: "error" }),
+    });
+  };
 
   const handleEditClick = (fnsItem: FnsItem) => {
-    openModal('fnsForm', {
+    openModal("fnsForm", {
       branch: fnsItem,
       onSuccess: async (message: string) => {
-        notify({ message, type: 'success' })
-        await refreshReferences()
+        notify({ message, type: "success" });
+        await refreshReferences();
       },
-      onError: (message: string) => notify({ message, type: 'error' }),
-    })
-  }
+      onError: (message: string) => notify({ message, type: "error" }),
+    });
+  };
 
   const handleDeleteClick = (fnsItem: FnsItem) => {
-    openModal('confirm', {
-      title: 'Удаление отделения',
+    openModal("confirm", {
+      title: "Удаление отделения",
       description: `Вы уверены, что хотите удалить отделение "${fnsItem.name}"? Это действие нельзя отменить.`,
-      confirmLabel: 'Удалить',
-      confirmVariant: 'destructive',
+      confirmLabel: "Удалить",
+      confirmVariant: "destructive",
       onConfirm: async () => {
-        await apiRequest(`/fns/${fnsItem.id}`, { method: 'DELETE' })
-        notify({ message: 'Отделение успешно удалено', type: 'success' })
-        await refreshReferences()
+        await apiRequest(`/fns/${fnsItem.id}`, { method: "DELETE" });
+        notify({ message: "Отделение успешно удалено", type: "success" });
+        await refreshReferences();
       },
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold">ФНС</h2>
-          <p className="text-muted-foreground">Управление базой инспекций ФНС</p>
+          <p className="text-muted-foreground">
+            Управление базой инспекций ФНС
+          </p>
         </div>
         <Button onClick={handleCreateClick}>
           <Plus className="h-4 w-4 mr-2" />
@@ -150,32 +173,58 @@ export function FnsDatabase() {
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="bg-card">
-                  <TableHead className="sticky top-0 bg-card">Наименование</TableHead>
+                  <TableHead className="sticky top-0 bg-card">
+                    Наименование
+                  </TableHead>
                   <TableHead className="sticky top-0 bg-card">Адрес</TableHead>
                   <TableHead className="sticky top-0 bg-card">Код</TableHead>
-                  <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
+                  <TableHead className="sticky top-0 w-28 bg-card">
+                    Действия
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
-                      {debouncedSearch ? 'Отделения не найдены' : 'Нет отделений. Добавьте первое отделение!'}
+                    <TableCell
+                      colSpan={4}
+                      className="text-center py-12 text-muted-foreground"
+                    >
+                      {debouncedSearch
+                        ? "Отделения не найдены"
+                        : "Нет отделений. Добавьте первое отделение!"}
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginated.map((fnsItem) => (
                     <TableRow key={fnsItem.id}>
-                      <TableCell className="font-medium">{fnsItem.name}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{fnsItem.address || '-'}</TableCell>
-                      <TableCell className="text-sm font-mono">{fnsItem.code || '-'}</TableCell>
+                      <TableCell className="font-medium">
+                        {fnsItem.name}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {fnsItem.address || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm font-mono">
+                        {fnsItem.code || "-"}
+                      </TableCell>
                       <TableCell>
                         <div className="flex">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(fnsItem)} title="Редактировать">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(fnsItem)}
+                            title="Редактировать"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(fnsItem)} title="Удалить">
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                          <Button
+                            variant="ghost"
+                            className="text-red-400"
+                            size="icon"
+                            onClick={() => handleDeleteClick(fnsItem)}
+                            title="Удалить"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -189,47 +238,63 @@ export function FnsDatabase() {
           {pages > 1 && (
             <div className="flex items-center justify-between mt-4 p-4 border-t">
               <div className="text-sm text-muted-foreground">
-                Показано {(pageSafe - 1) * limit + 1} - {Math.min(pageSafe * limit, total)} из {total}
+                Показано {(pageSafe - 1) * limit + 1} -{" "}
+                {Math.min(pageSafe * limit, total)} из {total}
               </div>
               <div className="flex gap-2 items-center">
-                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe - 1)} disabled={pageSafe === 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(pageSafe - 1)}
+                  disabled={pageSafe === 1}
+                >
                   <ChevronLeft className="h-4 w-4" />
                   Назад
                 </Button>
                 <div className="flex items-center gap-1">
                   {(() => {
-                    const pageNumbers: (number | string)[] = []
+                    const pageNumbers: (number | string)[] = [];
                     if (pages <= 7) {
-                      for (let i = 1; i <= pages; i++) pageNumbers.push(i)
+                      for (let i = 1; i <= pages; i++) pageNumbers.push(i);
                     } else {
-                      pageNumbers.push(1)
-                      if (pageSafe > 3) pageNumbers.push('...')
-                      const start = Math.max(2, pageSafe - 1)
-                      const end = Math.min(pages - 1, pageSafe + 1)
+                      pageNumbers.push(1);
+                      if (pageSafe > 3) pageNumbers.push("...");
+                      const start = Math.max(2, pageSafe - 1);
+                      const end = Math.min(pages - 1, pageSafe + 1);
                       for (let i = start; i <= end; i++) {
-                        if (i !== 1 && i !== pages) pageNumbers.push(i)
+                        if (i !== 1 && i !== pages) pageNumbers.push(i);
                       }
-                      if (pageSafe < pages - 2) pageNumbers.push('...')
-                      if (pages > 1) pageNumbers.push(pages)
+                      if (pageSafe < pages - 2) pageNumbers.push("...");
+                      if (pages > 1) pageNumbers.push(pages);
                     }
                     return pageNumbers.map((pageNum, idx) =>
-                      pageNum === '...'
-                        ? <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
-                        : (
-                          <Button
-                            key={pageNum}
-                            variant={pageSafe === pageNum ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setPage(pageNum as number)}
-                            className="w-10"
-                          >
-                            {pageNum}
-                          </Button>
-                        )
-                    )
+                      pageNum === "..." ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <Button
+                          key={pageNum}
+                          variant={pageSafe === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPage(pageNum as number)}
+                          className="w-10"
+                        >
+                          {pageNum}
+                        </Button>
+                      )
+                    );
                   })()}
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setPage(pageSafe + 1)} disabled={pageSafe === pages}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(pageSafe + 1)}
+                  disabled={pageSafe === pages}
+                >
                   Вперёд
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -239,5 +304,5 @@ export function FnsDatabase() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

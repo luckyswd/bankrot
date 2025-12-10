@@ -201,9 +201,10 @@ export const FamilyInfo: FC<Props> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    className="text-red-400"
                     onClick={() => remove(index)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 

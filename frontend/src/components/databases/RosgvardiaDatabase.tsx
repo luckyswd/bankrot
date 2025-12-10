@@ -170,8 +170,9 @@ export function RosgvardiaDatabase() {
                             size="icon"
                             onClick={() => handleDeleteClick(rosgvardiaItem)}
                             title="Удалить"
+                            className="text-red-400"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

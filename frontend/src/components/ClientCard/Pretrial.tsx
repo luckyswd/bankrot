@@ -97,6 +97,7 @@ export const PretrialTab = ({
   const combineDateTime = (date: string, time: string) => {
     if (!date && !time) return "";
     if (!date) return time ? `T${time}` : "";
+    console.log(time ? `${date}T${time}` : date)
     return time ? `${date}T${time}` : date;
   };
   const hasHearingDateTime = Boolean(hearingDateTimeValue);
@@ -120,11 +121,6 @@ export const PretrialTab = ({
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-3 p-1">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="pre_court.creditors" className="font-medium">
-                      Кредиторы
-                    </Label>
-                  </div>
 
                   {creditorFields.length === 0 ? (
                     <div className="space-y-2">
@@ -195,6 +191,7 @@ export const PretrialTab = ({
                               type="button"
                               variant="ghost"
                               size="icon"
+                              className="text-red-400"
                               onClick={() => removeCreditor(index)}
                               aria-label={`Удалить кредитора ${index + 1}`}
                             >
@@ -319,6 +316,7 @@ export const PretrialTab = ({
                             <div className="space-y-1">
                               <Input
                                 value={time}
+                                placeholder="15:30"
                                 onChange={(e) =>
                                   field.onChange(
                                     combineDateTime(date, e.target.value)

@@ -288,7 +288,7 @@ export const IntroductionTab = ({
 
             <div className="col-span-full space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="font-medium">
+                <Label className="font-medium text-lg">
                   Окончания исполнительных производств
                 </Label>
               </div>
@@ -342,7 +342,7 @@ export const IntroductionTab = ({
                             ) => (
                               <div
                                 key={terminationIndex}
-                                className="flex items-center gap-3"
+                                className="flex items-end gap-3"
                               >
                                 <div className="flex-1 space-y-1">
                                   <Label>

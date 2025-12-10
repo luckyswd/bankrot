@@ -160,8 +160,8 @@ export function MchsDatabase() {
                           <Button variant="ghost" size="icon" onClick={() => handleEditClick(mchsItem)} title="Редактировать">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(mchsItem)} title="Удалить">
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                          <Button variant="ghost" size="icon" className="text-red-400"  onClick={() => handleDeleteClick(mchsItem)} title="Удалить">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

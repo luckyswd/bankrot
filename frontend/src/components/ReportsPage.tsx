@@ -200,6 +200,7 @@ export default function ReportsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="text-red-400"
                           onClick={() => {
                             if (window.confirm('Удалить этот отчёт?')) {
                               deleteReport(report.id)
@@ -207,7 +208,7 @@ export default function ReportsPage() {
                           }}
                           title="Удалить"
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

@@ -309,10 +309,11 @@ function Dashboard() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="text-red-400"
                                 onClick={(e) => handleDeleteClick(contract, e)}
                                 title="Удалить"
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>

@@ -173,10 +173,11 @@ export default function CourtsDatabase() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="text-red-400"
                             onClick={() => handleDeleteClick(court)}
                             title="Удалить"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
