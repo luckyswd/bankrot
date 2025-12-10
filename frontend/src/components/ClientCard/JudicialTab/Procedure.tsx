@@ -114,9 +114,6 @@ export const ProcedureTab = ({
               const isCreditCardEnabled =
                 formValues?.judicial_procedure?.creditorsClaims?.[index]
                   ?.isCreditCard;
-              const isInclusionEnabled =
-                formValues?.judicial_procedure?.creditorsClaims?.[index]
-                  ?.inclusion;
 
               return (
                 <Card key={field.id}>
