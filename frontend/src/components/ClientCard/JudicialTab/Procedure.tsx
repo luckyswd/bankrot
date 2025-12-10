@@ -57,10 +57,10 @@ export const ProcedureTab = ({
     name: "judicial_procedure.creditorsClaims",
   });
   useEffect(() => {
-    if(!creditorsClaimsFields.length) {
-      appendCreditorsClaim(createEmptyCreditorsClaim())
+    if (!creditorsClaimsFields.length) {
+      appendCreditorsClaim(createEmptyCreditorsClaim());
     }
-  }, [])
+  }, []);
   const documents =
     (
       contractData?.judicial_procedure as {
@@ -278,8 +278,20 @@ export const ProcedureTab = ({
                         <div className="space-y-2">
                           <Label
                             htmlFor={`judicial_procedure.creditorsClaims.${index}.creditCardDate`}
+                            className="flex items-center gap-3"
                           >
-                            Дата кредитной карты
+                            Кредитная карта
+                            <Controller
+                              control={control}
+                              name={`judicial_procedure.creditorsClaims.${index}.isCreditCard`}
+                              render={({ field: isCreditCardField }) => (
+                                <Switch
+                                  id={`judicial_procedure.creditorsClaims.${index}.isCreditCard`}
+                                  checked={isCreditCardField.value ?? false}
+                                  onCheckedChange={isCreditCardField.onChange}
+                                />
+                              )}
+                            />
                           </Label>
                           <Controller
                             control={control}
@@ -299,64 +311,32 @@ export const ProcedureTab = ({
                         <div className="space-y-2">
                           <Label
                             htmlFor={`judicial_procedure.creditorsClaims.${index}.judicialActDate`}
+                            className="flex items-center gap-3"
                           >
                             Дата конкретного судебного акта
-                          </Label>
-                          <Controller
-                            control={control}
-                            name={`judicial_procedure.creditorsClaims.${index}.judicialActDate`}
-                          render={({ field: judicialActDateField }) => (
-                            <DatePickerInput
-                              id={`judicial_procedure.creditorsClaims.${index}.judicialActDate`}
-                              value={judicialActDateField.value ?? ""}
-                              placeholder="Выберите дату"
-                              onChange={judicialActDateField.onChange}
-                              disabled={!isInclusionEnabled}
-                            />
-                          )}
-                        />
-                      </div>
-
-                        <div className="space-y-2 flex items-center gap-2">
-                          <Controller
-                            control={control}
-                            name={`judicial_procedure.creditorsClaims.${index}.isCreditCard`}
-                            render={({ field: isCreditCardField }) => (
-                              <div className="flex items-center gap-3">
-                                <Label
-                                  htmlFor={`judicial_procedure.creditorsClaims.${index}.isCreditCard`}
-                                  className="cursor-pointer"
-                                >
-                                  Кредитная карта
-                                </Label>
-                                <Switch
-                                  id={`judicial_procedure.creditorsClaims.${index}.isCreditCard`}
-                                  checked={isCreditCardField.value ?? false}
-                                  onCheckedChange={isCreditCardField.onChange}
-                                />
-                              </div>
-                            )}
-                          />
-                        </div>
-
-                        <div className="space-y-2 flex items-center gap-2">
-                          <Controller
-                            control={control}
-                            name={`judicial_procedure.creditorsClaims.${index}.inclusion`}
-                            render={({ field: inclusionField }) => (
-                              <div className="flex items-center gap-3">
-                                <Label
-                                  htmlFor={`judicial_procedure.creditorsClaims.${index}.inclusion`}
-                                  className="cursor-pointer"
-                                >
-                                  Требования получено
-                                </Label>
+                            <Controller
+                              control={control}
+                              name={`judicial_procedure.creditorsClaims.${index}.inclusion`}
+                              render={({ field: inclusionField }) => (
                                 <Switch
                                   id={`judicial_procedure.creditorsClaims.${index}.inclusion`}
                                   checked={inclusionField.value ?? false}
                                   onCheckedChange={inclusionField.onChange}
                                 />
-                              </div>
+                              )}
+                            />
+                          </Label>
+                          <Controller
+                            control={control}
+                            name={`judicial_procedure.creditorsClaims.${index}.judicialActDate`}
+                            render={({ field: judicialActDateField }) => (
+                              <DatePickerInput
+                                id={`judicial_procedure.creditorsClaims.${index}.judicialActDate`}
+                                value={judicialActDateField.value ?? ""}
+                                placeholder="Выберите дату"
+                                onChange={judicialActDateField.onChange}
+                                disabled={!isInclusionEnabled}
+                              />
                             )}
                           />
                         </div>
@@ -438,7 +418,9 @@ export const ProcedureTab = ({
                                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <div className="space-y-1">
                                                   <Input
-                                                    value={basisItem.number ?? ""}
+                                                    value={
+                                                      basisItem.number ?? ""
+                                                    }
                                                     placeholder="А56-12345/2024"
                                                     onChange={(e) => {
                                                       const newBasis = [
@@ -499,8 +481,10 @@ export const ProcedureTab = ({
                                   <Button
                                     type="button"
                                     variant="outline"
+                                    className="ml-auto block"
                                     onClick={() => {
-                                      const currentBasis = basisField.value ?? [];
+                                      const currentBasis =
+                                        basisField.value ?? [];
                                       basisField.onChange([
                                         ...currentBasis,
                                         { number: "", date: "" },
