@@ -179,7 +179,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           <Label htmlFor="basic_info.snils">СНИЛС</Label>
           <Input
             id="basic_info.snils"
-            placeholder="123-456-789 01"
+            placeholder="12345678901"
             {...register("basic_info.snils")}
           />
         </div>

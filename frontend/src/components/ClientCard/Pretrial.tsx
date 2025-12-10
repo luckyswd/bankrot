@@ -122,7 +122,7 @@ export const PretrialTab = ({
                 <div className="space-y-3 p-1">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="pre_court.creditors" className="font-medium">
-                      Кредиторы (можно несколько)
+                      Кредиторы
                     </Label>
                   </div>
 
@@ -318,7 +318,6 @@ export const PretrialTab = ({
                             />
                             <div className="space-y-1">
                               <Input
-                                type="time"
                                 value={time}
                                 onChange={(e) =>
                                   field.onChange(

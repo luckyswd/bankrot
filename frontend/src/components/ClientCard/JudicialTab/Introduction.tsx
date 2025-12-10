@@ -268,7 +268,7 @@ export const IntroductionTab = ({
               </Label>
               <Input
                 id="judicial_procedure_initiation.procedureInitiationDuration"
-                placeholder="Укажите срок"
+                placeholder="шесть месяцев"
                 {...register(
                   "judicial_procedure_initiation.procedureInitiationDuration"
                 )}
@@ -289,7 +289,7 @@ export const IntroductionTab = ({
             <div className="col-span-full space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="font-medium">
-                  Окончания исполнительных производств (можно несколько)
+                  Окончания исполнительных производств
                 </Label>
               </div>
 
