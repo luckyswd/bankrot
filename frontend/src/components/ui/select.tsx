@@ -123,7 +123,7 @@ const SelectContent = React.forwardRef<
                       e.preventDefault()
                     }
                   }}
-                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none ring-offset-background placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none ring-offset-background placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-ring"
                   placeholder={searchPlaceholder}
                 />
               </div>
