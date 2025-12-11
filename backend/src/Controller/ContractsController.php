@@ -19,6 +19,7 @@ use App\Repository\GostekhnadzorRepository;
 use App\Repository\MchsRepository;
 use App\Repository\DocumentTemplateRepository;
 use App\Repository\RosgvardiaRepository;
+use App\Repository\UserRepository;
 use App\Service\Serializer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,6 +46,7 @@ class ContractsController extends AbstractController
         private readonly BailiffRepository $bailiffRepository,
         private readonly RosgvardiaRepository $rosgvardiaRepository,
         private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
@@ -1233,6 +1235,20 @@ class ContractsController extends AbstractController
                         }
 
                         $contract->addCreditorsClaim($contractCreditorClaim);
+                    }
+                }
+
+                continue;
+            }
+
+            if ($key === 'manager') {
+                if (empty($value)) {
+                    $contract->setManager(null);
+                } else {
+                    $manager = $this->userRepository->find((int)$value);
+
+                    if ($manager !== null) {
+                        $contract->setManager($manager);
                     }
                 }
 

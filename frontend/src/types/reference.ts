@@ -12,5 +12,6 @@ export interface ReferenceData {
   mchs?: ReferenceItem[]
   rosgvardia?: ReferenceItem[]
   gostekhnadzor?: ReferenceItem[]
+  users?: ReferenceItem[]
   [key: string]: ReferenceItem[] | undefined
 }

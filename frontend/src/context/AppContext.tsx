@@ -174,6 +174,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         { key: "mchs", path: "/mchs" },
         { key: "rosgvardia", path: "/rosgvardia" },
         { key: "gostekhnadzor", path: "/gostekhnadzor" },
+        { key: "users", path: "/users" },
       ] as const
 
       const responses = await Promise.allSettled(endpoints.map(({ path }) => fetchList(path)))

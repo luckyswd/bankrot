@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\BankruptcyStage;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -19,6 +21,7 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
@@ -31,6 +34,7 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
     private string $password;
 
     #[ORM\Column(type: Types::STRING, nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
     private ?string $fio = null;
 
     #[ORM\OneToMany(targetEntity: Contracts::class, mappedBy: 'author')]

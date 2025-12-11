@@ -13,6 +13,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
 import { MainInfo } from "./MainInfo";
+import { ManagerInfo } from "./ManagerInfo";
 import { Accordion } from "@/components/ui/accordion";
 import { AddressInfo } from "./AddressInfo";
 import { PassportInfo } from "./Passport";
@@ -20,6 +21,7 @@ import { FamilyInfo } from "./FamilyInfo";
 import { WorkInfo } from "./WorkInfo";
 import { ContactInfo } from "./ContactInfo";
 import { DeptsInfo } from "./DeptsInfo";
+import type { ReferenceData } from "@/types/reference";
 
 export const SaveContext = React.createContext<(() => Promise<void>) | null>(
   null
@@ -31,6 +33,7 @@ interface GeneralTabProps {
   openDocument: (document: { id: number; name: string }) => void;
   onDownload: (document: { id: number; name: string }) => void;
   onNavigateToField?: (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => void;
+  referenceData?: ReferenceData;
 }
 
 export const GeneralTab = ({
@@ -38,6 +41,7 @@ export const GeneralTab = ({
   openDocument,
   onDownload,
   onNavigateToField,
+  referenceData,
 }: GeneralTabProps): JSX.Element => {
   const { register, control, watch } = useFormContext<FormValues>();
   const formValues = watch();
@@ -60,7 +64,7 @@ export const GeneralTab = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <Accordion type="multiple" defaultValue={["mainInfo", "addressInfo", "passportInfo", "familyInfo", "workInfo", "contactInfo", "deptsInfo"]}>
+            <Accordion type="multiple" defaultValue={["mainInfo", "addressInfo", "passportInfo", "familyInfo", "workInfo", "contactInfo", "deptsInfo", "managerInfo"]}>
               <MainInfo
                 register={register}
                 useWatch={useWatch}
@@ -77,6 +81,10 @@ export const GeneralTab = ({
               <WorkInfo register={register} control={control} />
               <ContactInfo register={register} />
               <DeptsInfo register={register} control={control} />
+              <ManagerInfo
+                  control={control}
+                  referenceData={referenceData}
+              />
             </Accordion>
           </div>
             <DocumentsList

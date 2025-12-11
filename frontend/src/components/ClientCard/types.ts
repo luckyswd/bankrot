@@ -54,6 +54,7 @@ export type PrimaryInfoFields = {
   contractNumber?: string | null
   contractDate?: string | null
   work: boolean
+  manager?: string | null
 }
 
 export type PretrialFields = {

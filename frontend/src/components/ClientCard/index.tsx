@@ -68,7 +68,10 @@ function ClientCard() {
     }
 
     const apiData: Record<string, unknown> = {
-      basic_info: currentValues.basic_info || {},
+      basic_info: {
+        ...(currentValues.basic_info || {}),
+        manager: currentValues.basic_info?.manager || null,
+      },
       pre_court: {
         ...(currentValues.pre_court || {}),
         creditors: currentValues.pre_court?.creditors ?? [],
@@ -576,6 +579,7 @@ function ClientCard() {
                 openDocument={openDocument}
                 onDownload={onDownload}
                 onNavigateToField={navigateToField}
+                referenceData={referenceData}
               />
               <PretrialTab
                 openDocument={openDocument}

@@ -55,6 +55,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   contractNumber: null,
   contractDate: null,
   work: false,
+  manager: null,
 };
 
 export const defaultPretrial: PretrialFields = {
@@ -262,6 +263,11 @@ export const convertApiDataToFormValues = (
       contractNumber: basicInfo.contractNumber ?? null,
       contractDate: formatDate(basicInfo.contractDate),
       work: asBool(basicInfo.work),
+      manager: basicInfo.manager
+        ? typeof basicInfo.manager === "object" && true && "id" in basicInfo.manager
+          ? String((basicInfo.manager as { id: number }).id)
+          : String(basicInfo.manager)
+        : null,
     },
     pre_court: {
       ...defaults.pre_court,
