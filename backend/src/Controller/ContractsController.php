@@ -1113,6 +1113,8 @@ class ContractsController extends AbstractController
                 $contract->getCreditorsClaims()->clear();
 
                 if (is_array($value)) {
+                    $processedCreditorIds = [];
+
                     foreach ($value as $claimData) {
                         if (!is_array($claimData)) {
                             continue;
@@ -1125,7 +1127,13 @@ class ContractsController extends AbstractController
                             continue;
                         }
 
-                        $creditor = $this->creditorRepository->find((int)$creditorId);
+                        $creditorIdInt = (int)$creditorId;
+
+                        if (isset($processedCreditorIds[$creditorIdInt])) {
+                            continue;
+                        }
+
+                        $creditor = $this->creditorRepository->find($creditorIdInt);
 
                         if ($creditor === null) {
                             continue;
@@ -1142,13 +1150,25 @@ class ContractsController extends AbstractController
                         }
 
                         if (!$contractCreditorClaim) {
-                            $contractCreditorClaim = new ContractsCreditorsClaim();
-                            $contractCreditorClaim->setContract(contract: $contract);
+                            $existingClaim = $this->contractsCreditorsClaimRepository->findOneBy(
+                                [
+                                    'contract' => $contract,
+                                    'creditor' => $creditor,
+                                ]
+                            );
 
-                            $this->entityManager->persist($contractCreditorClaim);
+                            if ($existingClaim !== null) {
+                                $contractCreditorClaim = $existingClaim;
+                            } else {
+                                $contractCreditorClaim = new ContractsCreditorsClaim();
+                                $contractCreditorClaim->setContract(contract: $contract);
+
+                                $this->entityManager->persist($contractCreditorClaim);
+                            }
                         }
 
                         $contractCreditorClaim->setCreditor(creditor: $creditor);
+                        $processedCreditorIds[$creditorIdInt] = true;
 
                         if (isset($claimData['debtAmount'])) {
                             $contractCreditorClaim->setDebtAmount($claimData['debtAmount'] === '' ? null : $claimData['debtAmount']);
