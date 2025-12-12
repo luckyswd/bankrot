@@ -107,21 +107,23 @@ export const DocumentsList = ({
                           <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                         )}
                       </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          Заполнено: {completeness.filledFields} из {completeness.totalFields}
-                        </span>
-                        {completeness.missingFields.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-2 text-xs"
-                            onClick={() => setExpandedDocument(expandedDocument === document.id ? null : document.id)}
-                          >
-                            {expandedDocument === document.id ? "Скрыть" : "Показать"} незаполненные поля ({completeness.missingFields.length})
-                          </Button>
-                        )}
-                      </div>
+                      {completeness.totalFields > 0 && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            Заполнено: {completeness.filledFields} из {completeness.totalFields}
+                          </span>
+                          {completeness.missingFields.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-2 text-xs"
+                              onClick={() => setExpandedDocument(expandedDocument === document.id ? null : document.id)}
+                            >
+                              {expandedDocument === document.id ? "Скрыть" : "Показать"} незаполненные поля ({completeness.missingFields.length})
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">
