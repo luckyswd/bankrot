@@ -6,7 +6,12 @@ namespace App\Service\Templates;
 
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
+use App\Entity\Enum\BankruptcyStage;
+use App\Service\Templates\PreCourt\PreCourtMethods;
+use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
 use Doctrine\Common\Collections\Collection;
+use PhpOffice\PhpWord\Exception\Exception;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 readonly class DocumentTemplateProcessor
 {
@@ -381,5 +386,310 @@ readonly class DocumentTemplateProcessor
         }
 
         return $blockVariables;
+    }
+
+    /**
+     * Извлекает переменные из шаблона и находит соответствующие поля в сущностях.
+     */
+    public function extractFields(DocumentTemplate $template, Contracts $contract): array
+    {
+        $templatePath = $template->getPath();
+
+        if (!file_exists($templatePath)) {
+            throw new \RuntimeException('Файл шаблона не найден: ' . $templatePath);
+        }
+
+        $outputPath = sys_get_temp_dir() . '/' . uniqid('doc_', true) . '.docx';
+        copy($templatePath, $outputPath);
+
+        $fields = [];
+
+        try {
+            $templateProcessor1 = new OptimizedTemplateProcessor($outputPath);
+            $templateProcessor1->setMacroChars('{{', '}}');
+            $variables1 = $templateProcessor1->getVariables();
+
+            $templateProcessor2 = new OptimizedTemplateProcessor($outputPath);
+            $templateProcessor2->setMacroChars('${', '}');
+            $variables2 = $templateProcessor2->getVariables();
+
+            $allVariables = array_unique(array_merge($variables1, $variables2));
+
+            foreach ($allVariables as $variable) {
+                $cleanedVariable = $this->clearVariable($variable);
+
+                if ($this->isFunctionCall(match: $cleanedVariable)) {
+                    continue;
+                }
+
+                $fieldInfo = $this->findFieldsInfo(
+                    contracts: $contract,
+                    variable: $cleanedVariable,
+                );
+
+                if (empty($fieldInfo)) {
+                    continue;
+                }
+
+                if (is_array($fieldInfo)) {
+                    foreach ($fieldInfo as $field) {
+                        if (!empty($field) && !in_array($field, $fields, true)) {
+                            $fields[] = $field;
+                        }
+                    }
+                } else {
+                    if (!in_array($fieldInfo, $fields, true)) {
+                        $fields[] = $fieldInfo;
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            throw new \RuntimeException('Ошибка при чтении шаблона: ' . $e->getMessage(), 0, $e);
+        } finally {
+            if (file_exists($outputPath)) {
+                unlink($outputPath);
+            }
+        }
+
+        return [
+            'id' => $template->getId(),
+            'name' => $template->getName(),
+            'fields' => $fields,
+        ];
+    }
+
+    private function findFieldsInfo(Contracts $contracts, string $variable): array|string
+    {
+        $parts = explode('.', $variable);
+        $partsCount = count($parts);
+
+        if ($partsCount === 1) {
+            return $this->findFieldInContracts(contracts: $contracts, fieldName: $parts[0]);
+        }
+
+        $relationName = $parts[0];
+
+        $relationGetter = 'get' . ucfirst($this->snakeToCamel(string: $relationName));
+
+        if (!method_exists($contracts, $relationGetter)) {
+            return '';
+        }
+
+        $relationCamelCase = $this->snakeToCamel(string: $relationName);
+        $tabName = $this->getTabNameForProperty(entityClass: Contracts::class, propertyName: $relationCamelCase);
+
+        if ($tabName === null) {
+            return '';
+        }
+
+        return $tabName . '.' . $relationCamelCase;
+    }
+
+    private function findFieldInContracts(Contracts $contracts, string $fieldName): array|string
+    {
+        $camelCaseField = $this->snakeToCamel(string: $fieldName);
+        $getter = 'get' . ucfirst($camelCaseField);
+
+        if (!method_exists($contracts, $getter)) {
+            return '';
+        }
+
+        $reflectionMethod = new \ReflectionMethod($contracts, $getter);
+        $usedProperties = $this->extractPropertiesFromMethod(reflectionMethod: $reflectionMethod, objectClass: Contracts::class);
+        $usedProperties = array_values($usedProperties);
+
+        $result = [];
+
+        foreach ($usedProperties as $property) {
+            $propertyTabName = $this->getTabNameForProperty(entityClass: Contracts::class, propertyName: $property) ?? '';
+            $result[] = $propertyTabName . '.' . $this->snakeToCamel(string: $property);
+        }
+
+        return $result;
+    }
+
+    private function extractPropertiesFromMethod(\ReflectionMethod $reflectionMethod, string $objectClass): array
+    {
+        $allProperties = [];
+        $analyzedMethods = [];
+
+        $this->analyzeMethodRecursive(
+            reflectionMethod: $reflectionMethod,
+            objectClass: $objectClass,
+            allProperties: $allProperties,
+            analyzedMethods: $analyzedMethods,
+        );
+
+        return array_unique($allProperties);
+    }
+
+    /**
+     * Рекурсивно анализирует метод и все вызываемые статические методы из ProcedureInitiationMethods и PreCourtMethods.
+     */
+    private function analyzeMethodRecursive(
+        \ReflectionMethod $reflectionMethod,
+        string $objectClass,
+        array &$allProperties,
+        array &$analyzedMethods,
+    ): void {
+        $methodKey = $reflectionMethod->getDeclaringClass()->getName() . '::' . $reflectionMethod->getName();
+
+        if (isset($analyzedMethods[$methodKey])) {
+            return;
+        }
+
+        $analyzedMethods[$methodKey] = true;
+
+        $methodBody = file_get_contents($reflectionMethod->getFileName());
+        $startLine = $reflectionMethod->getStartLine() - 1;
+        $endLine = $reflectionMethod->getEndLine();
+        $lines = explode("\n", $methodBody);
+        $methodCode = implode("\n", array_slice($lines, $startLine, $endLine - $startLine));
+
+        // Ищем обращения к свойствам через $this->propertyName или $contract->propertyName
+        if (preg_match_all('/\$(?:this|contract)->([a-zA-Z_][a-zA-Z0-9_]*)/', $methodCode, $matches)) {
+            $reflectionClass = new \ReflectionClass($objectClass);
+
+            foreach ($matches[1] as $property) {
+                if ($reflectionClass->hasProperty($property)) {
+                    $allProperties[] = $property;
+                }
+            }
+        }
+
+
+        // Ищем вызовы геттеров через $contract->getMethodName() или $this->getMethodName()
+        // и рекурсивно анализируем их, чтобы найти используемые свойства
+        if (preg_match_all('/\$(?:this|contract)->get([A-Z][a-zA-Z0-9_]*)\(/', $methodCode, $getterMatches)) {
+            $reflectionClass = new \ReflectionClass($objectClass);
+            foreach ($getterMatches[1] as $getterName) {
+                $getterMethodName = 'get' . $getterName;
+                if ($reflectionClass->hasMethod($getterMethodName)) {
+                    $getterMethod = $reflectionClass->getMethod($getterMethodName);
+                    $this->analyzeMethodRecursive(
+                        reflectionMethod: $getterMethod,
+                        objectClass: $objectClass,
+                        allProperties: $allProperties,
+                        analyzedMethods: $analyzedMethods
+                    );
+                }
+            }
+        }
+
+        // Ищем вызовы статических методов из ProcedureInitiationMethods
+        if (preg_match_all('/ProcedureInitiationMethods::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $piMatches)) {
+            foreach ($piMatches[1] as $staticMethodName) {
+                $this->analyzeStaticMethod(
+                    className: ProcedureInitiationMethods::class,
+                    methodName: $staticMethodName,
+                    objectClass: $objectClass,
+                    allProperties: $allProperties,
+                    analyzedMethods: $analyzedMethods
+                );
+            }
+        }
+
+        // Ищем вызовы статических методов из PreCourtMethods
+        if (preg_match_all('/PreCourtMethods::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $pcMatches)) {
+            foreach ($pcMatches[1] as $staticMethodName) {
+                $this->analyzeStaticMethod(
+                    className: PreCourtMethods::class,
+                    methodName: $staticMethodName,
+                    objectClass: $objectClass,
+                    allProperties: $allProperties,
+                    analyzedMethods: $analyzedMethods
+                );
+            }
+        }
+
+        // Ищем вызовы через self:: или static::
+        if (preg_match_all('/(?:self|static)::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $selfMatches)) {
+            $declaringClass = $reflectionMethod->getDeclaringClass();
+            foreach ($selfMatches[1] as $selfMethodName) {
+                if ($declaringClass->hasMethod($selfMethodName)) {
+                    $selfMethod = $declaringClass->getMethod($selfMethodName);
+                    $this->analyzeMethodRecursive(
+                        reflectionMethod: $selfMethod,
+                        objectClass: $objectClass,
+                        allProperties: $allProperties,
+                        analyzedMethods: $analyzedMethods
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Анализирует статический метод из ProcedureInitiationMethods или PreCourtMethods.
+     */
+    private function analyzeStaticMethod(
+        string $className,
+        string $methodName,
+        string $objectClass,
+        array &$allProperties,
+        array &$analyzedMethods,
+    ): void {
+        if (!class_exists($className)) {
+            return;
+        }
+
+        $reflectionClass = new \ReflectionClass($className);
+        if (!$reflectionClass->hasMethod($methodName)) {
+            return;
+        }
+
+        $staticMethod = $reflectionClass->getMethod($methodName);
+        $this->analyzeMethodRecursive(
+            reflectionMethod: $staticMethod,
+            objectClass: $objectClass,
+            allProperties: $allProperties,
+            analyzedMethods: $analyzedMethods,
+        );
+    }
+
+    /**
+     * Получает tabName для свойства на основе Groups атрибутов.
+     */
+    private function getTabNameForProperty(string $entityClass, string $propertyName): ?string
+    {
+        if (!class_exists($entityClass)) {
+            return null;
+        }
+
+        $reflectionClass = new \ReflectionClass($entityClass);
+        if (!$reflectionClass->hasProperty($propertyName)) {
+            return null;
+        }
+
+        $reflectionProperty = $reflectionClass->getProperty($propertyName);
+        $attributes = $reflectionProperty->getAttributes(Groups::class);
+
+        if (empty($attributes)) {
+            return null;
+        }
+
+        $groupsAttribute = $attributes[0];
+        $groups = $groupsAttribute->getArguments()[0] ?? [];
+
+        if (empty($groups) || !is_array($groups)) {
+            return null;
+        }
+
+        $firstGroup = $groups[0] ?? null;
+
+        if ($firstGroup instanceof BankruptcyStage) {
+            return $firstGroup->value;
+        }
+
+        if (is_string($firstGroup)) {
+            return $firstGroup;
+        }
+
+        return null;
+    }
+
+    private function snakeToCamel(string $string): string
+    {
+        return lcfirst(str_replace('_', '', ucwords($string, '_')));
     }
 }
