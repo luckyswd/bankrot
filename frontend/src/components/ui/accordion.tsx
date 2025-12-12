@@ -9,9 +9,11 @@ const Accordion = AccordionPrimitive.Root
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
->(({ className, ...props }, ref) => (
+>(({ className, value, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
+    value={value}
+    data-value={value}
     className={cn(
       "relative mb-3 last:mb-0 bg-card/50 px-3 pt-1 pb-4",
       "after:content-[''] after:absolute after:bottom-0 after:h-[2px] after:bg-gray-300 dark:after:bg-gray-700",
@@ -50,7 +52,8 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    forceMount
+    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down data-[state=closed]:hidden"
     {...props}
   >
     <div className={cn("pb-4 pt-2 px-2 border-t border-border/20 mt-2", className)}>{children}</div>

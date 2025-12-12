@@ -339,18 +339,31 @@ function ClientCard() {
     "Новый договор";
 
   // Получаем текущий таб из URL или используем значение по умолчанию
-  const currentTab = searchParams.get("tab") || "primary";
-  const validTabs = ["primary", "pre_court", "judicial"];
-  const activeTab = validTabs.includes(currentTab) ? currentTab : "primary";
+  const currentTab = searchParams.get("tab") || "basic_info";
+  const validTabs = ["basic_info", "pre_court", "judicial", "judicial_procedure_initiation", "judicial_procedure", "judicial_report"];
+  
+  // Мапим judicial_procedure_* на общий таб judicial для UI
+  let activeTab = currentTab;
+  if (currentTab === "judicial_procedure_initiation" || 
+      currentTab === "judicial_procedure" || 
+      currentTab === "judicial_report" ||
+      currentTab === "judicial") {
+    activeTab = "judicial";
+  } else if (!validTabs.includes(currentTab)) {
+    activeTab = "basic_info";
+  }
 
   // Обработчик изменения таба
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams();
-    newParams.set("tab", value);
-    // Удаляем subTab если переключаемся не на judicial
-    if (value !== "judicial") {
-      newParams.delete("subTab");
+    
+    // Если кликнули на judicial, устанавливаем дефолтный подтаб
+    if (value === "judicial") {
+      newParams.set("tab", "judicial_procedure_initiation");
+    } else {
+      newParams.set("tab", value);
     }
+    
     setSearchParams(newParams, { replace: true });
   };
 
@@ -377,150 +390,17 @@ function ClientCard() {
   };
 
 
-  // Функция навигации к полю
   const navigateToField = (fieldInfo: { tab: string; accordion?: string; fieldId: string }) => {
-    // Переключаем таб
     handleTabChange(fieldInfo.tab);
 
-    // Если есть аккордеон, открываем его и устанавливаем subTab для judicial
-    if (fieldInfo.accordion) {
-      if (fieldInfo.tab === "judicial") {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set("tab", fieldInfo.tab);
-        newParams.set("subTab", fieldInfo.accordion);
-        setSearchParams(newParams, { replace: true });
-      }
+    const labelElement = document.querySelector(`[for="${fieldInfo.fieldId}"]`) as HTMLElement;
 
-      // Открываем аккордеон через клик на триггер
+    if (labelElement) {
+      labelElement.scrollIntoView({behavior: "smooth", block: "center"});
+
       setTimeout(() => {
-        // Ищем AccordionItem по значению и находим его триггер
-        const accordionItems = document.querySelectorAll('[data-radix-accordion-item]');
-        let accordionTrigger: HTMLElement | null = null;
-        
-        accordionItems.forEach((item) => {
-          const value = item.getAttribute('data-radix-accordion-item');
-          if (value === fieldInfo.accordion) {
-            const trigger = item.querySelector('button[data-radix-accordion-trigger]') as HTMLElement;
-            if (trigger && trigger.getAttribute('aria-expanded') === 'false') {
-              accordionTrigger = trigger;
-            }
-          }
-        });
-
-        // Если не нашли через data-атрибуты, ищем через aria-controls
-        if (!accordionTrigger && fieldInfo.accordion) {
-          const allTriggers = document.querySelectorAll('button[data-radix-accordion-trigger]');
-          for (const trigger of Array.from(allTriggers)) {
-            const controls = trigger.getAttribute('aria-controls');
-            if (controls && fieldInfo.accordion && controls.includes(fieldInfo.accordion) && trigger.getAttribute('aria-expanded') === 'false') {
-              accordionTrigger = trigger as HTMLElement;
-              break;
-            }
-          }
-        }
-
-        if (accordionTrigger) {
-          accordionTrigger.click();
-        }
-
-        // Устанавливаем фокус на поле
-        setTimeout(() => {
-          let fieldElement: HTMLElement | null = null;
-          
-          // Сначала пробуем найти по точному ID
-          fieldElement = document.getElementById(fieldInfo.fieldId);
-          
-          // Если не нашли по ID, пробуем найти по name
-          if (!fieldElement) {
-            fieldElement = document.querySelector(`input[name="${fieldInfo.fieldId}"]`) as HTMLElement;
-          }
-          
-          // Если все еще не нашли, пробуем найти по частичному совпадению ID
-          if (!fieldElement) {
-            const allInputs = document.querySelectorAll('input');
-            for (const input of Array.from(allInputs)) {
-              const inputId = input.getAttribute('id') || '';
-              const inputName = input.getAttribute('name') || '';
-              // Проверяем точное совпадение или вхождение части fieldId
-              if (inputId === fieldInfo.fieldId || 
-                  inputName === fieldInfo.fieldId ||
-                  inputId.includes(fieldInfo.fieldId) ||
-                  inputName.includes(fieldInfo.fieldId)) {
-                fieldElement = input as HTMLElement;
-                break;
-              }
-            }
-          }
-          
-          // Если все еще не нашли, пробуем найти по последней части fieldId (имя поля)
-          if (!fieldElement) {
-            const fieldName = fieldInfo.fieldId.split('.').pop() || '';
-            fieldElement = document.querySelector(`input[id*="${fieldName}"], input[name*="${fieldName}"]`) as HTMLElement;
-          }
-          
-          if (fieldElement) {
-            fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            // Небольшая задержка перед фокусом для корректной прокрутки
-            setTimeout(() => {
-              fieldElement?.focus();
-              // Подсвечиваем поле
-              fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
-              setTimeout(() => {
-                fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
-              }, 100);
-            }, 100);
-          }
-        }, 100);
-      }, 100);
-    } else {
-      // Если нет аккордеона, просто устанавливаем фокус на поле
-      setTimeout(() => {
-        let fieldElement: HTMLElement | null = null;
-        
-        // Сначала пробуем найти по точному ID
-        fieldElement = document.getElementById(fieldInfo.fieldId);
-        
-        // Если не нашли по ID, пробуем найти по name
-        if (!fieldElement) {
-          fieldElement = document.querySelector(`input[name="${fieldInfo.fieldId}"]`) as HTMLElement;
-        }
-        
-        // Если все еще не нашли, пробуем найти по частичному совпадению ID
-        if (!fieldElement) {
-          const allInputs = document.querySelectorAll('input');
-          for (const input of Array.from(allInputs)) {
-            const inputId = input.getAttribute('id') || '';
-            const inputName = input.getAttribute('name') || '';
-            // Проверяем точное совпадение или вхождение части fieldId
-            if (inputId === fieldInfo.fieldId || 
-                inputName === fieldInfo.fieldId ||
-                inputId.includes(fieldInfo.fieldId) ||
-                inputName.includes(fieldInfo.fieldId)) {
-              fieldElement = input as HTMLElement;
-              break;
-            }
-          }
-        }
-        
-        // Если все еще не нашли, пробуем найти по последней части fieldId (имя поля)
-        if (!fieldElement) {
-          const fieldName = fieldInfo.fieldId.split('.').pop() || '';
-          fieldElement = document.querySelector(`input[id*="${fieldName}"], input[name*="${fieldName}"]`) as HTMLElement;
-        }
-        
-        if (fieldElement) {
-          fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Небольшая задержка перед фокусом для корректной прокрутки
-          setTimeout(() => {
-            fieldElement?.focus();
-            // Подсвечиваем поле
-            fieldElement?.classList.add("ring-2", "ring-primary", "ring-offset-2");
-            setTimeout(() => {
-              fieldElement?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
-            }, 100);
-          }, 100);
-        }
-      }, 100);
+        labelElement.click();
+      }, 50)
     }
   };
 
@@ -553,19 +433,19 @@ function ClientCard() {
             <div className="flex flex-col">
               <TabsList className="grid w-full grid-cols-3 h-12 rounded-b-none p-0 gap-0.5">
                 <TabsTrigger 
-                  value="primary" 
+                  value="basic_info"
                   className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
                 >
                   Основная информация
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="pre_court" 
+                  value="pre_court"
                   className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
                 >
                   Досудебка
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="judicial" 
+                  value="judicial"
                   className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
                 >
                   Судебка

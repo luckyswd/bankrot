@@ -85,7 +85,7 @@ export const ProcedureTab = ({
   });
 
   return (
-    <TabsContent value="procedure" className="space-y-6">
+    <TabsContent value="judicial_procedure" className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Процедура</CardTitle>
@@ -514,7 +514,6 @@ export const ProcedureTab = ({
           <DocumentsList
             documents={documents}
             title="Документы процедуры:"
-            category="judicial_procedure"
             formValues={formValues}
             onDocumentClick={openDocument}
             onDownload={onDownload}

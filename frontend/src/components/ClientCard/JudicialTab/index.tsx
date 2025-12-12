@@ -23,15 +23,15 @@ export const JudicialTab = ({
 }: JudicialTabProps): JSX.Element => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Получаем текущий вложенный таб из URL или используем значение по умолчанию
-  const currentSubTab = searchParams.get("subTab") || "introduction";
-  const validSubTabs = ["introduction", "procedure", "report"];
-  const activeSubTab = validSubTabs.includes(currentSubTab) ? currentSubTab : "introduction";
+  // Получаем текущий таб из URL
+  const currentTab = searchParams.get("tab") || "judicial_procedure_initiation";
+  const validSubTabs = ["judicial_procedure_initiation", "judicial_procedure", "judicial_report"];
+  const activeSubTab = validSubTabs.includes(currentTab) ? currentTab : "judicial_procedure_initiation";
 
   // Обработчик изменения вложенного таба
   const handleSubTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.set("subTab", value);
+    newParams.set("tab", value);
     setSearchParams(newParams, { replace: true });
   };
 
@@ -41,19 +41,19 @@ export const JudicialTab = ({
         <div className="flex flex-col">
           <TabsList className="grid w-full grid-cols-3 h-12 rounded-t-none p-0 gap-0.5">
             <TabsTrigger 
-              value="introduction"
+              value="judicial_procedure_initiation"
               className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
             >
               Введение процедуры
             </TabsTrigger>
             <TabsTrigger 
-              value="procedure"
+              value="judicial_procedure"
               className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
             >
               Процедура
             </TabsTrigger>
             <TabsTrigger 
-              value="report"
+              value="judicial_report"
               className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
             >
               Отчет

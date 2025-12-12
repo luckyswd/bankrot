@@ -81,12 +81,13 @@ export const FamilyInfo: FC<Props> = ({
       <AccordionContent>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label>Семейное положение</Label>
+          <Label htmlFor="basic_info.maritalStatus">Семейное положение</Label>
           <Controller
             control={control}
             name="basic_info.maritalStatus"
             render={({ field }) => (
               <SelectField
+                id="basic_info.maritalStatus"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={marriageOptions}
@@ -150,12 +151,13 @@ export const FamilyInfo: FC<Props> = ({
         )}
 
         <div className="space-y-2">
-          <Label>Наличие несовершеннолетних детей</Label>
+          <Label htmlFor="basic_info.hasMinorChildren">Наличие несовершеннолетних детей</Label>
           <Controller
             control={control}
             name="basic_info.hasMinorChildren"
             render={({ field }) => (
               <SelectField
+                id="basic_info.hasMinorChildren"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={yesNoOptions}

@@ -6,12 +6,13 @@ interface SelectFieldProps {
   options: SelectOption[]
   placeholder?: string
   disabled?: boolean
+  id?: string
 }
 export type SelectOption = { value: string | boolean; label: string }
 
 const CLEAR_VALUE = "__clear__"
 
-export const SelectField = ({ value, onChange, options, placeholder = "Не указано", disabled }: SelectFieldProps) => {
+export const SelectField = ({ value, onChange, options, placeholder = "Не указано", disabled, id }: SelectFieldProps) => {
   const stringValue = value === undefined || value === null ? undefined : String(value)
   const optionValueMap = options.reduce<Record<string, string | boolean>>((acc, option) => {
     acc[String(option.value)] = option.value
@@ -34,7 +35,7 @@ export const SelectField = ({ value, onChange, options, placeholder = "Не ук
       }}
       disabled={disabled}
     >
-      <SelectTrigger disabled={disabled}>
+      <SelectTrigger disabled={disabled} id={id}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

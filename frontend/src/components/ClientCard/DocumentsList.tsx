@@ -3,19 +3,20 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/tooltip";
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { calculateDocumentCompleteness } from "./utils/documentCompleteness";
+import { calculateDocumentCompleteness } from "./utils/documentFieldsValidator";
 import type { FormValues } from "./types";
-import { useState } from "react";
+import type { DocumentCompleteness } from "./utils/documentFieldsValidator";
+import { useState, useEffect } from "react";
 
 interface Document {
   id: number;
   name: string;
+  fields?: string[];
 }
 
 interface DocumentsListProps {
   documents: Document[];
   title: string;
-  category: string;
   formValues: FormValues;
   onDocumentClick: (document: Document) => void;
   onDownload: (document: Document) => void;
@@ -24,35 +25,33 @@ interface DocumentsListProps {
 
 // Маппинг табов для отображения
 const tabLabels: Record<string, string> = {
-  primary: "Основная информация",
+  basic_info: "Основная информация",
   pre_court: "Досудебка",
-  judicial: "Судебка",
-};
-
-// Маппинг аккордеонов для отображения
-const accordionLabels: Record<string, string> = {
-  mainInfo: "Личные данные",
-  addressInfo: "Адрес регистрации",
-  passportInfo: "Паспорт",
-  familyInfo: "Семейное положение",
-  workInfo: "Работа и образование",
-  contactInfo: "Контакты",
-  deptsInfo: "Долг и исполнительные производства",
-  introduction: "Введение процедуры",
-  procedure: "Процедура",
-  report: "Отчет",
+  judicial_procedure_initiation: "Судебка - Введение процедуры",
+  judicial_procedure: "Судебка - Процедура",
+  judicial_report: "Судебка - Отчет",
 };
 
 export const DocumentsList = ({
   documents,
   title,
-  category,
   formValues,
   onDocumentClick,
   onDownload,
   onNavigateToField,
 }: DocumentsListProps): JSX.Element | null => {
   const [expandedDocument, setExpandedDocument] = useState<number | null>(null);
+  const [completenessCache, setCompletenessCache] = useState<Map<number, DocumentCompleteness>>(new Map());
+
+  // Пересчитываем completeness после рендера DOM (когда аккордеоны с forceMount уже в DOM)
+  useEffect(() => {
+    const newCache = new Map<number, DocumentCompleteness>();
+    documents.forEach((document) => {
+      const completeness = calculateDocumentCompleteness(document.fields || [], formValues);
+      newCache.set(document.id, completeness);
+    });
+    setCompletenessCache(newCache);
+  }, [documents, formValues]);
 
   if (!documents || documents.length === 0) {
     return null;
@@ -70,7 +69,12 @@ export const DocumentsList = ({
         </CardHeader>
         <CardContent className="space-y-3">
           {documents.map((document) => {
-            const completeness = calculateDocumentCompleteness(category, formValues, document.id);
+            const completeness = completenessCache.get(document.id) || {
+              status: "empty" as const,
+              totalFields: document.fields?.length || 0,
+              filledFields: 0,
+              missingFields: [],
+            };
             
             // Определяем цвет границы в зависимости от статуса
             const borderColorClass = 
@@ -105,7 +109,7 @@ export const DocumentsList = ({
                       </div>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
-                          Заполнено: {completeness.percentage}%
+                          Заполнено: {completeness.filledFields} из {completeness.totalFields}
                         </span>
                         {completeness.missingFields.length > 0 && (
                           <Button
@@ -176,8 +180,7 @@ export const DocumentsList = ({
                               {field.label}
                             </span>
                             <span className="text-muted-foreground/60 text-[10px] mt-0.5">
-                              ({tabLabels[field.tab] || field.tab}
-                              {field.accordion && ` → ${accordionLabels[field.accordion] || field.accordion}`})
+                              ({tabLabels[field.category] || field.category})
                             </span>
                           </button>
                         </li>

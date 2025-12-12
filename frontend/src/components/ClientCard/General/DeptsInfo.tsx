@@ -36,12 +36,13 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
         </div>
 
         <div className="space-y-2">
-          <Label>Наличие возбужденных исполнительных производств</Label>
+          <Label htmlFor="basic_info.hasEnforcementProceedings">Наличие возбужденных исполнительных производств</Label>
           <Controller
             control={control}
             name="basic_info.hasEnforcementProceedings"
             render={({ field }) => (
               <SelectField
+                id="basic_info.hasEnforcementProceedings"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={yesNoOptions}

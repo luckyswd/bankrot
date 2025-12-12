@@ -59,7 +59,7 @@ export const IntroductionTab = ({
     )?.documents || [];
 
   return (
-    <TabsContent value="introduction" className="space-y-6">
+    <TabsContent value="judicial_procedure_initiation" className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Введение процедуры</CardTitle>
@@ -426,7 +426,6 @@ export const IntroductionTab = ({
           <DocumentsList
             documents={documents}
             title="Документы этапа введения:"
-            category="judicial_procedure_initiation"
             formValues={watch()}
             onDocumentClick={openDocument}
             onDownload={onDownload}

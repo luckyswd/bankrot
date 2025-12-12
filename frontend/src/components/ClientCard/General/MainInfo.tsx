@@ -107,12 +107,13 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
         </div>
 
         <div className="space-y-2">
-          <Label>Изменялось ли ФИО</Label>
+          <Label htmlFor="basic_info.isLastNameChanged">Изменялось ли ФИО</Label>
           <Controller
             control={control}
             name="basic_info.isLastNameChanged"
             render={({ field }) => (
               <SelectField
+                id="basic_info.isLastNameChanged"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={yesNoOptions}
@@ -138,6 +139,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             <div className="space-y-2">
               <Label htmlFor="basic_info.gender">Пол</Label>
               <SelectField
+                id="basic_info.gender"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={genderOptions}

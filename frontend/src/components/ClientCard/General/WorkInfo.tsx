@@ -27,37 +27,31 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
 
   return (
     <AccordionItem value="workInfo">
-      <AccordionTrigger>
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <AccordionTrigger className="flex-1">
           <h3 className="text-xl font-semibold">Работа и образование</h3>
-          <Controller
-            name="basic_info.work"
-            control={control}
-            render={({ field }) => {
-              return (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  onPointerDown={(e) => e.stopPropagation()}
-                >
-                  <Switch
-                    checked={Boolean(field.value)}
-                    onCheckedChange={field.onChange}
-                    aria-label="Работает"
-                  />
-                </div>
-              );
-            }}
-          />
-        </div>
-      </AccordionTrigger>
+        </AccordionTrigger>
+        <Controller
+          name="basic_info.work"
+          control={control}
+          render={({ field }) => (
+            <Switch
+              checked={Boolean(field.value)}
+              onCheckedChange={field.onChange}
+              aria-label="Работает"
+            />
+          )}
+        />
+      </div>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-2">
-          <Label>Является ли студентом</Label>
+          <Label htmlFor="basic_info.isStudent">Является ли студентом</Label>
           <Controller
             control={control}
             name="basic_info.isStudent"
             render={({ field }) => (
               <SelectField
+                id="basic_info.isStudent"
                 value={field.value}
                 onChange={(value) => field.onChange(value)}
                 options={yesNoOptions}

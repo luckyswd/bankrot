@@ -97,7 +97,7 @@ export const PretrialTab = ({
   const combineDateTime = (date: string, time: string) => {
     if (!date && !time) return "";
     if (!date) return time ? `T${time}` : "";
-    console.log(time ? `${date}T${time}` : date)
+
     return time ? `${date}T${time}` : date;
   };
   const hasHearingDateTime = Boolean(hearingDateTimeValue);
@@ -124,14 +124,14 @@ export const PretrialTab = ({
 
                   {creditorFields.length === 0 ? (
                     <div className="space-y-2">
-                      <Label htmlFor="pre_court.creditors.empty">
+                      <Label htmlFor="pre_court.creditors">
                         Кредитор 1
                       </Label>
                       <Select
                         onValueChange={(val) => appendCreditor(Number(val))}
                         disabled={!hasAvailableCreditors}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="pre_court.creditors">
                           <SelectValue placeholder="Выберите кредитора" />
                         </SelectTrigger>
                         <SelectContent>
@@ -238,7 +238,7 @@ export const PretrialTab = ({
                           value={toIdString(field.value)}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger id="pre_court.court">
                             <SelectValue placeholder="Выберите суд" />
                           </SelectTrigger>
                           <SelectContent>
@@ -256,19 +256,21 @@ export const PretrialTab = ({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Номер дела</Label>
+                    <Label htmlFor="pre_court.caseNumber">Номер дела</Label>
                     <Input
-                      type="text"
-                      placeholder="А56-12345/2024"
-                      {...register("pre_court.caseNumber")}
+                        id="pre_court.caseNumber"
+                        type="text"
+                        placeholder="А56-12345/2024"
+                        {...register("pre_court.caseNumber")}
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label>Доверенность</Label>
+                    <Label htmlFor="pre_court.powerOfAttorneyNumber">Доверенность</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Input
+                          id="pre_court.powerOfAttorneyNumber"
                           type="text"
                           placeholder="ДГ-2024-001234"
                           {...register("pre_court.powerOfAttorneyNumber")}
@@ -279,6 +281,8 @@ export const PretrialTab = ({
                         control={control}
                         render={({ field }) => (
                           <DatePickerInput
+                            id="pre_court.powerOfAttorneyDate"
+                            name="pre_court.powerOfAttorneyDate"
                             value={(field.value as string) ?? ""}
                             onChange={field.onChange}
                             className="space-y-1"
@@ -289,7 +293,7 @@ export const PretrialTab = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Дата и время заседания</Label>
+                    <Label htmlFor="pre_court.hearingDateTime">Дата и время заседания</Label>
                     <Controller
                       name="pre_court.hearingDateTime"
                       control={control}
@@ -300,6 +304,8 @@ export const PretrialTab = ({
                         return (
                           <div className="grid grid-cols-2 gap-2">
                             <DatePickerInput
+                              id="pre_court.hearingDateTime"
+                              name="pre_court.hearingDateTime"
                               value={date}
                               onChange={(nextDate) =>
                                 field.onChange(
@@ -315,6 +321,7 @@ export const PretrialTab = ({
                             />
                             <div className="space-y-1">
                               <Input
+                                id="pre_court.hearingDateTime_time"
                                 value={time}
                                 placeholder="15:30"
                                 onChange={(e) =>
@@ -349,7 +356,6 @@ export const PretrialTab = ({
           <DocumentsList
             documents={documents}
             title="Документы досудебного этапа:"
-            category="pre_court"
             formValues={watch()}
             onDocumentClick={openDocument}
             onDownload={onDownload}

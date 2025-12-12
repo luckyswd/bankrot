@@ -54,7 +54,7 @@ export const GeneralTab = ({
     )?.documents || [];
   
   return (
-    <TabsContent value="primary" className="space-y-6">
+    <TabsContent value="basic_info" className="space-y-6">
       <Card>
         <CardHeader>
           <div>
@@ -90,7 +90,6 @@ export const GeneralTab = ({
             <DocumentsList
               documents={documents}
               title="Документы основной информации:"
-              category="basic_info"
               formValues={formValues}
               onDocumentClick={openDocument}
               onDownload={onDownload}

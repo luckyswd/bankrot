@@ -17,7 +17,7 @@ export const ReportTab = ({ openDocument, onDownload, contractData, onNavigateTo
   const documents = (contractData?.report as { documents?: Array<{ id: number; name: string }> })?.documents || []
 
   return (
-    <TabsContent value="report" className="space-y-6">
+    <TabsContent value="judicial_report" className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Отчет</CardTitle>
@@ -32,7 +32,6 @@ export const ReportTab = ({ openDocument, onDownload, contractData, onNavigateTo
           <DocumentsList
             documents={documents}
             title="Документы отчетов:"
-            category="judicial_report"
             formValues={formValues}
             onDocumentClick={openDocument}
             onDownload={onDownload}
