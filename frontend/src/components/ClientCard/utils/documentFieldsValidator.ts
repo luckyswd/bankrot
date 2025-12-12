@@ -124,6 +124,15 @@ export const calculateDocumentCompleteness = (
   const missingFields: MissingField[] = [];
   const totalFields = documentFields.length;
 
+  if (totalFields === 0) {
+    return {
+      status: "complete",
+      totalFields: 0,
+      filledFields: 0,
+      missingFields: [],
+    };
+  }
+
   documentFields.forEach((fieldId) => {
     const value = getFieldValueByFieldId(fieldId, formValues);
 
@@ -147,7 +156,7 @@ export const calculateDocumentCompleteness = (
   const filledFields = totalFields - missingFields.length;
 
   let status: DocumentStatus = "empty";
-  if (filledFields === totalFields && totalFields > 0) {
+  if (filledFields === totalFields) {
     status = "complete";
   } else if (filledFields > 0) {
     status = "partial";
