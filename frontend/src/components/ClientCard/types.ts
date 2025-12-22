@@ -19,6 +19,7 @@ export type PrimaryInfoFields = {
   birthDate?: string | null
   birthPlace?: string | null
   snils?: string | null
+  inn?: string | null
   gender?: string | null
   registrationRegion?: string | null
   registrationDistrict?: string | null

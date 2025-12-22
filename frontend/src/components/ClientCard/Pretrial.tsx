@@ -339,7 +339,7 @@ export const PretrialTab = ({
                   {hasHearingDateTime && (
                     <div className="space-y-1">
                       <Label htmlFor="pre_court.efrsbCabinet">
-                        Кабинет ЕФРСБ
+                        Кабинет
                       </Label>
                       <Input
                         id="pre_court.efrsbCabinet"

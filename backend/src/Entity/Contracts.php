@@ -85,6 +85,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'СНИЛС должника', type: Types::STRING, example: '123-456-789 00', nullable: true)]
     private ?string $snils = null;
 
+    #[ORM\Column(length: 12, nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
+    #[OA\Property(description: 'ИНН должника', type: Types::STRING, example: '123456789012', nullable: true)]
+    private ?string $inn = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Место рождения должника', type: Types::STRING, example: 'г. Москва', nullable: true)]
@@ -584,6 +589,18 @@ class Contracts extends BaseEntity
     public function setSnils(?string $snils): self
     {
         $this->snils = $snils;
+
+        return $this;
+    }
+
+    public function getInn(): ?string
+    {
+        return $this->inn;
+    }
+
+    public function setInn(?string $inn): self
+    {
+        $this->inn = $inn;
 
         return $this;
     }

@@ -185,6 +185,15 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             {...register("basic_info.snils")}
           />
         </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="basic_info.inn">ИНН</Label>
+          <Input
+            id="basic_info.inn"
+            placeholder="123456789012"
+            {...register("basic_info.inn")}
+          />
+        </div>
       </AccordionContent>
     </AccordionItem>
   );

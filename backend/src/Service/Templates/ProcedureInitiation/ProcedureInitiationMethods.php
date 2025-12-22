@@ -212,7 +212,7 @@ class ProcedureInitiationMethods
             $contract->getBirthDate()?->format('d.m.Y') ?? '',
             $contract->getBirthPlace() ?? '',
             $contract->getSnils() ?? '',
-            $contract->getEmployerInn() ?? '',
+            $contract->getInn() ?? '',
             $contract->getFullRegistrationAddress() ?? '',
             self::textDeclaredInsolvent(contract: $contract),
             $contract->getProcedureInitiationDuration() ?? '',
