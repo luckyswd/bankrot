@@ -42,8 +42,8 @@ class PreCourtMethods
     {
         $isMarried = $contract->getMaritalStatus() === 'married';
         $wasMarried3YearsAgo = $contract->getMaritalStatus() === 'married_3y_ago';
-        $hasChildren = $contract->hasMinorChildren() === true;
         $divorceDate = $contract->getMarriageTerminationDate();
+        $children = $contract->getChildren() ?? [];
 
         $parts = [];
 
@@ -52,16 +52,37 @@ class PreCourtMethods
         } else {
             $divorceInfo = '';
             if ($wasMarried3YearsAgo && $divorceDate !== null) {
-                $formattedDate = $divorceDate->format('d.m.Y');
-                $divorceInfo = " (брак расторгнут {$formattedDate}г.)";
+                $divorceInfo = ' (брак расторгнут ' . $divorceDate->format('d.m.Y') . ' г.)';
             }
             $parts[] = 'Должник не состоит в браке' . $divorceInfo;
         }
 
-        if ($hasChildren) {
-            $parts[] = 'имеет несовершеннолетних детей';
-        } else {
+        $childrenCount = count($children);
+
+        if ($childrenCount === 0) {
             $parts[] = 'не имеет несовершеннолетних детей';
+        } else {
+            $childrenStrings = [];
+
+            foreach ($children as $child) {
+                $fio = trim(
+                    $child['lastName'] . ' ' .
+                    $child['firstName'] . ' ' .
+                    ($child['middleName'] ?? '')
+                );
+
+                $childrenStrings[] = $fio . ' ' . $child['birthDate'];
+            }
+
+            if ($childrenCount === 1) {
+                $parts[] = 'имеет на иждивении несовершеннолетнего ребенка: ' . $childrenStrings[0];
+            } else {
+                $last = array_pop($childrenStrings);
+                $parts[] =
+                    'имеет на иждивении несовершеннолетних детей: ' .
+                    implode(', ', $childrenStrings) .
+                    ' и ' . $last;
+            }
         }
 
         return implode(', ', $parts) . '.';
