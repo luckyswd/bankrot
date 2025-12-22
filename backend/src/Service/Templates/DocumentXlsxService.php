@@ -59,7 +59,7 @@ class DocumentXlsxService
             $worksheet->setCellValue('M4', $contracts->getFullRegistrationAddress() ?? '');
 
             // N4 - Номер дела о введении процедуры
-            $worksheet->setCellValue('N4', $contracts->getProcedureInitiationCaseNumber() ?? '');
+            $worksheet->setCellValue('N4', $contracts->getCaseNumber() ?? '');
 
             // O4 - Дата решения о введении процедуры
             $procedureInitiationDecisionDate = $contracts->getProcedureInitiationDecisionDate();

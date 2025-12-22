@@ -326,7 +326,7 @@ class Contracts extends BaseEntity
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
-    #[OA\Property(description: '№ Дела', type: Types::STRING, example: 'А56-75258/2025', nullable: true)]
+    #[OA\Property(description: 'Номер Дела', type: Types::STRING, example: 'А56-75258/2025', nullable: true)]
     private ?string $caseNumber = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
@@ -410,11 +410,6 @@ class Contracts extends BaseEntity
         nullable: true
     )]
     private ?\DateTimeInterface $procedureInitiationDocumentDate = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
-    #[OA\Property(description: 'Номер дела', type: Types::STRING, example: 'А56-12345/2025', nullable: true)]
-    private ?string $procedureInitiationCaseNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
@@ -1179,18 +1174,6 @@ class Contracts extends BaseEntity
     public function setProcedureInitiationDocumentDate(?\DateTimeInterface $procedureInitiationDocumentDate): self
     {
         $this->procedureInitiationDocumentDate = $procedureInitiationDocumentDate;
-
-        return $this;
-    }
-
-    public function getProcedureInitiationCaseNumber(): ?string
-    {
-        return $this->procedureInitiationCaseNumber;
-    }
-
-    public function setProcedureInitiationCaseNumber(?string $procedureInitiationCaseNumber): self
-    {
-        $this->procedureInitiationCaseNumber = $procedureInitiationCaseNumber;
 
         return $this;
     }

@@ -77,7 +77,6 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationGostekhnadzor: "",
   procedureInitiationFns: "",
   procedureInitiationDocNumber: "",
-  procedureInitiationCaseNumber: "",
   procedureInitiationDuration: "",
   procedureInitiationRosgvardia: "",
   procedureInitiationJudge: "",
@@ -181,8 +180,8 @@ export const convertApiDataToFormValues = (
   const basicInfo = asPartial<PrimaryInfoFields>(apiData.basic_info);
 
   // Преобразуем даты из формата API в строки
-  const formatDate = (date: unknown): string | null => {
-    if (!date) return null;
+  const formatDate = (date: unknown): string => {
+    if (!date) return "";
     if (typeof date === "string") return date;
     if (date instanceof Date) return date.toISOString().split("T")[0];
     return String(date);
@@ -281,6 +280,16 @@ export const convertApiDataToFormValues = (
     judicial_procedure_initiation: {
       ...defaults.judicial_procedure_initiation,
       ...asPartial<IntroductionFields>(apiData.judicial_procedure_initiation),
+      procedureInitiationDecisionDate: formatDate(
+        isRecord(apiData.judicial_procedure_initiation)
+          ? apiData.judicial_procedure_initiation.procedureInitiationDecisionDate
+          : undefined
+      ),
+      procedureInitiationResolutionDate: formatDate(
+        isRecord(apiData.judicial_procedure_initiation)
+          ? apiData.judicial_procedure_initiation.procedureInitiationResolutionDate
+          : undefined
+      ),
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,

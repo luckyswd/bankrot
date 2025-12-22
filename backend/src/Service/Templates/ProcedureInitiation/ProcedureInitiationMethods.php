@@ -207,7 +207,7 @@ class ProcedureInitiationMethods
             'Решением Арбитражного суда %s от %s по делу № %s %s (дата рождения: %s г., место рождения: %s, СНИЛС %s, ИНН %s, адрес регистрации: %s) %s (банкротом) и введена процедура реализации имущества гражданина сроком на %s.',
             $contract->getCourt()?->getShortName() ?? '',
             self::procedureInitiationDateWithResolution(contract: $contract),
-            $contract->getProcedureInitiationCaseNumber() ?? '',
+            $contract->getCaseNumber() ?? '',
             $contract->getFullName() ?? '',
             $contract->getBirthDate()?->format('d.m.Y') ?? '',
             $contract->getBirthPlace() ?? '',
