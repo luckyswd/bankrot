@@ -44,11 +44,29 @@ function ClientCard() {
   const savedSnapshotRef = useRef<string>(
     JSON.stringify(createDefaultFormValues())
   );
+  const isInitializedRef = useRef<boolean>(false);
+  
+  const normalizeForComparison = useCallback((values: FormValues): string => {
+    const normalized = JSON.parse(JSON.stringify(values));
+
+    if (!normalized.judicial_procedure?.creditorsClaims) {
+      normalized.judicial_procedure = { ...normalized.judicial_procedure, creditorsClaims: [] };
+    }
+
+    if (!Array.isArray(normalized.pre_court?.creditors)) {
+      normalized.pre_court = { ...normalized.pre_court, creditors: [] };
+    }
+
+    return JSON.stringify(normalized);
+  }, []);
+  
   const watchedValues =
     useWatch<FormValues>({
       control: form.control,
     }) ?? form.getValues();
-  const isDirty = form.formState.isDirty;
+  
+  const currentSerialized = normalizeForComparison(watchedValues);
+  const isDirty = isInitializedRef.current && currentSerialized !== savedSnapshotRef.current;
   const currentPathRef = useRef(`${location.pathname}${location.search}`);
   const pendingPathRef = useRef<string | null>(null);
   // Функция для ручного сохранения
@@ -56,7 +74,7 @@ function ClientCard() {
     if (!contract || loading) return;
 
     const currentValues = form.getValues();
-    const serialized = JSON.stringify(currentValues);
+    const serialized = normalizeForComparison(currentValues);
 
     if (serialized === savedSnapshotRef.current) {
       notify({
@@ -103,7 +121,7 @@ function ClientCard() {
         method: "PUT",
         body: JSON.stringify(apiData),
       });
-      savedSnapshotRef.current = serialized;
+      savedSnapshotRef.current = normalizeForComparison(currentValues);
       // Сбрасываем состояние формы, чтобы isDirty стал false
       form.reset(currentValues, { keepValues: true });
       notify({ message: "Изменения успешно сохранены", type: "success" });
@@ -116,7 +134,7 @@ function ClientCard() {
         duration: 5000,
       });
     }
-  }, [contract, loading, form]);
+  }, [contract, loading, form, normalizeForComparison]);
 
   // Загрузка контракта из API
   useEffect(() => {
@@ -127,7 +145,8 @@ function ClientCard() {
         setContractData(null);
         const defaults = createDefaultFormValues();
         form.reset(defaults);
-        savedSnapshotRef.current = JSON.stringify(defaults);
+        savedSnapshotRef.current = normalizeForComparison(defaults);
+        isInitializedRef.current = false;
         return;
       }
 
@@ -140,7 +159,8 @@ function ClientCard() {
           // Преобразуем данные из API формата
           const formValues = convertApiDataToFormValues(data);
           form.reset(formValues);
-          savedSnapshotRef.current = JSON.stringify(formValues);
+          savedSnapshotRef.current = normalizeForComparison(formValues);
+          isInitializedRef.current = false;
 
           // Сохраняем базовую информацию о контракте
           setContract({
@@ -162,7 +182,22 @@ function ClientCard() {
     };
 
     loadContract();
-  }, [id, form]);
+  }, [id, form, normalizeForComparison]);
+
+  useEffect(() => {
+    if (!loading && (id === "new" || contract)) {
+      const timeoutId = setTimeout(() => {
+        const currentValues = form.getValues();
+        const serialized = normalizeForComparison(currentValues);
+
+        savedSnapshotRef.current = serialized;
+        form.reset(currentValues, { keepValues: true });
+        isInitializedRef.current = true;
+      }, 200);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loading, id, contract, form, normalizeForComparison]);
 
   useEffect(() => {
     currentPathRef.current = `${location.pathname}${location.search}`;
