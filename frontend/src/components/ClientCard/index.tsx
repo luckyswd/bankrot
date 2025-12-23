@@ -46,8 +46,8 @@ function ClientCard() {
   );
   const isInitializedRef = useRef<boolean>(false);
   
-  const normalizeForComparison = useCallback((values: FormValues): string => {
-    const normalized = JSON.parse(JSON.stringify(values));
+  const normalizeForComparison = useCallback((values: any): string => {
+    const normalized = JSON.parse(JSON.stringify(values)) as any;
 
     if (!normalized.judicial_procedure) {
       normalized.judicial_procedure = {};
@@ -59,7 +59,7 @@ function ClientCard() {
     if (!normalized.pre_court) {
       normalized.pre_court = {};
     }
-    if (!Array.isArray(normalized.pre_court.creditors)) {
+    if (normalized.pre_court && !Array.isArray(normalized.pre_court.creditors)) {
       normalized.pre_court.creditors = [];
     }
 
@@ -203,6 +203,7 @@ function ClientCard() {
 
       return () => clearTimeout(timeoutId);
     }
+    return undefined;
   }, [loading, id, contract, form, normalizeForComparison]);
 
   useEffect(() => {
