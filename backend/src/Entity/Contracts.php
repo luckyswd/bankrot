@@ -421,11 +421,6 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Номер спец счёта', type: Types::STRING, example: '40817810099910004312', nullable: true)]
     private ?string $procedureInitiationSpecialAccountNumber = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
-    #[OA\Property(description: 'Продолжительность процедуры', type: Types::STRING, example: 'шесть месяцев', nullable: true)]
-    private ?string $procedureInitiationDuration = null;
-
     #[ORM\ManyToOne(targetEntity: Rosgvardia::class)]
     #[ORM\JoinColumn(name: 'procedure_initiation_rosgvardia_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
@@ -1427,18 +1422,6 @@ class Contracts extends BaseEntity
     public function setGender(?string $gender): self
     {
         $this->gender = $gender;
-
-        return $this;
-    }
-
-    public function getProcedureInitiationDuration(): ?string
-    {
-        return $this->procedureInitiationDuration;
-    }
-
-    public function setProcedureInitiationDuration(?string $procedureInitiationDuration): self
-    {
-        $this->procedureInitiationDuration = $procedureInitiationDuration;
 
         return $this;
     }

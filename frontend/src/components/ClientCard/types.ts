@@ -75,7 +75,6 @@ export type IntroductionFields = {
   procedureInitiationMchs: string
   procedureInitiationGostekhnadzor: string
   procedureInitiationFns: string
-  procedureInitiationDuration: string
   procedureInitiationRosgvardia: string
   procedureInitiationJudge: string
   procedureInitiationBailiff: string

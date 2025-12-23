@@ -76,7 +76,6 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationMchs: "",
   procedureInitiationGostekhnadzor: "",
   procedureInitiationFns: "",
-  procedureInitiationDuration: "",
   procedureInitiationRosgvardia: "",
   procedureInitiationJudge: "",
   procedureInitiationBailiff: "",

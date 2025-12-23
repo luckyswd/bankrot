@@ -204,7 +204,7 @@ class ProcedureInitiationMethods
     public static function startNotificationText(Contracts $contract): string
     {
         return sprintf(
-            'Решением Арбитражного суда %s от %s по делу № %s %s (дата рождения: %s г., место рождения: %s, СНИЛС %s, ИНН %s, адрес регистрации: %s) %s (банкротом) и введена процедура реализации имущества гражданина сроком на %s.',
+            'Решением Арбитражного суда %s от %s по делу № %s %s (дата рождения: %s г., место рождения: %s, СНИЛС %s, ИНН %s, адрес регистрации: %s) %s (банкротом).',
             $contract->getCourt()?->getShortName() ?? '',
             self::procedureInitiationDateWithResolution(contract: $contract),
             $contract->getCaseNumber() ?? '',
@@ -215,7 +215,6 @@ class ProcedureInitiationMethods
             $contract->getInn() ?? '',
             $contract->getFullRegistrationAddress() ?? '',
             self::textDeclaredInsolvent(contract: $contract),
-            $contract->getProcedureInitiationDuration() ?? '',
         );
     }
 

@@ -242,19 +242,6 @@ export const IntroductionTab = ({
               )}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure_initiation.procedureInitiationDuration">
-                Продолжительность процедуры
-              </Label>
-              <Input
-                id="judicial_procedure_initiation.procedureInitiationDuration"
-                placeholder="шесть месяцев"
-                {...register(
-                  "judicial_procedure_initiation.procedureInitiationDuration"
-                )}
-              />
-            </div>
-
             <div className="space-y-1">
               <Label htmlFor="judicial_procedure_initiation.procedureInitiationSpecialAccountNumber">
                 Номер спец счёта
