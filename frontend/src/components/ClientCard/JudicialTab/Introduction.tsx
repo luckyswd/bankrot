@@ -179,17 +179,6 @@ export const IntroductionTab = ({
               )}
             />
 
-            <div className="space-y-1">
-              <Label htmlFor="judicial_procedure_initiation.procedureInitiationDocNumber">
-                Номер документа
-              </Label>
-              <Input
-                id="judicial_procedure_initiation.procedureInitiationDocNumber"
-                placeholder="А56-98765/2024"
-                {...register("judicial_procedure_initiation.procedureInitiationDocNumber")}
-              />
-            </div>
-
             <Controller
               name="judicial_procedure_initiation.procedureInitiationRosgvardia"
               control={control}
