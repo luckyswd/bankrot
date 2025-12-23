@@ -416,14 +416,22 @@ class ContractorService
 
             // Обработка полей типа date
             if (in_array($key, $dateFields, true) && is_string($value)) {
-                $method->invoke($contract, new \DateTime($value));
+                if ($value === '') {
+                    $method->invoke($contract, null);
+                } else {
+                    $method->invoke($contract, new \DateTime($value));
+                }
 
                 continue;
             }
 
             // Обработка полей типа datetime
             if (in_array($key, $dateTimeFields, true) && is_string($value)) {
-                $method->invoke($contract, new \DateTime($value));
+                if ($value === '') {
+                    $method->invoke($contract, null);
+                } else {
+                    $method->invoke($contract, new \DateTime($value));
+                }
 
                 continue;
             }
