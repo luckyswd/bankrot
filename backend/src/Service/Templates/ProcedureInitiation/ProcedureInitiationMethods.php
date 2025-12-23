@@ -96,6 +96,7 @@ class ProcedureInitiationMethods
         $decisionDate = $contract->getProcedureInitiationDecisionDate();
         $resolutionDate = $contract->getProcedureInitiationResolutionDate();
 
+
         // Если есть обе даты
         if ($decisionDate !== null && $resolutionDate !== null) {
             $decisionFormatted = $decisionDate->format('d.m.Y');
