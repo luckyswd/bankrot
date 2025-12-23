@@ -49,12 +49,18 @@ function ClientCard() {
   const normalizeForComparison = useCallback((values: FormValues): string => {
     const normalized = JSON.parse(JSON.stringify(values));
 
-    if (!normalized.judicial_procedure?.creditorsClaims) {
-      normalized.judicial_procedure = { ...normalized.judicial_procedure, creditorsClaims: [] };
+    if (!normalized.judicial_procedure) {
+      normalized.judicial_procedure = {};
+    }
+    if (!normalized.judicial_procedure.creditorsClaims) {
+      normalized.judicial_procedure.creditorsClaims = [];
     }
 
-    if (!Array.isArray(normalized.pre_court?.creditors)) {
-      normalized.pre_court = { ...normalized.pre_court, creditors: [] };
+    if (!normalized.pre_court) {
+      normalized.pre_court = {};
+    }
+    if (!Array.isArray(normalized.pre_court.creditors)) {
+      normalized.pre_court.creditors = [];
     }
 
     return JSON.stringify(normalized);
