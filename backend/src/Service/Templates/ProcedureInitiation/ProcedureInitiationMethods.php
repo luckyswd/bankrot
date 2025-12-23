@@ -87,7 +87,6 @@ class ProcedureInitiationMethods
 
     /**
      * 2. Заявка на публикацию (газета Коммерсантъ).
-     * 3. Уведомление о введении реализации имущества.
      *
      * @example '12.12.2025 г. (резолютивная часть объявлена 10.12.2025 г.)'
      */
@@ -95,7 +94,6 @@ class ProcedureInitiationMethods
     {
         $decisionDate = $contract->getProcedureInitiationDecisionDate();
         $resolutionDate = $contract->getProcedureInitiationResolutionDate();
-
 
         // Если есть обе даты
         if ($decisionDate !== null && $resolutionDate !== null) {
