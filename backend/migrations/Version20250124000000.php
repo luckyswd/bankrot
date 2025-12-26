@@ -7,9 +7,6 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Удаление уникального индекса с court_id для поддержки связи ManyToOne
- */
 final class Version20250124000000 extends AbstractMigration
 {
     public function getDescription(): string
@@ -119,4 +116,3 @@ final class Version20250124000000 extends AbstractMigration
         $this->addSql('ALTER TABLE contracts ADD CONSTRAINT FK_950A973E3184009 FOREIGN KEY (court_id) REFERENCES courts (id) ON DELETE SET NULL');
     }
 }
-
