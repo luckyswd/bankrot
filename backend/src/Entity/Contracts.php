@@ -291,7 +291,7 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Дата договора', type: Types::STRING, format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $contractDate = null;
 
-    #[ORM\OneToOne(targetEntity: Court::class)]
+    #[ORM\ManyToOne(targetEntity: Court::class)]
     #[ORM\JoinColumn(name: 'court_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: 'Арбитражный суд', type: 'object', nullable: true)]
