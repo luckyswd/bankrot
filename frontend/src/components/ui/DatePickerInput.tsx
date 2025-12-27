@@ -132,31 +132,40 @@ export function DatePickerInput({
   return (
     <div className={cn("space-y-2", className)}>
       {label && <Label htmlFor={id}>{label}</Label>}
-      <div className="relative flex gap-2">
+      <div 
+        className="relative flex gap-2"
+        onMouseDown={(e) => {
+          if (!disabled && (e.target as HTMLElement).tagName !== "BUTTON") {
+            setOpen(true)
+          }
+        }}
+      >
         <InputMask
           mask="99.99.9999"
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => setOpen(true)}
           maskChar={null}
+          disabled={disabled}
         >
-          {(inputProps: any) => (
-            <Input
-              id={id}
-              name={name}
-              placeholder={placeholder}
-              className="bg-background pr-10"
-              onKeyDown={(event) => {
-                if (event.key === "ArrowDown") {
-                  event.preventDefault()
-                  setOpen(true)
-                }
-              }}
-              disabled={disabled}
-              required={required}
-              {...inputProps}
-            />
-          )}
+          {(inputProps: any) => {
+            const { onMouseDown, ...restProps } = inputProps
+            return (
+              <Input
+                id={id}
+                name={name}
+                placeholder={placeholder}
+                className="bg-background pr-10"
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault()
+                    setOpen(true)
+                  }
+                }}
+                required={required}
+                {...restProps}
+              />
+            )
+          }}
         </InputMask>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

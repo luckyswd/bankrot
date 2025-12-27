@@ -1,16 +1,67 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
 interface Props {
   register: any;
+  control: any;
+  useWatch: any;
 }
 
-export const AddressInfo: FC<Props> = ({ register }) => {
+export const AddressInfo: FC<Props> = ({ register, control, useWatch }) => {
+  const registrationRegion = useWatch({ control, name: "basic_info.registrationRegion" })
+  const registrationDistrict = useWatch({ control, name: "basic_info.registrationDistrict" })
+  const registrationCity = useWatch({ control, name: "basic_info.registrationCity" })
+  const registrationSettlement = useWatch({ control, name: "basic_info.registrationSettlement" })
+  const registrationStreet = useWatch({ control, name: "basic_info.registrationStreet" })
+  const registrationHouse = useWatch({ control, name: "basic_info.registrationHouse" })
+  const registrationBuilding = useWatch({ control, name: "basic_info.registrationBuilding" })
+  const registrationApartment = useWatch({ control, name: "basic_info.registrationApartment" })
+
+  const fullAddress = useMemo(() => {
+    const parts: string[] = []
+    
+    if (registrationRegion) {
+      parts.push(registrationRegion)
+    }
+    if (registrationDistrict) {
+      parts.push(registrationDistrict + " район")
+    }
+    if (registrationCity) {
+      parts.push("г. " + registrationCity)
+    }
+    if (registrationSettlement) {
+      parts.push(registrationSettlement)
+    }
+    if (registrationStreet) {
+      parts.push("ул. " + registrationStreet)
+    }
+    if (registrationHouse) {
+      parts.push("д. " + registrationHouse)
+    }
+    if (registrationBuilding) {
+      parts.push("корп. " + registrationBuilding)
+    }
+    if (registrationApartment) {
+      parts.push("кв. " + registrationApartment)
+    }
+    
+    return parts.length > 0 ? parts.join(", ") : ""
+  }, [
+    registrationRegion,
+    registrationDistrict,
+    registrationCity,
+    registrationSettlement,
+    registrationStreet,
+    registrationHouse,
+    registrationBuilding,
+    registrationApartment,
+  ])
   return (
     <AccordionItem value="addressInfo">
       <AccordionTrigger>
@@ -98,6 +149,17 @@ export const AddressInfo: FC<Props> = ({ register }) => {
             id="basic_info.postalCode"
             placeholder="191186"
             {...register("basic_info.postalCode")}
+          />
+        </div>
+        <div className="space-y-1 col-span-3">
+          <Label htmlFor="basic_info.registrationFullAddress">
+            Адрес регистрации
+          </Label>
+          <Input
+            id="basic_info.registrationFullAddress"
+            value={fullAddress}
+            readOnly
+            className="bg-muted"
           />
         </div>
         <div className="space-y-1 col-span-3">

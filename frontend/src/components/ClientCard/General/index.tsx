@@ -70,7 +70,7 @@ export const GeneralTab = ({
                 useWatch={useWatch}
                 control={control}
               />
-              <AddressInfo register={register} />
+              <AddressInfo register={register} control={control} useWatch={useWatch} />
               <PassportInfo register={register} control={control} />
               <FamilyInfo
                 register={register}
