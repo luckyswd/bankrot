@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { CalendarIcon } from "lucide-react"
+import InputMask from "react-input-mask"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -39,19 +40,6 @@ const parseStoredValue = (value?: string) => {
   }
   const fallback = new Date(value)
   return Number.isNaN(fallback.getTime()) ? undefined : fallback
-}
-
-const applyDateMask = (value: string): string => {
-  const digits = value.replace(/\D/g, "")
-  const limited = digits.slice(0, 8)
-  
-  if (limited.length <= 2) {
-    return limited
-  }
-  if (limited.length <= 4) {
-    return `${limited.slice(0, 2)}.${limited.slice(2)}`
-  }
-  return `${limited.slice(0, 2)}.${limited.slice(2, 4)}.${limited.slice(4)}`
 }
 
 const parseInputValue = (raw: string) => {
@@ -120,16 +108,15 @@ export function DatePickerInput({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value
-    const masked = applyDateMask(raw)
-    setInputValue(masked)
+    setInputValue(raw)
 
-    if (!masked.trim()) {
+    if (!raw.trim()) {
       onChange(CLEAR_VALUE)
       setDate(undefined)
       return
     }
 
-    const nextDate = parseInputValue(masked)
+    const nextDate = parseInputValue(raw)
     if (nextDate) {
       setDate(nextDate)
       setMonth(nextDate)
@@ -146,23 +133,31 @@ export function DatePickerInput({
     <div className={cn("space-y-2", className)}>
       {label && <Label htmlFor={id}>{label}</Label>}
       <div className="relative flex gap-2">
-        <Input
-          id={id}
-          name={name}
+        <InputMask
+          mask="99.99.9999"
           value={inputValue}
-          placeholder={placeholder}
-          className="bg-background pr-10"
           onChange={handleInputChange}
           onFocus={() => setOpen(true)}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowDown") {
-              event.preventDefault()
-              setOpen(true)
-            }
-          }}
-          disabled={disabled}
-          required={required}
-        />
+          maskChar={null}
+        >
+          {(inputProps: any) => (
+            <Input
+              id={id}
+              name={name}
+              placeholder={placeholder}
+              className="bg-background pr-10"
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault()
+                  setOpen(true)
+                }
+              }}
+              disabled={disabled}
+              required={required}
+              {...inputProps}
+            />
+          )}
+        </InputMask>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button

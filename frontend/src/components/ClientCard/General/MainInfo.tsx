@@ -4,6 +4,7 @@ import { FC } from "react";
 import { Controller } from "react-hook-form";
 import { DatePickerInput } from "@/components/ui/DatePickerInput";
 import { SelectField, SelectOption } from "@/components/shared/SelectFields";
+import InputMask from "react-input-mask";
 import {
   AccordionContent,
   AccordionItem,
@@ -177,14 +178,29 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="basic_info.snils">СНИЛС</Label>
-          <Input
-            id="basic_info.snils"
-            placeholder="12345678901"
-            {...register("basic_info.snils")}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="basic_info.snils"
+          render={({ field }) => (
+            <div className="space-y-1">
+              <Label htmlFor="basic_info.snils">СНИЛС</Label>
+              <InputMask
+                mask="999-999-999 99"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+              >
+                {(inputProps: any) => (
+                  <Input
+                    id="basic_info.snils"
+                    placeholder="123-456-789 01"
+                    {...inputProps}
+                  />
+                )}
+              </InputMask>
+            </div>
+          )}
+        />
 
         <div className="space-y-1">
           <Label htmlFor="basic_info.inn">ИНН</Label>

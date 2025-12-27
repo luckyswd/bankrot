@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { FC } from "react";
 import { Controller } from "react-hook-form";
 import { DatePickerInput } from "@/components/ui/DatePickerInput";
+import InputMask from "react-input-mask";
 import {
   AccordionContent,
   AccordionItem,
@@ -37,17 +38,31 @@ export const PassportInfo: FC<Props> = ({ register, control }) => {
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="basic_info.passportDepartmentCode">
-            Код подразделения
-          </Label>
-          <Input
-            id="basic_info.passportDepartmentCode"
-            placeholder="780-001"
-            maxLength={20}
-            {...register("basic_info.passportDepartmentCode")}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="basic_info.passportDepartmentCode"
+          render={({ field }) => (
+            <div className="space-y-1">
+              <Label htmlFor="basic_info.passportDepartmentCode">
+                Код подразделения
+              </Label>
+              <InputMask
+                mask="999-999"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+              >
+                {(inputProps: any) => (
+                  <Input
+                    id="basic_info.passportDepartmentCode"
+                    placeholder="780-001"
+                    {...inputProps}
+                  />
+                )}
+              </InputMask>
+            </div>
+          )}
+        />
 
         <div className="space-y-1 lg:col-span-3">
           <Label htmlFor="basic_info.passportIssuedBy">
