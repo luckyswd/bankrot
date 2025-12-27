@@ -57,9 +57,9 @@ export const FamilyInfo: FC<Props> = ({
 
 
   const marriageOptions: SelectOption[] = [
-    { value: "married", label: "Да" },
-    { value: "single", label: "Нет" },
-    { value: "married_3y_ago", label: "Нет, но состоял в течение 3 лет" },
+    { value: "married", label: "состоит в браке" },
+    { value: "single", label: "не состоит в браке" },
+    { value: "married_3y_ago", label: "состоял в течение 3 лет" },
   ]
   
   
