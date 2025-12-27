@@ -10,12 +10,6 @@ import { cn } from "@/lib/utils"
 
 const CLEAR_VALUE = ""
 
-const ruFormatter = new Intl.DateTimeFormat("ru-RU", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-})
-
 interface DatePickerInputProps {
   label?: string
   value?: string
@@ -47,9 +41,27 @@ const parseStoredValue = (value?: string) => {
   return Number.isNaN(fallback.getTime()) ? undefined : fallback
 }
 
+const applyDateMask = (value: string): string => {
+  const digits = value.replace(/\D/g, "")
+  const limited = digits.slice(0, 8)
+  
+  if (limited.length <= 2) {
+    return limited
+  }
+  if (limited.length <= 4) {
+    return `${limited.slice(0, 2)}.${limited.slice(2)}`
+  }
+  return `${limited.slice(0, 2)}.${limited.slice(2, 4)}.${limited.slice(4)}`
+}
+
 const parseInputValue = (raw: string) => {
   const trimmed = raw.trim()
   if (!trimmed) {
+    return undefined
+  }
+
+  const digitsOnly = trimmed.replace(/\D/g, "")
+  if (digitsOnly.length !== 8) {
     return undefined
   }
 
@@ -60,19 +72,26 @@ const parseInputValue = (raw: string) => {
     return Number.isNaN(date.getTime()) ? undefined : date
   }
 
-  return parseStoredValue(trimmed)
+  const d = digitsOnly.slice(0, 2)
+  const m = digitsOnly.slice(2, 4)
+  const y = digitsOnly.slice(4, 8)
+  const date = new Date(Number(y), Number(m) - 1, Number(d))
+  return Number.isNaN(date.getTime()) ? undefined : date
 }
 
 const formatDisplayValue = (date?: Date) => {
   if (!date) return ""
-  return ruFormatter.format(date)
+  const day = String(date.getDate()).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const year = date.getFullYear()
+  return `${day}.${month}.${year}`
 }
 
 export function DatePickerInput({
   label,
   value,
   onChange,
-  placeholder = "Выберите дату",
+  placeholder = "дд.мм.гггг",
   name,
   id,
   disabled,
@@ -101,19 +120,25 @@ export function DatePickerInput({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value
-    setInputValue(raw)
+    const masked = applyDateMask(raw)
+    setInputValue(masked)
 
-    if (!raw.trim()) {
+    if (!masked.trim()) {
       onChange(CLEAR_VALUE)
       setDate(undefined)
       return
     }
 
-    const nextDate = parseInputValue(raw)
+    const nextDate = parseInputValue(masked)
     if (nextDate) {
       setDate(nextDate)
       setMonth(nextDate)
       onChange(toStorageFormat(nextDate))
+    } else {
+      if (date) {
+        setDate(undefined)
+        onChange(CLEAR_VALUE)
+      }
     }
   }
 
