@@ -10,6 +10,7 @@ import InputMask from "react-input-mask"
 type FinancialManager = {
   id?: number
   fio?: string
+  fioGenitive?: string
   inn?: string
   snils?: string
   arbitrationManagerRegistryNumber?: string
@@ -31,6 +32,7 @@ type FinancialManagerFormModalProps = {
 
 const emptyForm = {
   fio: "",
+  fioGenitive: "",
   inn: "",
   snils: "",
   arbitrationManagerRegistryNumber: "",
@@ -51,6 +53,7 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
     if (isOpen) {
       setFormData({
         fio: financialManager?.fio ?? "",
+        fioGenitive: financialManager?.fioGenitive ?? "",
         inn: financialManager?.inn ?? "",
         snils: financialManager?.snils ?? "",
         arbitrationManagerRegistryNumber: financialManager?.arbitrationManagerRegistryNumber ?? "",
@@ -147,6 +150,16 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
                 placeholder="Введите ФИО"
                 disabled={submitting}
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fioGenitive">ФИО (родительный падеж)</Label>
+              <Input
+                id="fioGenitive"
+                value={formData.fioGenitive}
+                onChange={(e) => setFormData((prev) => ({ ...prev, fioGenitive: e.target.value }))}
+                placeholder="Федорца Василия Владимировича"
+                disabled={submitting}
               />
             </div>
             <div className="space-y-2">

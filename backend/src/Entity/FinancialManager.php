@@ -23,6 +23,10 @@ class FinancialManager extends BaseEntity
     #[Groups(['basic_info'])]
     private ?string $fio = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['basic_info'])]
+    private ?string $fioGenitive = null;
+
     #[ORM\Column(type: Types::STRING, length: 12, nullable: true)]
     private ?string $inn = null;
 
@@ -213,5 +217,17 @@ class FinancialManager extends BaseEntity
         $middleNameInitial = mb_substr($parts[2], 0, 1, 'UTF-8') . '.';
 
         return $firstNameInitial . $middleNameInitial . ' ' . $lastName;
+    }
+
+    public function getFioGenitive(): ?string
+    {
+        return $this->fioGenitive;
+    }
+
+    public function setFioGenitive(?string $fioGenitive): self
+    {
+        $this->fioGenitive = $fioGenitive;
+
+        return $this;
     }
 }

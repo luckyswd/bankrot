@@ -145,6 +145,10 @@ class FinancialManagerController extends AbstractController
             $financialManager->setFio(!empty(trim($data['fio'])) ? trim($data['fio']) : null);
         }
 
+        if (isset($data['fioGenitive'])) {
+            $financialManager->setFioGenitive(!empty(trim($data['fioGenitive'])) ? trim($data['fioGenitive']) : null);
+        }
+
         if (isset($data['inn'])) {
             $financialManager->setInn(!empty(trim($data['inn'])) ? trim($data['inn']) : null);
         }
@@ -199,6 +203,7 @@ class FinancialManagerController extends AbstractController
         return [
             'id' => $financialManager->getId(),
             'fio' => $financialManager->getFio(),
+            'fioGenitive' => $financialManager->getFioGenitive(),
             'inn' => $financialManager->getInn(),
             'snils' => $financialManager->getSnils(),
             'arbitrationManagerRegistryNumber' => $financialManager->getArbitrationManagerRegistryNumber(),
