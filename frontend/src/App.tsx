@@ -8,7 +8,6 @@ import Layout from "./components/Layout"
 import Login from "./components/Login"
 import Dashboard from "./components/Dashboard"
 import Loading from "./components/shared/Loading"
-import DocumentView from "./components/DocumentView"
 import DocumentsPage from "./components/DocumentsPage"
 import CreditorsDatabase from "./components/databases/CreditorsDatabase"
 import CourtsDatabase from "./components/databases/CourtsDatabase"
@@ -42,7 +41,6 @@ function AppRoutes() {
                 <Route path="/contracts" element={<Dashboard />} />
                 <Route path="/documents" element={<DocumentsPage />} />
                 <Route path="/contract/:id" element={<ClientCard />} />
-                <Route path="/document/:contractId/:docType" element={<DocumentView />} />
                 <Route path="/databases/creditors" element={<CreditorsDatabase />} />
                 <Route path="/databases/courts" element={<CourtsDatabase />} />
                 <Route path="/databases/bailiffs" element={<BailiffsDatabase />} />

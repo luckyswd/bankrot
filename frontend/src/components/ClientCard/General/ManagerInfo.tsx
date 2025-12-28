@@ -43,7 +43,7 @@ export const ManagerInfo: FC<Props> = ({ control, referenceData }) => {
           render={({ field }) => (
             <div className="space-y-2">
               <Label htmlFor="basic_info.manager">
-                Управляющий
+                Финансовый управляющий
               </Label>
               <Select
                 value={field.value ? toIdString(field.value) : "none"}

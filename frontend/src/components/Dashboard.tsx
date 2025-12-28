@@ -259,7 +259,7 @@ function Dashboard() {
                       <TableHead className="sticky top-0 bg-card">Номер договора</TableHead>
                       <TableHead className="sticky top-0 bg-card">ФИО клиента</TableHead>
                       <TableHead className="sticky top-0 bg-card">Дата договора</TableHead>
-                      <TableHead className="sticky top-0 bg-card">Управляющий</TableHead>
+                      <TableHead className="sticky top-0 bg-card">Финансовый управляющий</TableHead>
                       <TableHead className="sticky top-0 bg-card">Создал</TableHead>
                       <TableHead className="sticky top-0 bg-card">Статус</TableHead>
                       <TableHead className="sticky top-0 w-28 bg-card">Действия</TableHead>
