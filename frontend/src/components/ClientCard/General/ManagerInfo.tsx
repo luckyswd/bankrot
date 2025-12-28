@@ -56,7 +56,7 @@ export const ManagerInfo: FC<Props> = ({ control, referenceData }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Не указано</SelectItem>
-                  {referenceData?.users?.map((item) => (
+                  {referenceData?.financialManagers?.map((item) => (
                     <SelectItem key={item.id} value={String(item.id)}>
                       {item.name}
                     </SelectItem>

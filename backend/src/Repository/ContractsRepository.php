@@ -144,9 +144,9 @@ class ContractsRepository extends ServiceEntityRepository
     ): array {
         $qb = $this->createQueryBuilder(alias: 'c')
             ->leftJoin('c.author', 'author')
-            ->leftJoin('c.manager', 'manager')
+            ->leftJoin('c.financialManager', 'financialManager')
             ->addSelect('author')
-            ->addSelect('manager');
+            ->addSelect('financialManager');
 
         $this->applyFilterConditions(qb: $qb, filter: $filter, user: $user);
         $this->applySearch(qb: $qb, search: $search);

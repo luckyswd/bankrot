@@ -262,11 +262,14 @@ export const convertApiDataToFormValues = (
       contractNumber: basicInfo.contractNumber ?? null,
       contractDate: formatDate(basicInfo.contractDate),
       work: asBool(basicInfo.work),
-      manager: basicInfo.manager
-        ? typeof basicInfo.manager === "object" && true && "id" in basicInfo.manager
-          ? String((basicInfo.manager as { id: number }).id)
-          : String(basicInfo.manager)
-        : null,
+      manager: (() => {
+        // API возвращает financialManager, но форма использует manager
+        const managerValue = (basicInfo as any).financialManager || basicInfo.manager;
+        if (!managerValue) return null;
+        return typeof managerValue === "object" && managerValue !== null && "id" in managerValue
+          ? String((managerValue as { id: number }).id)
+          : String(managerValue);
+      })(),
     },
     pre_court: {
       ...defaults.pre_court,

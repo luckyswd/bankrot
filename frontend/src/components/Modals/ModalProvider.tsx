@@ -5,6 +5,7 @@ import { CreateContractModal } from "./CreateContractModal"
 import { CreditorFormModal } from "./CreditorFormModal"
 import { BailiffFormModal } from "./BailiffFormModal"
 import { CourtFormModal } from "./CourtFormModal"
+import { FinancialManagerFormModal } from "./FinancialManagerFormModal"
 import { FnsBranchModal } from "./FnsBranchModal"
 import { MchsBranchModal } from "./MchsBranchModal"
 import { RosgvardiaBranchModal } from "./RosgvardiaBranchModal"
@@ -17,6 +18,7 @@ export type ModalKey =
   | "creditorForm"
   | "bailiffForm"
   | "courtForm"
+  | "financialManagerForm"
   | "fnsForm"
   | "mchsForm"
   | "rosgvardiaForm"
@@ -53,6 +55,7 @@ const modalComponents: ModalComponentMap = {
   creditorForm: CreditorFormModal,
   bailiffForm: BailiffFormModal,
   courtForm: CourtFormModal,
+  financialManagerForm: FinancialManagerFormModal,
   fnsForm: FnsBranchModal,
   mchsForm: MchsBranchModal,
   rosgvardiaForm: RosgvardiaBranchModal,

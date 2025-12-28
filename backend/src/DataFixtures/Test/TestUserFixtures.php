@@ -54,7 +54,6 @@ class TestUserFixtures extends Fixture
 
         $contract1 = new Contracts();
         $contract1->setAuthor($user1);
-        $contract1->setManager($manager1);
         $contract1->setStatus(ContractStatus::IN_PROGRESS);
         $contract1->setContractNumber('CONTRACT-001');
         $contract1->setContractDate(new \DateTime('2024-01-01'));
@@ -66,7 +65,6 @@ class TestUserFixtures extends Fixture
 
         $contract2 = new Contracts();
         $contract2->setAuthor($user2);
-        $contract2->setManager($manager1);
         $contract2->setStatus(ContractStatus::COMPLETED);
         $contract2->setContractNumber('CONTRACT-002');
         $contract2->setContractDate(new \DateTime('2024-01-02'));
@@ -79,7 +77,6 @@ class TestUserFixtures extends Fixture
         for ($i = 3; $i <= 25; ++$i) {
             $contract = new Contracts();
             $contract->setAuthor($user1);
-            $contract->setManager($manager1);
             $contract->setStatus($i % 2 === 0 ? ContractStatus::COMPLETED : ContractStatus::IN_PROGRESS);
             $contract->setContractNumber('CONTRACT-' . str_pad((string)$i, 3, '0', STR_PAD_LEFT));
             $contract->setContractDate(new \DateTime('2024-01-' . str_pad((string)$i, 2, '0', STR_PAD_LEFT)));

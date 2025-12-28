@@ -12,6 +12,7 @@ import DocumentsPage from "./components/DocumentsPage"
 import CreditorsDatabase from "./components/databases/CreditorsDatabase"
 import CourtsDatabase from "./components/databases/CourtsDatabase"
 import BailiffsDatabase from "./components/databases/BailiffsDatabase"
+import FinancialManagersDatabase from "./components/databases/FinancialManagersDatabase"
 import ClientCard from "./components/ClientCard"
 import { RosgvardiaDatabase } from "./components/databases/RosgvardiaDatabase"
 import { MchsDatabase } from "./components/databases/MchsDatabase"
@@ -44,6 +45,7 @@ function AppRoutes() {
                 <Route path="/databases/creditors" element={<CreditorsDatabase />} />
                 <Route path="/databases/courts" element={<CourtsDatabase />} />
                 <Route path="/databases/bailiffs" element={<BailiffsDatabase />} />
+                <Route path="/databases/financial-managers" element={<FinancialManagersDatabase />} />
                 <Route path="/databases/fns" element={<FnsDatabase />} />
                 <Route path="/databases/mchs" element={<MchsDatabase />} />
                 <Route path="/databases/rosgvardia" element={<RosgvardiaDatabase />} />

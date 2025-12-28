@@ -105,16 +105,11 @@ class UsersAndContractsFixtures extends Fixture implements FixtureGroupInterface
      */
     private function createContracts(ObjectManager $manager, array $users): void
     {
-        $usersCount = count($users);
-        $contractManagers = array_slice($users, 0, min(5, $usersCount));
-
         for ($i = 1; $i <= 200; ++$i) {
             $contract = new Contracts();
             $author = $users[array_rand($users)];
-            $contractManager = $contractManagers[array_rand($contractManagers)];
 
             $contract->setAuthor($author);
-            $contract->setManager($contractManager);
             $contract->setStatus($i % 3 === 0 ? ContractStatus::COMPLETED : ContractStatus::IN_PROGRESS);
             $contract->setContractNumber('ДГ-' . date('Y') . '-' . str_pad((string)$i, 4, '0', STR_PAD_LEFT));
             $contract->setContractDate($this->generateRandomDate());

@@ -42,6 +42,7 @@ export default function Layout({ children }: LayoutProps) {
     { icon: Users, label: 'Кредиторы', path: '/databases/creditors' },
     { icon: Scale, label: 'Арбитражные суды', path: '/databases/courts' },
     { icon: Shield, label: 'Судебные приставы', path: '/databases/bailiffs' },
+    { icon: Users, label: 'Финансовые упр.', path: '/databases/financial-managers' },
     { icon: Building2, label: 'ФНС', path: '/databases/fns' },
     { icon: Flame, label: 'ГИМС МЧС', path: '/databases/mchs' },
     { icon: Shield, label: 'Росгвардия', path: '/databases/rosgvardia' },
@@ -225,6 +226,7 @@ export default function Layout({ children }: LayoutProps) {
                  location.pathname.includes('/databases/creditors') ? 'Кредиторы' :
                  location.pathname.includes('/databases/courts') ? 'Арбитражные суды' :
                  location.pathname.includes('/databases/bailiffs') ? 'Судебные приставы' :
+                 location.pathname.includes('/databases/financial-managers') ? 'Финансовые управляющие' :
                  location.pathname.includes('/databases/fns') ? 'ФНС' :
                  location.pathname.includes('/databases/mchs') ? 'ГИМС МЧС' :
                  location.pathname.includes('/databases/rosgvardia') ? 'Росгвардия' :

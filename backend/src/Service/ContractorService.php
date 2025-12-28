@@ -11,11 +11,11 @@ use App\Repository\ContractsCreditorsClaimRepository;
 use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
 use App\Repository\DocumentTemplateRepository;
+use App\Repository\FinancialManagerRepository;
 use App\Repository\FnsRepository;
 use App\Repository\GostekhnadzorRepository;
 use App\Repository\MchsRepository;
 use App\Repository\RosgvardiaRepository;
-use App\Repository\UserRepository;
 use App\Service\Templates\DocumentTemplateProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -34,7 +34,7 @@ class ContractorService
         private readonly BailiffRepository $bailiffRepository,
         private readonly RosgvardiaRepository $rosgvardiaRepository,
         private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
-        private readonly UserRepository $userRepository,
+        private readonly FinancialManagerRepository $financialManagerRepository,
     ) {
     }
 
@@ -390,12 +390,12 @@ class ContractorService
 
             if ($key === 'manager') {
                 if (empty($value)) {
-                    $contract->setManager(null);
+                    $contract->setFinancialManager(null);
                 } else {
-                    $manager = $this->userRepository->find((int)$value);
+                    $manager = $this->financialManagerRepository->find((int)$value);
 
                     if ($manager !== null) {
-                        $contract->setManager($manager);
+                        $contract->setFinancialManager($manager);
                     }
                 }
 

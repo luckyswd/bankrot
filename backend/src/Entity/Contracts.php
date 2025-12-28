@@ -275,11 +275,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Статус договора', type: Types::STRING, enum: ContractStatus::class, example: 'in_progress')]
     private ContractStatus $status = ContractStatus::IN_PROGRESS;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: FinancialManager::class)]
     #[ORM\JoinColumn(name: 'manager_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
-    #[OA\Property(description: 'Управляющий', type: 'object', nullable: true)]
-    private ?User $manager = null;
+    #[OA\Property(description: 'Финансовый управляющий', type: 'object', nullable: true)]
+    private ?FinancialManager $financialManager = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
@@ -1060,14 +1060,14 @@ class Contracts extends BaseEntity
         return $this;
     }
 
-    public function getManager(): ?User
+    public function getFinancialManager(): ?FinancialManager
     {
-        return $this->manager;
+        return $this->financialManager;
     }
 
-    public function setManager(?User $manager): self
+    public function setFinancialManager(?FinancialManager $financialManager): self
     {
-        $this->manager = $manager;
+        $this->financialManager = $financialManager;
 
         return $this;
     }
