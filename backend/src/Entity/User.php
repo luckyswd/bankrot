@@ -129,8 +129,6 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
         return $this;
     }
 
-
-
     public function eraseCredentials(): void
     {
     }
