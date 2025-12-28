@@ -1,6 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FC } from "react";
+import { Controller } from "react-hook-form";
+import InputMask from "react-input-mask";
 import {
   AccordionContent,
   AccordionItem,
@@ -8,23 +10,40 @@ import {
 } from "@/components/ui/accordion";
 interface Props {
   register: any;
+  control: any;
 }
-export const ContactInfo: FC<Props> = ({ register }) => {
+export const ContactInfo: FC<Props> = ({ register, control }) => {
   return (
     <AccordionItem value="contactInfo">
       <AccordionTrigger>
         <h3 className="text-xl font-semibold">Контакты</h3>
       </AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
-        <div className="space-y-1">
-          <Label htmlFor="basic_info.phone">Телефон</Label>
-          <Input
-            id="basic_info.phone"
-            type="tel"
-            placeholder="+7 (921) 345-67-89"
-            {...register("basic_info.phone")}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="basic_info.phone"
+          render={({ field }) => (
+            <div className="space-y-1">
+              <Label htmlFor="basic_info.phone">Телефон</Label>
+              <InputMask
+                mask="+7(999)-999-99-99"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                maskChar={null}
+              >
+                {(inputProps: any) => (
+                  <Input
+                    id="basic_info.phone"
+                    type="tel"
+                    placeholder="+7(999)-999-99-99"
+                    {...inputProps}
+                  />
+                )}
+              </InputMask>
+            </div>
+          )}
+        />
 
         <div className="space-y-1">
           <Label htmlFor="basic_info.email">Электронная почта</Label>

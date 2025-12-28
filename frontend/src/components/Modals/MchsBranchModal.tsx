@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import InputMask from "react-input-mask"
 
 type MchsBranch = {
   id: number
@@ -130,13 +131,22 @@ export const MchsBranchModal = ({ isOpen, onClose, branch, onSuccess, onError }:
           </div>
           <div className="space-y-2">
             <Label htmlFor="mchs-phone">Телефон</Label>
-            <Input
-              id="mchs-phone"
+            <InputMask
+              mask="+7(999)-999-99-99"
               value={formData.phone}
               onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-              placeholder="Введите телефон"
+              maskChar={null}
               disabled={submitting}
-            />
+            >
+              {(inputProps: any) => (
+                <Input
+                  id="mchs-phone"
+                  placeholder="+7(999)-999-99-99"
+                  disabled={submitting}
+                  {...inputProps}
+                />
+              )}
+            </InputMask>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

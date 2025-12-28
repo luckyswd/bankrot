@@ -79,7 +79,7 @@ export const GeneralTab = ({
                 watch={watch}
               />
               <WorkInfo register={register} control={control} />
-              <ContactInfo register={register} />
+              <ContactInfo register={register} control={control} />
               <DeptsInfo register={register} control={control} />
               <ManagerInfo
                   control={control}
