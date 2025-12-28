@@ -85,7 +85,9 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationIPEndings: [],
 };
 
-export const defaultProcedure: ProcedureFields = {};
+export const defaultProcedure: ProcedureFields = {
+  correspondenceAddress: null,
+};
 
 export const createDefaultFormValues = (): FormValues => ({
   basic_info: { ...defaultPrimaryInfo },
@@ -295,6 +297,9 @@ export const convertApiDataToFormValues = (
     judicial_procedure: {
       ...defaults.judicial_procedure,
       ...asPartial<ProcedureFields>(apiData.judicial_procedure),
+      correspondenceAddress: isRecord(apiData.judicial_procedure)
+        ? ((apiData.judicial_procedure as any).correspondenceAddress ?? null)
+        : null,
     },
   };
 };

@@ -112,6 +112,7 @@ export type CreditorsClaimItem = {
 }
 
 export type ProcedureFields = {
+  correspondenceAddress?: string | null
   creditorsClaims?: CreditorsClaimItem[]
 }
 

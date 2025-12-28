@@ -324,6 +324,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Требования кредиторов', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
     private Collection $creditorsClaims;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Адрес для направления корреспонденции', type: Types::STRING, example: '195112, г. Санкт-Петербург, а/я 16', nullable: true)]
+    private ?string $correspondenceAddress = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: 'Номер Дела', type: Types::STRING, example: 'А56-75258/2025', nullable: true)]
@@ -1265,6 +1270,18 @@ class Contracts extends BaseEntity
                 $creditorsClaim->setContract(new Contracts());
             }
         }
+
+        return $this;
+    }
+
+    public function getCorrespondenceAddress(): ?string
+    {
+        return $this->correspondenceAddress;
+    }
+
+    public function setCorrespondenceAddress(?string $correspondenceAddress): self
+    {
+        $this->correspondenceAddress = $correspondenceAddress;
 
         return $this;
     }
