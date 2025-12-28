@@ -174,4 +174,44 @@ class FinancialManager extends BaseEntity
 
         return $this;
     }
+
+    /**
+     * Получить сокращенное ФИО в формате "И.О. Фамилия".
+     *
+     * Пример: "Федорец Василий Владимирович" -> "В.В. Федорец"
+     *
+     * @return string|null Сокращенное ФИО или null, если ФИО не указано
+     */
+    public function getShortFio(): ?string
+    {
+        if (empty($this->fio)) {
+            return null;
+        }
+
+        $parts = array_filter(array_map('trim', explode(' ', $this->fio)));
+
+        if (empty($parts)) {
+            return null;
+        }
+
+        // Если только одна часть - возвращаем как есть
+        if (count($parts) === 1) {
+            return $parts[0];
+        }
+
+        // Если две части - считаем что это "Фамилия Имя", возвращаем "И. Фамилия"
+        if (count($parts) === 2) {
+            $lastName = $parts[0];
+            $firstName = mb_substr($parts[1], 0, 1, 'UTF-8') . '.';
+
+            return $firstName . ' ' . $lastName;
+        }
+
+        // Если три и более частей - формат "Фамилия Имя Отчество", возвращаем "И.О. Фамилия"
+        $lastName = $parts[0];
+        $firstNameInitial = mb_substr($parts[1], 0, 1, 'UTF-8') . '.';
+        $middleNameInitial = mb_substr($parts[2], 0, 1, 'UTF-8') . '.';
+
+        return $firstNameInitial . $middleNameInitial . ' ' . $lastName;
+    }
 }

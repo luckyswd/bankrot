@@ -276,7 +276,7 @@ class Contracts extends BaseEntity
     private ContractStatus $status = ContractStatus::IN_PROGRESS;
 
     #[ORM\ManyToOne(targetEntity: FinancialManager::class)]
-    #[ORM\JoinColumn(name: 'manager_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'financial_manager_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Финансовый управляющий', type: 'object', nullable: true)]
     private ?FinancialManager $financialManager = null;
