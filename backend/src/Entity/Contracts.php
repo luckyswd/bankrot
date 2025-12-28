@@ -1533,4 +1533,95 @@ class Contracts extends BaseEntity
 
         return $this;
     }
+
+    /**
+     * Получить строку с информацией о финансовом управляющем.
+     *
+     * Формат: "ФИО (ИНН, СНИЛС, регистрационный номер, e-mail, тел.) – член ассоциации арбитражных управляющих "Название" (ОГРН, ИНН, адрес)"
+     */
+    public function getFinancialManagerInfo(): string
+    {
+        $manager = $this->getFinancialManager();
+
+        if (!$manager) {
+            return '';
+        }
+
+        $parts = [];
+
+        // ФИО
+        if (!empty($manager->getFio())) {
+            $parts[] = $manager->getFio();
+        }
+
+        // Данные финансового управляющего в скобках
+        $managerDetails = [];
+
+        if (!empty($manager->getInn())) {
+            $managerDetails[] = 'ИНН ' . $manager->getInn();
+        }
+
+        if (!empty($manager->getSnils())) {
+            $managerDetails[] = 'СНИЛС ' . $manager->getSnils();
+        }
+
+        if (!empty($manager->getArbitrationManagerRegistryNumber())) {
+            $managerDetails[] = 'регистрационный номер в сводном государственном реестре арбитражных управляющих – ' . $manager->getArbitrationManagerRegistryNumber();
+        }
+
+        if (!empty($manager->getEmail())) {
+            $managerDetails[] = 'e-mail: ' . $manager->getEmail();
+        }
+
+        if (!empty($manager->getPhone())) {
+            $managerDetails[] = 'тел.: ' . $manager->getPhone();
+        }
+
+        $result = '';
+
+        if (!empty($parts)) {
+            $result .= $parts[0];
+        }
+
+        if (!empty($managerDetails)) {
+            $result .= ' (' . implode(', ', $managerDetails) . ')';
+        }
+
+        // Данные ААУ
+        $aauParts = [];
+
+        if (!empty($manager->getAauName())) {
+            $aauParts[] = 'член ассоциации арбитражных управляющих "' . $manager->getAauName() . '"';
+        }
+
+        $aauDetails = [];
+
+        if (!empty($manager->getAauOgrn())) {
+            $aauDetails[] = 'ОГРН ' . $manager->getAauOgrn();
+        }
+
+        if (!empty($manager->getAauInn())) {
+            $aauDetails[] = 'ИНН ' . $manager->getAauInn();
+        }
+
+        if (!empty($manager->getAauAddress())) {
+            $aauDetails[] = 'адрес: ' . $manager->getAauAddress();
+        }
+
+        if (!empty($aauParts) || !empty($aauDetails)) {
+            if (!empty($result)) {
+                $result .= ' – ';
+            }
+
+            if (!empty($aauParts)) {
+                $result .= $aauParts[0];
+            }
+
+            if (!empty($aauDetails)) {
+                $result .= ' (' . implode(', ', $aauDetails) . ')';
+            }
+        }
+
+        return $result;
+    }
 }
