@@ -5,6 +5,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { notify } from "@/components/ui/toast";
 
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,6 +26,7 @@ function ClientCard() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { referenceData } = useApp();
+  const { user } = useAuth();
   const [contract, setContract] = useState<{
     id: number;
     contractNumber: string;
@@ -380,6 +382,10 @@ function ClientCard() {
     contract?.contractNumber ||
     "Новый договор";
 
+  // Определяем доступные табы в зависимости от роли
+  const canSeeAllTabs = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_FINANCIAL_MANAGER');
+  const canSeeBasicAndPretrial = user?.roles?.includes('ROLE_MANAGER');
+  
   // Получаем текущий таб из URL или используем значение по умолчанию
   const currentTab = searchParams.get("tab") || "basic_info";
   const validTabs = ["basic_info", "pre_court", "judicial", "judicial_procedure_initiation", "judicial_procedure", "judicial_report"];
@@ -393,6 +399,14 @@ function ClientCard() {
     activeTab = "judicial";
   } else if (!validTabs.includes(currentTab)) {
     activeTab = "basic_info";
+  }
+  
+  // Если пользователь может видеть только основную информацию и досудебку, проверяем доступ
+  if (canSeeBasicAndPretrial && activeTab === "judicial") {
+    activeTab = "basic_info";
+    const newParams = new URLSearchParams();
+    newParams.set("tab", "basic_info");
+    setSearchParams(newParams, { replace: true });
   }
 
   // Обработчик изменения таба
@@ -473,25 +487,29 @@ function ClientCard() {
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <div className="flex flex-col">
-              <TabsList className="grid w-full grid-cols-3 h-12 rounded-b-none p-0 gap-0.5">
+              <TabsList className={`grid w-full ${canSeeAllTabs ? 'grid-cols-3' : canSeeBasicAndPretrial ? 'grid-cols-2' : 'grid-cols-1'} h-12 rounded-b-none p-0 gap-0.5`}>
                 <TabsTrigger 
                   value="basic_info"
                   className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
                 >
                   Основная информация
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="pre_court"
-                  className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
-                >
-                  Досудебка
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="judicial"
-                  className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
-                >
-                  Судебка
-                </TabsTrigger>
+                {(canSeeAllTabs || canSeeBasicAndPretrial) && (
+                  <TabsTrigger 
+                    value="pre_court"
+                    className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+                  >
+                    Досудебка
+                  </TabsTrigger>
+                )}
+                {canSeeAllTabs && (
+                  <TabsTrigger 
+                    value="judicial"
+                    className="text-sm font-semibold rounded-lg mx-0.5 data-[state=active]:bg-blue-100/80 dark:data-[state=active]:bg-blue-900/40 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:font-bold data-[state=inactive]:bg-muted/80 dark:data-[state=inactive]:bg-muted/70 data-[state=inactive]:text-muted-foreground/90 dark:data-[state=inactive]:text-muted-foreground/80"
+                  >
+                    Судебка
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 
@@ -503,20 +521,24 @@ function ClientCard() {
                 onNavigateToField={navigateToField}
                 referenceData={referenceData}
               />
-              <PretrialTab
-                openDocument={openDocument}
-                onDownload={onDownload}
-                referenceData={referenceData}
-                contractData={contractData}
-                onNavigateToField={navigateToField}
-              />
-              <JudicialTab
-                openDocument={openDocument}
-                onDownload={onDownload}
-                referenceData={referenceData}
-                contractData={contractData}
-                onNavigateToField={navigateToField}
-              />
+              {(canSeeAllTabs || canSeeBasicAndPretrial) && (
+                <PretrialTab
+                  openDocument={openDocument}
+                  onDownload={onDownload}
+                  referenceData={referenceData}
+                  contractData={contractData}
+                  onNavigateToField={navigateToField}
+                />
+              )}
+              {canSeeAllTabs && (
+                <JudicialTab
+                  openDocument={openDocument}
+                  onDownload={onDownload}
+                  referenceData={referenceData}
+                  contractData={contractData}
+                  onNavigateToField={navigateToField}
+                />
+              )}
             </div>
           </Tabs>
 

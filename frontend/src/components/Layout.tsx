@@ -173,6 +173,7 @@ export default function Layout({ children }: LayoutProps) {
                       <p className="text-sm font-medium truncate">{user?.username}</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
+                         user?.roles?.includes('ROLE_FINANCIAL_MANAGER') ? 'Финансовый управляющий' :
                          user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
                       </p>
                     </div>
@@ -185,6 +186,7 @@ export default function Layout({ children }: LayoutProps) {
                     <p className="text-sm font-medium">{user?.username}</p>
                     <p className="text-xs text-muted-foreground">
                       {user?.roles?.includes('ROLE_ADMIN') ? 'Администратор' : 
+                       user?.roles?.includes('ROLE_FINANCIAL_MANAGER') ? 'Финансовый управляющий' :
                        user?.roles?.includes('ROLE_MANAGER') ? 'Менеджер' : 'Пользователь'}
                     </p>
                   </div>
