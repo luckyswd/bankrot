@@ -1,35 +1,16 @@
 .PHONY: up down start stop install db-migrate cc check-code stan lint test
 
 up: install
-	@echo "🚀 Запуск Docker контейнеров..."
 	docker-compose up -d
-	@echo ""
-	@echo "⏳ Ожидание запуска контейнеров..."
-	@sleep 5
-	@echo "🗄️  Выполнение миграций базы данных..."
-	docker exec bankruptcy-php php bin/console doctrine:migrations:migrate --no-interaction
-	@echo ""
-	@echo "✅ Проект запущен!"
-	@echo ""
-	@echo "📍 Frontend: http://localhost"
-	@echo "📍 Backend API: http://api.localhost"
-	@echo "📍 Тестовая страница: http://localhost/test"
-	@echo ""
 
 down:
-	@echo "🛑 Остановка и удаление контейнеров..."
 	docker-compose down
-	@echo "✅ Контейнеры остановлены"
 
 start:
-	@echo "▶️  Запуск контейнеров..."
 	docker-compose start
-	@echo "✅ Контейнеры запущены"
 
 stop:
-	@echo "⏸️  Остановка контейнеров..."
 	docker-compose stop
-	@echo "✅ Контейнеры остановлены"
 
 install:
 	@echo "📦 Проверка и копирование .env файлов..."
@@ -49,5 +30,3 @@ install:
 	else \
 		echo "✓ backend/.env существует"; \
 	fi
-	@echo "✅ Проверка завершена"
-	@echo ""
