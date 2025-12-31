@@ -58,9 +58,19 @@ export type PrimaryInfoFields = {
   manager?: string | null
 }
 
+export type PreCourtCreditorItem = {
+  id?: number | null
+  creditorId: number
+  creditContractNumber?: string | null
+  creditContractDate?: string | null
+  debtAmount?: string | null
+  principalAmount?: string | null
+  financialSanctions?: string | null
+}
+
 export type PretrialFields = {
   court: string
-  creditors: number[]
+  preCourtCreditors: PreCourtCreditorItem[]
   powerOfAttorneyNumber: string
   caseNumber: string
   powerOfAttorneyDate: string

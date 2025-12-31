@@ -4,10 +4,12 @@ namespace App\Service;
 
 use App\Entity\Contracts;
 use App\Entity\ContractsCreditorsClaim;
+use App\Entity\ContractsPreCourtCreditor;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Repository\BailiffRepository;
 use App\Repository\ContractsCreditorsClaimRepository;
+use App\Repository\ContractsPreCourtCreditorRepository;
 use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
 use App\Repository\DocumentTemplateRepository;
@@ -34,6 +36,7 @@ class ContractorService
         private readonly BailiffRepository $bailiffRepository,
         private readonly RosgvardiaRepository $rosgvardiaRepository,
         private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
+        private readonly ContractsPreCourtCreditorRepository $contractsPreCourtCreditorRepository,
         private readonly FinancialManagerRepository $financialManagerRepository,
     ) {
     }
@@ -229,18 +232,98 @@ class ContractorService
                 continue;
             }
 
-            if ($key === 'creditors') {
-                $contract->getCreditors()->clear();
+            if ($key === 'preCourtCreditors') {
+                $contract->getPreCourtCreditors()->clear();
 
                 if (is_array($value)) {
-                    foreach ($value as $creditorId) {
-                        if (is_numeric($creditorId)) {
-                            $creditor = $this->creditorRepository->find((int)$creditorId);
+                    $processedCreditorIds = [];
 
-                            if ($creditor) {
-                                $contract->addCreditor($creditor);
+                    foreach ($value as $creditorData) {
+                        if (!is_array($creditorData)) {
+                            continue;
+                        }
+
+                        $creditorId = $creditorData['creditorId'] ?? null;
+                        $id = $creditorData['id'] ?? null;
+
+                        if (!is_numeric($creditorId) || (int)$creditorId === 0) {
+                            continue;
+                        }
+
+                        $creditorIdInt = (int)$creditorId;
+
+                        if (isset($processedCreditorIds[$creditorIdInt])) {
+                            continue;
+                        }
+
+                        $creditor = $this->creditorRepository->find($creditorIdInt);
+
+                        if ($creditor === null) {
+                            continue;
+                        }
+
+                        $contractPreCourtCreditor = null;
+
+                        if (is_numeric($id)) {
+                            $contractPreCourtCreditor = $this->contractsPreCourtCreditorRepository->find((int)$id);
+
+                            if ($contractPreCourtCreditor !== null && $contractPreCourtCreditor->getContract()->getId() !== $contract->getId()) {
+                                $contractPreCourtCreditor = null;
                             }
                         }
+
+                        if (!$contractPreCourtCreditor) {
+                            $existingCreditor = $this->contractsPreCourtCreditorRepository->findOneBy(
+                                [
+                                    'contract' => $contract,
+                                    'creditor' => $creditor,
+                                ]
+                            );
+
+                            if ($existingCreditor !== null) {
+                                $contractPreCourtCreditor = $existingCreditor;
+                            } else {
+                                $contractPreCourtCreditor = new ContractsPreCourtCreditor();
+                                $contractPreCourtCreditor->setContract(contract: $contract);
+
+                                $this->entityManager->persist($contractPreCourtCreditor);
+                            }
+                        }
+
+                        $contractPreCourtCreditor->setCreditor(creditor: $creditor);
+                        $processedCreditorIds[$creditorIdInt] = true;
+
+                        if (isset($creditorData['creditContractNumber'])) {
+                            $contractPreCourtCreditor->setCreditContractNumber($creditorData['creditContractNumber'] === '' ? null : $creditorData['creditContractNumber']);
+                        }
+
+                        if (isset($creditorData['creditContractDate'])) {
+                            $date = $creditorData['creditContractDate'];
+                            if ($date === '') {
+                                $contractPreCourtCreditor->setCreditContractDate(null);
+                            } else {
+                                try {
+                                    $dateObj = new \DateTime($date);
+                                    $contractPreCourtCreditor->setCreditContractDate($dateObj);
+                                } catch (\Exception $e) {
+                                    $contractPreCourtCreditor->setCreditContractDate(null);
+                                }
+                            }
+                        }
+
+                        if (isset($creditorData['debtAmount'])) {
+                            $contractPreCourtCreditor->setDebtAmount($creditorData['debtAmount'] === '' ? null : $creditorData['debtAmount']);
+                        }
+
+                        if (isset($creditorData['principalAmount'])) {
+                            $contractPreCourtCreditor->setPrincipalAmount($creditorData['principalAmount'] === '' ? null : $creditorData['principalAmount']);
+                        }
+
+                        if (isset($creditorData['financialSanctions'])) {
+                            $contractPreCourtCreditor->setFinancialSanctions($creditorData['financialSanctions'] === '' ? null : $creditorData['financialSanctions']);
+                        }
+
+                        $contract->addPreCourtCreditor($contractPreCourtCreditor);
                     }
                 }
 

@@ -3,6 +3,7 @@ import {
   FormSections,
   FormValues,
   IntroductionFields,
+  PreCourtCreditorItem,
   PretrialFields,
   PrimaryInfoFields,
   ProcedureFields,
@@ -61,7 +62,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
 
 export const defaultPretrial: PretrialFields = {
   court: "",
-  creditors: [],
+  preCourtCreditors: [],
   powerOfAttorneyNumber: "",
   caseNumber: "",
   powerOfAttorneyDate: "",
@@ -102,37 +103,54 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 export const asPartial = <T extends object>(value: unknown): Partial<T> =>
   isRecord(value) ? (value as Partial<T>) : {};
 
-const normalizeCreditors = (value: unknown): number[] => {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => {
-        if (typeof item === "string" || typeof item === "number") {
-          const num = Number(item);
-          return Number.isNaN(num) ? null : num;
-        }
-        if (isRecord(item) && "creditorId" in item && item.creditorId !== undefined) {
-          const num = Number(item.creditorId);
-          return Number.isNaN(num) ? null : num;
-        }
-        if (isRecord(item) && "id" in item && item.id !== undefined) {
-          const num = Number(item.id);
-          return Number.isNaN(num) ? null : num;
-        }
+const normalizePreCourtCreditors = (value: unknown): PreCourtCreditorItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): PreCourtCreditorItem | null => {
+      if (!isRecord(item)) {
         return null;
-      })
-      .filter((creditorId): creditorId is number => typeof creditorId === "number");
-  }
+      }
 
-  if (typeof value === "string") {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .map((creditorId) => Number(creditorId))
-      .filter((num) => !Number.isNaN(num));
-  }
+      const creditorId = item.creditorId ?? item.id;
+      if (typeof creditorId !== "number" && typeof creditorId !== "string") {
+        return null;
+      }
 
-  return [];
+      const creditorIdNum = Number(creditorId);
+      if (Number.isNaN(creditorIdNum) || creditorIdNum === 0) {
+        return null;
+      }
+
+      const creditContractDate = item.creditContractDate;
+      let formattedDate: string | null = null;
+      if (typeof creditContractDate === "string" && creditContractDate) {
+        formattedDate = creditContractDate.split("T")[0] || null;
+      }
+
+      return {
+        id: typeof item.id === "number" ? item.id : null,
+        creditorId: creditorIdNum,
+        creditContractNumber:
+          typeof item.creditContractNumber === "string"
+            ? item.creditContractNumber || null
+            : null,
+        creditContractDate: formattedDate,
+        debtAmount:
+          typeof item.debtAmount === "string" ? item.debtAmount || null : null,
+        principalAmount:
+          typeof item.principalAmount === "string"
+            ? item.principalAmount || null
+            : null,
+        financialSanctions:
+          typeof item.financialSanctions === "string"
+            ? item.financialSanctions || null
+            : null,
+      };
+    })
+    .filter((item): item is PreCourtCreditorItem => item !== null);
 };
 
 export const normalizeChild = (child: unknown): ChildInfo => {
@@ -276,8 +294,10 @@ export const convertApiDataToFormValues = (
     pre_court: {
       ...defaults.pre_court,
       ...asPartial<PretrialFields>(apiData.pre_court),
-      creditors: normalizeCreditors(
-        isRecord(apiData.pre_court) ? apiData.pre_court.creditors : undefined
+      preCourtCreditors: normalizePreCourtCreditors(
+        isRecord(apiData.pre_court)
+          ? apiData.pre_court.preCourtCreditors
+          : undefined
       ),
     },
     judicial_procedure_initiation: {
@@ -345,9 +365,9 @@ export const buildFormValues = (
     pre_court: {
       ...defaults.pre_court,
       ...(overrides.pre_court ?? {}),
-      creditors: normalizeCreditors(
+      preCourtCreditors: normalizePreCourtCreditors(
         overrides.pre_court
-          ? (overrides.pre_court as Record<string, unknown>).creditors
+          ? (overrides.pre_court as Record<string, unknown>).preCourtCreditors
           : undefined
       ),
     },

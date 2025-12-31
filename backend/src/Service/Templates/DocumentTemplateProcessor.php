@@ -231,7 +231,7 @@ readonly class DocumentTemplateProcessor
             }
 
             $blockVariables = $this->getBlockVariables(
-                variables: $templateProcessor->getVariables(),
+                variables: $block['blockVariables'],
                 itemName: $block['itemName']
             );
 
@@ -245,15 +245,17 @@ readonly class DocumentTemplateProcessor
 
             foreach ($collection as $item) {
                 $itemReplacements = [];
-                $itemName = $block['itemName'];
 
                 foreach ($blockVariables as $originalVariable => $propertyPath) {
-                    $value = $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
-                    $cleanedOriginal = trim(strip_tags($originalVariable));
-                    $itemReplacements[$cleanedOriginal] = $value;
-                }
+                    if ($propertyPath === 'number') {
+                        $itemReplacements[$originalVariable] = (string)$index;
 
-                $itemReplacements['$' . $itemName . '.index'] = (string)$index;
+                        continue;
+                    }
+
+                    $value = $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
+                    $itemReplacements[$originalVariable] = $value;
+                }
 
                 $variableReplacements[] = $itemReplacements;
                 ++$index;
@@ -274,7 +276,7 @@ readonly class DocumentTemplateProcessor
      *
      * @param array<string> $variables Массив переменных (уже без макросов ${ и })
      *
-     * @return array<int, array{blockName: string, itemName: string, collectionName: string}>
+     * @return array<int, array{blockName: string, itemName: string, collectionName: string, blockVariables: array<string>}>
      */
     private function findBlocks(array $variables): array
     {
@@ -285,9 +287,15 @@ readonly class DocumentTemplateProcessor
 
         $currentBlock = null;
         $itemNameMap = [];
+        $blockVariablesMap = [];
 
         foreach ($variables as $variable) {
             $cleaned = trim(strip_tags($variable));
+
+            // Если мы внутри блока, собираем переменные (включая $index)
+            if ($currentBlock !== null && !preg_match($endBlockPattern, $cleaned)) {
+                $blockVariablesMap[$currentBlock['blockName']][] = $variable;
+            }
 
             if (preg_match($itemVariablePattern, $cleaned, $itemMatches)) {
                 $itemName = $itemMatches[2];
@@ -300,6 +308,7 @@ readonly class DocumentTemplateProcessor
             if (preg_match($blockPattern, $cleaned, $matches) && !str_starts_with($cleaned, '/') && !str_starts_with($cleaned, '$')) {
                 $blockName = $matches[1];
                 $currentBlock = ['blockName' => $blockName];
+                $blockVariablesMap[$blockName] = [];
             }
 
             // Конец блока (/blockName)
@@ -327,6 +336,7 @@ readonly class DocumentTemplateProcessor
                         'blockName' => $currentBlock['blockName'],
                         'itemName' => $itemName,
                         'collectionName' => $collectionName,
+                        'blockVariables' => $blockVariablesMap[$currentBlock['blockName']] ?? [],
                     ];
 
                     $currentBlock = null;
@@ -377,6 +387,12 @@ readonly class DocumentTemplateProcessor
 
         foreach ($variables as $originalVariable) {
             $cleaned = trim(strip_tags($originalVariable));
+
+            if ($cleaned === '$number') {
+                $blockVariables[$originalVariable] = 'number';
+
+                continue;
+            }
 
             // Проверяем переменные в формате $itemName.property (например, $creditor.name)
             if (preg_match('/^\$' . preg_quote($itemName, '/') . '\.(.+)$/', $cleaned, $matches)) {

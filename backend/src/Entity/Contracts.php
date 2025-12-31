@@ -308,13 +308,12 @@ class Contracts extends BaseEntity
     private ?\DateTimeInterface $powerOfAttorneyDate = null;
 
     /**
-     * @var Collection<int, Creditor>
+     * @var Collection<int, ContractsPreCourtCreditor>
      */
-    #[ORM\ManyToMany(targetEntity: Creditor::class)]
-    #[ORM\JoinTable(name: 'contracts_creditors')]
+    #[ORM\OneToMany(targetEntity: ContractsPreCourtCreditor::class, mappedBy: 'contract', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups([BankruptcyStage::PRE_COURT->value])]
     #[OA\Property(description: 'Кредиторы', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
-    private Collection $creditors;
+    private Collection $preCourtCreditors;
 
     /**
      * @var Collection<int, ContractsCreditorsClaim>
@@ -454,7 +453,7 @@ class Contracts extends BaseEntity
     public function __construct()
     {
         parent::__construct();
-        $this->creditors = new ArrayCollection();
+        $this->preCourtCreditors = new ArrayCollection();
         $this->creditorsClaims = new ArrayCollection();
     }
 
@@ -1222,25 +1221,30 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @return Collection<int, Creditor>
+     * @return Collection<int, ContractsPreCourtCreditor>
      */
-    public function getCreditors(): Collection
+    public function getPreCourtCreditors(): Collection
     {
-        return $this->creditors;
+        return $this->preCourtCreditors;
     }
 
-    public function addCreditor(Creditor $creditor): self
+    public function addPreCourtCreditor(ContractsPreCourtCreditor $preCourtCreditor): self
     {
-        if (!$this->creditors->contains($creditor)) {
-            $this->creditors->add($creditor);
+        if (!$this->preCourtCreditors->contains($preCourtCreditor)) {
+            $this->preCourtCreditors->add($preCourtCreditor);
+            $preCourtCreditor->setContract($this);
         }
 
         return $this;
     }
 
-    public function removeCreditor(Creditor $creditor): self
+    public function removePreCourtCreditor(ContractsPreCourtCreditor $preCourtCreditor): self
     {
-        $this->creditors->removeElement($creditor);
+        if ($this->preCourtCreditors->removeElement($preCourtCreditor)) {
+            if ($preCourtCreditor->getContract() === $this) {
+                $preCourtCreditor->setContract(new Contracts());
+            }
+        }
 
         return $this;
     }

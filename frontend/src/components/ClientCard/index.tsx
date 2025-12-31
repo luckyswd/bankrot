@@ -61,8 +61,8 @@ function ClientCard() {
     if (!normalized.pre_court) {
       normalized.pre_court = {};
     }
-    if (normalized.pre_court && !Array.isArray(normalized.pre_court.creditors)) {
-      normalized.pre_court.creditors = [];
+    if (normalized.pre_court && !Array.isArray(normalized.pre_court.preCourtCreditors)) {
+      normalized.pre_court.preCourtCreditors = [];
     }
 
     return JSON.stringify(normalized);
@@ -100,7 +100,7 @@ function ClientCard() {
       },
       pre_court: {
         ...(currentValues.pre_court || {}),
-        creditors: currentValues.pre_court?.creditors ?? [],
+        preCourtCreditors: currentValues.pre_court?.preCourtCreditors ?? [],
       },
       judicial_procedure_initiation: currentValues.judicial_procedure_initiation || {},
       judicial_procedure: {

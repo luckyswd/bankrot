@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
-import { FormValues } from "./types";
+import { FormValues, PreCourtCreditorItem } from "./types";
 import { DocumentsList } from "./DocumentsList";
 import {
   Select,
@@ -28,7 +28,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 
 import type { ReferenceData } from "@/types/reference";
 
@@ -57,27 +56,40 @@ export const PretrialTab = ({
   };
 
   const {
-    fields: creditorFields,
-    append: appendCreditor,
-    remove: removeCreditor,
-  } = useFieldArray({
-    control: control as any,
-    name: "pre_court.creditors" as any,
+    fields: preCourtCreditorFields,
+    append: appendPreCourtCreditor,
+    remove: removePreCourtCreditor,
+  } = useFieldArray<FormValues, "pre_court.preCourtCreditors">({
+    control,
+    name: "pre_court.preCourtCreditors",
   });
-  const watchedCreditors = watch("pre_court.creditors") ?? [];
+
+  const watchedPreCourtCreditors = watch("pre_court.preCourtCreditors") ?? [];
   const selectedCreditorIds = useMemo(
     () =>
-      watchedCreditors
-        .filter((id) => typeof id === "number")
-        .map((id) => String(id)),
-    [watchedCreditors]
+      watchedPreCourtCreditors
+        .map((item) => (item?.creditorId ? String(item.creditorId) : null))
+        .filter((id): id is string => id !== null),
+    [watchedPreCourtCreditors]
   );
-  const getAvailableCreditors = (currentValue?: string) =>
+
+  const getAvailableCreditors = (currentCreditorId?: number) =>
     (referenceData?.creditors ?? []).filter((creditor) => {
       const id = String(creditor.id);
-      return id === currentValue || !selectedCreditorIds.includes(id);
+      return (
+        (currentCreditorId && creditor.id === currentCreditorId) ||
+        !selectedCreditorIds.includes(id)
+      );
     });
-  const hasAvailableCreditors = getAvailableCreditors().length > 0;
+
+  const createEmptyPreCourtCreditor = (): PreCourtCreditorItem => ({
+    creditorId: 0,
+    creditContractNumber: null,
+    creditContractDate: null,
+    debtAmount: null,
+    principalAmount: null,
+    financialSanctions: null,
+  });
 
   const documents =
     (
@@ -120,104 +132,169 @@ export const PretrialTab = ({
                 <h3 className="text-xl font-semibold">Кредиторы</h3>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-3 p-1">
-
-                  {creditorFields.length === 0 ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="pre_court.creditors">
-                        Кредитор 1
-                      </Label>
-                      <Select
-                        onValueChange={(val) => appendCreditor(Number(val))}
-                        disabled={!hasAvailableCreditors}
-                      >
-                        <SelectTrigger id="pre_court.creditors">
-                          <SelectValue placeholder="Выберите кредитора" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getAvailableCreditors().map((creditor) => (
-                            <SelectItem
-                              key={creditor.id}
-                              value={String(creditor.id)}
-                            >
-                              {creditor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {creditorFields.map((item, index) => {
-                        const currentValue = toIdString(
-                          watchedCreditors[index]
-                        );
-                        const options = getAvailableCreditors(currentValue);
-
-                        return (
-                          <div key={item.id} className="flex items-end gap-3">
-                            <div className="flex-1 space-y-2">
-                              <Label htmlFor={`pre_court.creditors.${index}`}>
-                                Кредитор {index + 1}
-                              </Label>
-                              <Controller
-                                name={`pre_court.creditors.${index}`}
-                                control={control}
-                                render={({ field }) => (
-                                  <Select
-                                    value={toIdString(field.value)}
-                                    onValueChange={(val) =>
-                                      field.onChange(Number(val))
-                                    }
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Выберите кредитора" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {options.map((creditor) => (
-                                        <SelectItem
-                                          key={creditor.id}
-                                          value={String(creditor.id)}
-                                        >
-                                          {creditor.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-400"
-                              onClick={() => removeCreditor(index)}
-                              aria-label={`Удалить кредитора ${index + 1}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto block"
-                    onClick={() => {
-                      const firstAvailable = getAvailableCreditors()[0];
-                      if (firstAvailable) {
-                        appendCreditor(Number(firstAvailable.id));
+                <div className="space-y-4 p-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-lg font-semibold">
+                      Кредиторы
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        appendPreCourtCreditor(createEmptyPreCourtCreditor())
                       }
-                    }}
-                    disabled={!hasAvailableCreditors}
-                  >
-                    Добавить кредитора
-                  </Button>
+                    >
+                      Добавить кредитора
+                    </Button>
+                  </div>
+
+                  {preCourtCreditorFields.map((field, index) => {
+                    const currentCreditorId =
+                      watchedPreCourtCreditors[index]?.creditorId;
+                    const availableCreditors = getAvailableCreditors(
+                      currentCreditorId
+                    );
+
+                    return (
+                      <Card key={field.id}>
+                        <CardContent className="pt-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-base font-semibold">
+                                Кредитор #{index + 1}
+                              </Label>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removePreCourtCreditor(index)}
+                              >
+                                Удалить
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.creditorId`}
+                                >
+                                  Кредитор
+                                </Label>
+                                <Controller
+                                  control={control}
+                                  name={`pre_court.preCourtCreditors.${index}.creditorId`}
+                                  render={({ field: selectField }) => (
+                                    <Select
+                                      value={
+                                        selectField.value
+                                          ? String(selectField.value)
+                                          : ""
+                                      }
+                                      onValueChange={(value) =>
+                                        selectField.onChange(Number(value))
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        id={`pre_court.preCourtCreditors.${index}.creditorId`}
+                                      >
+                                        <SelectValue placeholder="Выберите кредитора" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {availableCreditors.map((item) => (
+                                          <SelectItem
+                                            key={item.id}
+                                            value={String(item.id)}
+                                          >
+                                            {item.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.creditContractNumber`}
+                                >
+                                  № Кредитного договора
+                                </Label>
+                                <Input
+                                  id={`pre_court.preCourtCreditors.${index}.creditContractNumber`}
+                                  {...register(
+                                    `pre_court.preCourtCreditors.${index}.creditContractNumber`
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.creditContractDate`}
+                                >
+                                  Дата Кредитного договора
+                                </Label>
+                                <Controller
+                                  control={control}
+                                  name={`pre_court.preCourtCreditors.${index}.creditContractDate`}
+                                  render={({ field: dateField }) => (
+                                    <DatePickerInput
+                                      id={`pre_court.preCourtCreditors.${index}.creditContractDate`}
+                                      name={`pre_court.preCourtCreditors.${index}.creditContractDate`}
+                                      value={(dateField.value as string) ?? ""}
+                                      onChange={dateField.onChange}
+                                    />
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.debtAmount`}
+                                >
+                                  Сумма долга
+                                </Label>
+                                <Input
+                                  id={`pre_court.preCourtCreditors.${index}.debtAmount`}
+                                  {...register(
+                                    `pre_court.preCourtCreditors.${index}.debtAmount`
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.principalAmount`}
+                                >
+                                  Основной долг
+                                </Label>
+                                <Input
+                                  id={`pre_court.preCourtCreditors.${index}.principalAmount`}
+                                  {...register(
+                                    `pre_court.preCourtCreditors.${index}.principalAmount`
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`pre_court.preCourtCreditors.${index}.financialSanctions`}
+                                >
+                                  Финансовые санкции
+                                </Label>
+                                <Input
+                                  id={`pre_court.preCourtCreditors.${index}.financialSanctions`}
+                                  {...register(
+                                    `pre_court.preCourtCreditors.${index}.financialSanctions`
+                                  )}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>
