@@ -271,14 +271,15 @@ export const IntroductionTab = ({
                       {executionTerminationsArray.length === 0 ? (
                         <div className="space-y-1">
                           <Label>Окончание 1</Label>
-                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="space-y-1">
                               <Input
                                 placeholder="12345/24/77001-ИП"
                                 onChange={(e) => {
                                   const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
                                     number: "",
-                                    date: ""
+                                    date: "",
+                                    amount: ""
                                   };
                                   executionTerminationsField.onChange([
                                     { ...currentTermination, number: e.target.value },
@@ -291,20 +292,38 @@ export const IntroductionTab = ({
                               onChange={(value) => {
                                 const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
                                   number: "",
-                                  date: ""
+                                  date: "",
+                                  amount: ""
                                 };
                                 executionTerminationsField.onChange([
                                   { ...currentTermination, date: value },
                                 ]);
                               }}
                             />
+                            <div className="space-y-1">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Сумма долга"
+                                onChange={(e) => {
+                                  const currentTermination = executionTerminationsArray.length > 0 ? executionTerminationsArray[0] : {
+                                    number: "",
+                                    date: "",
+                                    amount: ""
+                                  };
+                                  executionTerminationsField.onChange([
+                                    { ...currentTermination, amount: e.target.value },
+                                  ]);
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           {executionTerminationsArray.map(
                             (
-                              terminationItem: { number: string; date: string },
+                              terminationItem: { number: string; date: string; amount?: string | null },
                               terminationIndex: number
                             ) => (
                               <div
@@ -315,7 +334,7 @@ export const IntroductionTab = ({
                                   <Label>
                                     Окончание {terminationIndex + 1}
                                   </Label>
-                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div className="space-y-1">
                                       <Input
                                         value={terminationItem.number ?? ""}
@@ -346,6 +365,24 @@ export const IntroductionTab = ({
                                         executionTerminationsField.onChange(newTerminations);
                                       }}
                                     />
+                                    <div className="space-y-1">
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={terminationItem.amount ?? ""}
+                                        placeholder="Сумма долга"
+                                        onChange={(e) => {
+                                          const newTerminations = [
+                                            ...executionTerminationsArray,
+                                          ];
+                                          newTerminations[terminationIndex] = {
+                                            ...terminationItem,
+                                            amount: e.target.value,
+                                          };
+                                          executionTerminationsField.onChange(newTerminations);
+                                        }}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                                 <Button
@@ -377,7 +414,7 @@ export const IntroductionTab = ({
                           const currentTerminations = executionTerminationsField.value ?? [];
                           executionTerminationsField.onChange([
                             ...currentTerminations,
-                            { number: "", date: "" },
+                            { number: "", date: "", amount: "" },
                           ]);
                         }}
                       >

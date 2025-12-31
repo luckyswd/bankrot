@@ -430,7 +430,7 @@ class Contracts extends BaseEntity
     private ?Rosgvardia $procedureInitiationRosgvardia = null;
 
     /**
-     * @var array<int, array{number: string, date: string}>|null
+     * @var array<int, array{number: string, date: string, amount: string|null}>|null
      */
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
@@ -441,6 +441,7 @@ class Contracts extends BaseEntity
             properties: [
                 new OA\Property(property: 'number', type: Types::STRING, example: '199465/22/05023-ИП'),
                 new OA\Property(property: 'date', type: Types::STRING, format: 'date', example: '2024-01-15'),
+                new OA\Property(property: 'amount', description: 'Сумма долга', type: Types::STRING, example: '100000.00', nullable: true),
             ],
             type: 'object'
         ),
@@ -1289,7 +1290,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @return array<int, array{number: string, date: string}>|null
+     * @return array<int, array{number: string, date: string, amount: string|null}>|null
      */
     public function getProcedureInitiationIPEndings(): ?array
     {
@@ -1297,7 +1298,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @param array<int, array{number: string, date: string}>|null $procedureInitiationIPEndings
+     * @param array<int, array{number: string, date: string, amount: string|null}>|null $procedureInitiationIPEndings
      */
     public function setProcedureInitiationIPEndings(?array $procedureInitiationIPEndings): self
     {
@@ -1307,7 +1308,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @param array{number: string, date: string} $ipEnding
+     * @param array{number: string, date: string, amount: string|null} $ipEnding
      */
     public function addIpEnding(array $ipEnding): self
     {
