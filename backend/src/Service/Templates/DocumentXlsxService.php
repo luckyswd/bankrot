@@ -24,6 +24,9 @@ class DocumentXlsxService
             $spreadsheet = IOFactory::load($sourcePath);
             $worksheet = $spreadsheet->getActiveSheet();
 
+            $worksheet->setCellValue('A4', $contracts->getFinancialManager()->getFio() ?? '');
+            $worksheet->setCellValue('D4', $contracts->getFinancialManager()->getEmail() ?? '');
+
             // F4 - Полное имя
             $worksheet->setCellValue('F4', $contracts->getFullName() ?? '');
 
