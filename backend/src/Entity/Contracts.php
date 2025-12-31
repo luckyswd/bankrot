@@ -189,7 +189,7 @@ class Contracts extends BaseEntity
     private ?bool $hasMinorChildren = null;
 
     /**
-     * @var array<int, array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string}>|null
+     * @var array<int, array{firstName: string, lastName: string, middleName: ?string, birthDate: string, fullAge: ?int}>|null
      */
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
@@ -201,9 +201,8 @@ class Contracts extends BaseEntity
                 new OA\Property(property: 'firstName', type: Types::STRING, example: 'Александр'),
                 new OA\Property(property: 'lastName', type: Types::STRING, example: 'Иванов'),
                 new OA\Property(property: 'middleName', type: Types::STRING, example: 'Иванович', nullable: true),
-                new OA\Property(property: 'isLastNameChanged', type: 'boolean', example: false),
-                new OA\Property(property: 'changedLastName', type: Types::STRING, example: null, nullable: true),
                 new OA\Property(property: 'birthDate', type: Types::STRING, format: 'date', example: '2015-08-10'),
+                new OA\Property(property: 'fullAge', description: 'Количество полных лет (readonly)', type: Types::INTEGER, example: 8, nullable: true),
             ],
             type: 'object'
         ),
@@ -901,7 +900,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @return array<int, array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string}>|null
+     * @return array<int, array{firstName: string, lastName: string, middleName: ?string, birthDate: string, fullAge: ?int}>|null
      */
     public function getChildren(): ?array
     {
@@ -909,7 +908,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @param array<int, array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string}>|null $children
+     * @param array<int, array{firstName: string, lastName: string, middleName: ?string, birthDate: string, fullAge: ?int}>|null $children
      */
     public function setChildren(?array $children): self
     {
@@ -919,7 +918,7 @@ class Contracts extends BaseEntity
     }
 
     /**
-     * @param array{firstName: string, lastName: string, middleName: ?string, isLastNameChanged: bool, changedLastName: ?string, birthDate: string} $child
+     * @param array{firstName: string, lastName: string, middleName: ?string, birthDate: string, fullAge: ?int} $child
      */
     public function addChild(array $child): self
     {

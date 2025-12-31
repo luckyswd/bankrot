@@ -67,9 +67,8 @@ export const FamilyInfo: FC<Props> = ({
     firstName: "",
     lastName: "",
     middleName: null,
-    isLastNameChanged: false,
-    changedLastName: null,
     birthDate: "",
+    fullAge: null,
   })
 
   // Отслеживаем изменения для всех детей сразу
@@ -192,9 +191,6 @@ export const FamilyInfo: FC<Props> = ({
           )}
 
           {fields.map((field, index) => {
-            const childIsLastNameChanged =
-              childrenValues[index]?.isLastNameChanged;
-
             return (
               <Card key={field.id} className="p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -244,37 +240,18 @@ export const FamilyInfo: FC<Props> = ({
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Изменялось ли ФИО</Label>
-                    <Controller
-                      control={control}
-                      name={`basic_info.children.${index}.isLastNameChanged`}
-                      render={({ field }) => (
-                        <SelectField
-                          value={field.value}
-                          onChange={(value) => field.onChange(value)}
-                          options={yesNoOptions}
-                        />
-                      )}
+                  <div className="space-y-1">
+                    <Label htmlFor={`basic_info.children.${index}.fullAge`}>
+                      Количество полных лет
+                    </Label>
+                    <Input
+                      id={`basic_info.children.${index}.fullAge`}
+                      value={childrenValues[index]?.fullAge ?? ""}
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                      placeholder="Вычисляется автоматически"
                     />
                   </div>
-
-                  {childIsLastNameChanged === true && (
-                    <div className="space-y-1 lg:col-span-2">
-                      <Label
-                        htmlFor={`basic_info.children.${index}.changedLastName`}
-                      >
-                        Предыдущее ФИО
-                      </Label>
-                      <Input
-                        id={`basic_info.children.${index}.changedLastName`}
-                        placeholder="Сидоров Дмитрий Александрович"
-                        {...register(
-                          `basic_info.children.${index}.changedLastName`
-                        )}
-                      />
-                    </div>
-                  )}
 
                   <Controller
                     control={control}

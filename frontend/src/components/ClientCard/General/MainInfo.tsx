@@ -133,6 +133,7 @@ export const MainInfo: FC<Props> = ({ register, useWatch, control }) => {
             />
           </div>
         )}
+
         <Controller
           control={control}
           name="basic_info.gender"

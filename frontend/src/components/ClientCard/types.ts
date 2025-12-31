@@ -2,9 +2,8 @@ export type ChildInfo = {
   firstName: string
   lastName: string
   middleName?: string | null
-  isLastNameChanged: boolean
-  changedLastName?: string | null
   birthDate: string
+  fullAge?: number | null
 }
 
 export type PrimaryInfoFields = {
