@@ -121,25 +121,13 @@ export function DatePickerInput({
       setDate(nextDate)
       setMonth(nextDate)
       onChange(toStorageFormat(nextDate))
-    } else {
-      if (date) {
-        setDate(undefined)
-        onChange(CLEAR_VALUE)
-      }
     }
   }
 
   return (
     <div className={cn("space-y-2", className)}>
       {label && <Label htmlFor={id}>{label}</Label>}
-      <div 
-        className="relative flex gap-2"
-        onMouseDown={(e) => {
-          if (!disabled && (e.target as HTMLElement).tagName !== "BUTTON") {
-            setOpen(true)
-          }
-        }}
-      >
+      <div className="relative flex gap-2">
         <InputMask
           mask="99.99.9999"
           value={inputValue}
