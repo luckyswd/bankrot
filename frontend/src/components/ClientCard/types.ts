@@ -3,7 +3,6 @@ export type ChildInfo = {
   lastName: string
   middleName?: string | null
   birthDate: string
-  fullAge?: number | null
 }
 
 export type PrimaryInfoFields = {

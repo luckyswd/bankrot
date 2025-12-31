@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FC } from "react";
+import { FC, useMemo, useEffect, useRef } from "react";
 import { DatePickerInput } from "@/components/ui/DatePickerInput";
 import { SelectField, SelectOption } from "@/components/shared/SelectFields";
 import { Controller, useFieldArray } from "react-hook-form"
@@ -13,6 +13,7 @@ import {
 import { ChildInfo, FormValues } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { notify } from "@/components/ui/toast";
 interface Props {
   register: any;
   control: any;
@@ -68,11 +69,131 @@ export const FamilyInfo: FC<Props> = ({
     lastName: "",
     middleName: null,
     birthDate: "",
-    fullAge: null,
   })
 
   // Отслеживаем изменения для всех детей сразу
   const childrenValues = watch("basic_info.children") ?? [];
+
+  // Вычисляет количество полных лет на основе даты рождения
+  const calculateFullAge = (birthDate: string): number | null => {
+    if (!birthDate) {
+      return null
+    }
+
+    try {
+      const birth = new Date(birthDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      birth.setHours(0, 0, 0, 0)
+
+      // Если дата рождения в будущем, возвращаем null
+      if (birth > today) {
+        return null
+      }
+
+      const age = today.getFullYear() - birth.getFullYear()
+      const monthDiff = today.getMonth() - birth.getMonth()
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        return age - 1
+      }
+
+      return age
+    } catch (error) {
+      return null
+    }
+  }
+
+  // Вычисляем возраст для каждого ребенка
+  const childrenAges = useMemo(() => {
+    return childrenValues.map((child: ChildInfo) => {
+      if (!child.birthDate) {
+        return null
+      }
+      return calculateFullAge(child.birthDate)
+    })
+  }, [childrenValues])
+
+  // Функция для правильного склонения возраста
+  const getAgeText = (age: number): string => {
+    const lastDigit = age % 10
+    const lastTwoDigits = age % 100
+
+    // Исключения для 11-14
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return `${age} лет`
+    }
+
+    // 1, 21, 31, 41... год
+    if (lastDigit === 1) {
+      return `${age} год`
+    }
+
+    // 2, 3, 4, 22, 23, 24... года
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return `${age} года`
+    }
+
+    // Остальные - лет
+    return `${age} лет`
+  }
+
+  // Отслеживаем уже показанные уведомления, чтобы не показывать повторно
+  const shownNotificationsRef = useRef<Set<string>>(new Set())
+
+  // Проверяет детей на возраст >= 18 и показывает уведомления
+  const checkChildrenAge = (children: ChildInfo[], ages: (number | null)[]) => {
+    children.forEach((child, index) => {
+      const age = ages[index]
+      if (age !== null && age >= 18) {
+        const childName = [child?.lastName, child?.firstName, child?.middleName]
+          .filter(Boolean)
+          .join(' ') || 'Ребенок'
+        
+        // Создаем уникальный ключ для уведомления
+        const notificationKey = `${child.birthDate}-${index}`
+        
+        // Показываем уведомление только если еще не показывали
+        if (!shownNotificationsRef.current.has(notificationKey)) {
+          shownNotificationsRef.current.add(notificationKey)
+          notify({
+            message: `Внимание! ${childName} достиг(ла) возраста ${getAgeText(age)}. Пожалуйста, проверьте данные.`,
+            type: 'error',
+            duration: 8000,
+          })
+        }
+      }
+    })
+  }
+
+  // Проверяем возраст при загрузке/изменении данных
+  useEffect(() => {
+    if (childrenValues.length > 0 && childrenAges.length > 0) {
+      checkChildrenAge(childrenValues, childrenAges)
+    }
+  }, [childrenValues, childrenAges])
+
+  // Проверяем возраст при изменении даты рождения и показываем уведомление
+  const handleBirthDateChange = (index: number, value: string) => {
+    const age = calculateFullAge(value)
+    
+    if (age !== null && age >= 18) {
+      const child = childrenValues[index]
+      const childName = [child?.lastName, child?.firstName, child?.middleName]
+        .filter(Boolean)
+        .join(' ') || 'Ребенок'
+      
+      // Сбрасываем ключ для этого ребенка, чтобы показать уведомление снова
+      const notificationKey = `${value}-${index}`
+      shownNotificationsRef.current.delete(notificationKey)
+      
+      notify({
+        message: `Внимание! ${childName} достиг(ла) возраста ${getAgeText(age)}. Пожалуйста, проверьте данные.`,
+        type: 'error',
+        duration: 8000,
+      })
+    }
+  }
 
   return (
     <AccordionItem value="familyInfo">
@@ -240,19 +361,6 @@ export const FamilyInfo: FC<Props> = ({
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <Label htmlFor={`basic_info.children.${index}.fullAge`}>
-                      Количество полных лет
-                    </Label>
-                    <Input
-                      id={`basic_info.children.${index}.fullAge`}
-                      value={childrenValues[index]?.fullAge ?? ""}
-                      readOnly
-                      className="bg-muted cursor-not-allowed"
-                      placeholder="Вычисляется автоматически"
-                    />
-                  </div>
-
                   <Controller
                     control={control}
                     name={`basic_info.children.${index}.birthDate`}
@@ -268,10 +376,26 @@ export const FamilyInfo: FC<Props> = ({
                               : (field.value as any)?.toString()
                             : ""
                         }
-                        onChange={field.onChange}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          handleBirthDateChange(index, value)
+                        }}
                       />
                     )}
                   />
+
+                  <div className="space-y-1">
+                    <Label htmlFor={`basic_info.children.${index}.fullAge`}>
+                      Количество полных лет
+                    </Label>
+                    <Input
+                      id={`basic_info.children.${index}.fullAge`}
+                      value={childrenAges[index] !== null ? childrenAges[index] : ""}
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                      placeholder="Вычисляется автоматически"
+                    />
+                  </div>
                 </div>
               </Card>
             );

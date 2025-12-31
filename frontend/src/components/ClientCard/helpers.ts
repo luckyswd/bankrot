@@ -160,7 +160,6 @@ export const normalizeChild = (child: unknown): ChildInfo => {
       lastName: "",
       middleName: null,
       birthDate: "",
-      fullAge: null,
     };
   }
 
@@ -174,7 +173,6 @@ export const normalizeChild = (child: unknown): ChildInfo => {
     lastName: asString(child.lastName),
     middleName: asNullableString(child.middleName),
     birthDate: asString(child.birthDate),
-    fullAge: typeof child.fullAge === "number" ? child.fullAge : null,
   };
 };
 

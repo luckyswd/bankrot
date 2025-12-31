@@ -204,7 +204,6 @@ class UsersAndContractsFixtures extends Fixture implements FixtureGroupInterface
                         'lastName' => $contract->getLastName(),
                         'middleName' => self::MIDDLE_NAMES[array_rand(self::MIDDLE_NAMES)],
                         'birthDate' => $this->generateRandomDate(startYear: 2010, endYear: 2020)->format('Y-m-d'),
-                        'fullAge' => 10,
                     ];
                 }
 
