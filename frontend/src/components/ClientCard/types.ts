@@ -100,6 +100,7 @@ export type BasisItem = {
 export type ExecutionTerminationItem = {
   number: string
   date: string
+  amount?: string | null
 }
 
 export type CreditorsClaimItem = {
