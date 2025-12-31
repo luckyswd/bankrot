@@ -21,7 +21,7 @@ export const DeptsInfo: FC<Props> = ({ register, control }) => {
   return (
     <AccordionItem value="deptsInfo">
       <AccordionTrigger><h3 className="text-xl font-semibold">
-        Долг и исполнительные производства
+        Иисполнительные производства
       </h3></AccordionTrigger>
       <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
         <div className="space-y-1">
