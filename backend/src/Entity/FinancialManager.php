@@ -131,6 +131,22 @@ class FinancialManager extends BaseEntity
         return $this;
     }
 
+    /**
+     * Получить номер телефона только из цифр (формат: 9112066788).
+     *
+     * @return string|null Номер телефона только из цифр или null, если телефон не указан
+     */
+    public function getPhoneDigits(): ?string
+    {
+        if (null === $this->phone) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $this->phone);
+
+        return '' === $digits ? null : $digits;
+    }
+
     public function getAauName(): ?string
     {
         return $this->aauName;

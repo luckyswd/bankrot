@@ -25,6 +25,8 @@ class DocumentXlsxService
             $worksheet = $spreadsheet->getActiveSheet();
 
             $worksheet->setCellValue('A4', $contracts->getFinancialManager()->getFio() ?? '');
+            $worksheet->setCellValue('B4', $contracts->getFinancialManager()->getAauInn() ?? '');
+            $worksheet->setCellValue('C4', $contracts->getFinancialManager()->getPhoneDigits() ?? '');
             $worksheet->setCellValue('D4', $contracts->getFinancialManager()->getEmail() ?? '');
 
             // F4 - Полное имя
