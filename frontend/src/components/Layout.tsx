@@ -116,48 +116,46 @@ export default function Layout({ children }: LayoutProps) {
               </>
             )}
 
-            {user?.roles?.includes('ROLE_ADMIN') && (
-              <Accordion type="single" collapsible value={sidebarOpen ? (databasesOpen ? "databases" : undefined) : undefined} onValueChange={(value) => setDatabasesOpen(value === "databases")}>
-                <AccordionItem value="databases" className="border-none">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccordionTrigger className={`w-full flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'} gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors`}>
-                        <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
-                          <Database className="h-4 w-4" />
-                          {sidebarOpen && <span>Справочники</span>}
-                        </div>
-                      </AccordionTrigger>
-                    </TooltipTrigger>
-                    {!sidebarOpen && <TooltipContent side="right">Справочники</TooltipContent>}
-                  </Tooltip>
-                  <AccordionContent className="mt-1 space-y-1 pl-0">
-                    {databaseItems.map((item, index) => {
-                      const isActive = location.pathname === item.path
-                      const Icon = item.icon
+            <Accordion type="single" collapsible value={sidebarOpen ? (databasesOpen ? "databases" : undefined) : undefined} onValueChange={(value) => setDatabasesOpen(value === "databases")}>
+              <AccordionItem value="databases" className="border-none">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AccordionTrigger className={`w-full flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'} gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors`}>
+                      <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
+                        <Database className="h-4 w-4" />
+                        {sidebarOpen && <span>Справочники</span>}
+                      </div>
+                    </AccordionTrigger>
+                  </TooltipTrigger>
+                  {!sidebarOpen && <TooltipContent side="right">Справочники</TooltipContent>}
+                </Tooltip>
+                <AccordionContent className="mt-1 space-y-1 pl-0">
+                  {databaseItems.map((item, index) => {
+                    const isActive = location.pathname === item.path
+                    const Icon = item.icon
 
-                      return (
-                        <Tooltip key={index}>
-                          <TooltipTrigger asChild>
-                            <Link
-                              to={item.path}
-                              className={`flex items-center ${sidebarOpen ? 'gap-3 justify-start px-3 py-2' : 'justify-center p-2'}  rounded-md transition-colors ${
-                                isActive
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-accent hover:text-accent-foreground'
-                              }`}
-                            >
-                              <Icon className="h-4 w-4" />
-                              {sidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
-                            </Link>
-                          </TooltipTrigger>
-                          {!sidebarOpen && <TooltipContent side="right">{item.label}</TooltipContent>}
-                        </Tooltip>
-                      )
-                    })}
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            )}
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <Link
+                            to={item.path}
+                            className={`flex items-center ${sidebarOpen ? 'gap-3 justify-start px-3 py-2' : 'justify-center p-2'}  rounded-md transition-colors ${
+                              isActive
+                                ? 'bg-primary text-primary-foreground'
+                                : 'hover:bg-accent hover:text-accent-foreground'
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {sidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
+                          </Link>
+                        </TooltipTrigger>
+                        {!sidebarOpen && <TooltipContent side="right">{item.label}</TooltipContent>}
+                      </Tooltip>
+                    )
+                  })}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </nav>
 
           <Separator />
