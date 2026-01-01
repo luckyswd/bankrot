@@ -104,10 +104,10 @@ export const FamilyInfo: FC<Props> = ({
     }
   }
 
-  // Вычисляем возраст для каждого ребенка
+  // Вычисляем возраст для каждого ребенка - пересчитывается при изменении дат рождения
   const childrenAges = useMemo(() => {
     return childrenValues.map((child: ChildInfo) => {
-      if (!child.birthDate) {
+      if (!child?.birthDate) {
         return null
       }
       return calculateFullAge(child.birthDate)
@@ -312,6 +312,13 @@ export const FamilyInfo: FC<Props> = ({
           )}
 
           {fields.map((field, index) => {
+            const birthDate = useWatch({
+              control,
+              name: `basic_info.children.${index}.birthDate`,
+            }) as string | undefined;
+
+            const currentAge = birthDate ? calculateFullAge(birthDate) : null;
+
             return (
               <Card key={field.id} className="p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -390,7 +397,7 @@ export const FamilyInfo: FC<Props> = ({
                     </Label>
                     <Input
                       id={`basic_info.children.${index}.fullAge`}
-                      value={childrenAges[index] !== null ? childrenAges[index] : ""}
+                      value={currentAge !== null ? currentAge : ""}
                       readOnly
                       className="bg-muted cursor-not-allowed"
                       placeholder="Вычисляется автоматически"
