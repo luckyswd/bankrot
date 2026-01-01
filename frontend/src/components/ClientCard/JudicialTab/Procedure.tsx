@@ -71,6 +71,7 @@ export const ProcedureTab = ({
     lateFee: null,
     forfeiture: null,
     stateDuty: null,
+    stateDutyForConsideration: null,
     basis: [],
     inclusion: null,
     isCreditCard: null,
@@ -296,6 +297,20 @@ export const ProcedureTab = ({
                             id={`judicial_procedure.creditorsClaims.${index}.stateDuty`}
                             {...register(
                               `judicial_procedure.creditorsClaims.${index}.stateDuty`
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.stateDutyForConsideration`}
+                          >
+                            Госпошлина за рассмотрение настоящего требования
+                          </Label>
+                          <Input
+                            id={`judicial_procedure.creditorsClaims.${index}.stateDutyForConsideration`}
+                            {...register(
+                              `judicial_procedure.creditorsClaims.${index}.stateDutyForConsideration`
                             )}
                           />
                         </div>

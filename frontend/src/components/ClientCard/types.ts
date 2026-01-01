@@ -113,6 +113,7 @@ export type CreditorsClaimItem = {
   lateFee?: string | null
   forfeiture?: string | null
   stateDuty?: string | null
+  stateDutyForConsideration?: string | null
   basis?: BasisItem[] | null
   inclusion?: boolean | null
   isCreditCard?: boolean | null

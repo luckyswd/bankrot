@@ -115,6 +115,7 @@ function ClientCard() {
           lateFee: claim.lateFee,
           forfeiture: claim.forfeiture,
           stateDuty: claim.stateDuty,
+          stateDutyForConsideration: claim.stateDutyForConsideration,
           basis: claim.basis,
           inclusion: claim.inclusion,
           isCreditCard: claim.isCreditCard,

@@ -430,6 +430,10 @@ class ContractorService
                             $contractCreditorClaim->setStateDuty($claimData['stateDuty'] === '' ? null : $claimData['stateDuty']);
                         }
 
+                        if (isset($claimData['stateDutyForConsideration'])) {
+                            $contractCreditorClaim->setStateDutyForConsideration($claimData['stateDutyForConsideration'] === '' ? null : $claimData['stateDutyForConsideration']);
+                        }
+
                         if (isset($claimData['basis'])) {
                             $basis = $claimData['basis'];
                             if (is_array($basis) && empty($basis)) {

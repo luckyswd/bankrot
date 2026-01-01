@@ -78,6 +78,11 @@ class ContractsCreditorsClaim extends BaseEntity
     #[OA\Property(description: 'Госпошлина', type: Types::STRING, example: '3000.00', nullable: true)]
     private ?string $stateDuty = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Госпошлина за рассмотрение настоящего требования', type: Types::STRING, example: '3000.00', nullable: true)]
+    private ?string $stateDutyForConsideration = null;
+
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
     #[OA\Property(
@@ -223,6 +228,18 @@ class ContractsCreditorsClaim extends BaseEntity
     public function setStateDuty(?string $stateDuty): self
     {
         $this->stateDuty = $stateDuty;
+
+        return $this;
+    }
+
+    public function getStateDutyForConsideration(): ?string
+    {
+        return $this->stateDutyForConsideration;
+    }
+
+    public function setStateDutyForConsideration(?string $stateDutyForConsideration): self
+    {
+        $this->stateDutyForConsideration = $stateDutyForConsideration;
 
         return $this;
     }
