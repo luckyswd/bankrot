@@ -89,11 +89,11 @@ class ContractsCreditorsClaim extends BaseEntity
         description: 'Основания (массив с номером и датой)',
         type: 'array',
         items: new OA\Items(
-            type: 'object',
             properties: [
                 new OA\Property(property: 'number', type: Types::STRING, example: '123'),
                 new OA\Property(property: 'date', type: Types::STRING, format: 'date', example: '2025-01-15'),
-            ]
+            ],
+            type: 'object'
         ),
         nullable: true
     )]
@@ -406,5 +406,82 @@ class ContractsCreditorsClaim extends BaseEntity
         }
 
         return '';
+    }
+
+    public function getPublishInfo(): string
+    {
+        $contract = $this->getContract();
+        $court = $contract->getCourt();
+        $courtName = $court ? $court->getShortName() : '';
+        $caseNumber = $contract->getCaseNumber() ?? '';
+        $debtorName = $contract->getFullNameGenitive() ?? '';
+
+        $judicialActDate = '';
+        if ($this->judicialActDate) {
+            $judicialActDate = $this->judicialActDate->format('d.m.Y');
+        }
+
+        $creditor = $this->getCreditor();
+        $creditorName = $creditor->getNameGenitive();
+        $creditorOgrn = $creditor->getOgrn();
+        $creditorInn = $creditor->getInn();
+
+        $creditorInfo = $creditorName;
+        $creditorDetails = [];
+        if ($creditorOgrn) {
+            $creditorDetails[] = 'ОГРН ' . $creditorOgrn;
+        }
+        if ($creditorInn) {
+            $creditorDetails[] = 'ИНН ' . $creditorInn;
+        }
+        if (!empty($creditorDetails)) {
+            $creditorInfo .= ' (' . implode(', ', $creditorDetails) . ')';
+        }
+
+        $debtAmount = $this->getDebtAmount() ?? '';
+
+        $amountDetails = [];
+        $principalAmount = $this->getPrincipalAmount();
+        if ($principalAmount) {
+            $amountDetails[] = $principalAmount . ' руб. – основной долг';
+        }
+        $interest = $this->getInterest();
+        if ($interest) {
+            $amountDetails[] = $interest . ' руб. – проценты';
+        }
+        $lateFee = $this->getLateFee();
+        if ($lateFee) {
+            $amountDetails[] = $lateFee . ' руб. – пени';
+        }
+        $stateDuty = $this->getStateDuty();
+        if ($stateDuty) {
+            $amountDetails[] = $stateDuty . ' руб. – госпошлина';
+        }
+        $stateDutyForConsideration = $this->getStateDutyForConsideration();
+        if ($stateDutyForConsideration) {
+            $amountDetails[] = $stateDutyForConsideration . ' руб. – госпошлина за рассмотрение настоящего требования';
+        }
+
+        $basisString = $this->getBasisString();
+
+        $result = 'Настоящим финансовый управляющий уведомляет, что Определением Арбитражного суда ' . $courtName;
+        if ($judicialActDate) {
+            $result .= ' от ' . $judicialActDate . ' г.';
+        }
+        if ($caseNumber) {
+            $result .= ' по делу № ' . $caseNumber;
+        }
+        $result .= ' в реестр требований кредиторов ' . $debtorName . ' в составе третьей очереди включено требование ' . $creditorInfo;
+        if ($debtAmount) {
+            $result .= ' на общую сумму ' . $debtAmount . ' руб.';
+            if (!empty($amountDetails)) {
+                $result .= ' (' . implode(', ', $amountDetails) . ')';
+            }
+        }
+        if ($basisString) {
+            $result .= ', возникшее на основании ' . $basisString;
+        }
+
+        return $result;
     }
 }
