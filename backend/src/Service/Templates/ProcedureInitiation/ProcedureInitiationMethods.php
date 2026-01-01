@@ -231,7 +231,7 @@ class ProcedureInitiationMethods
         $parts = [];
 
         foreach ($items as $IPEnding) {
-            $parts[] = $IPEnding['number'] . ' от ' . $IPEnding['date'] . ' на сумму: ' . $IPEnding['amount'] . 'руб.';
+            $parts[] = $IPEnding['number'] . ' от ' . $IPEnding['date'] . ' на сумму: ' . $IPEnding['amount'] . ' руб.';
         }
 
         return implode(', ', $parts);
