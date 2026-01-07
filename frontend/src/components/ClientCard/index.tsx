@@ -244,7 +244,10 @@ function ClientCard() {
     };
 
     const handleLinkClick = (event: MouseEvent) => {
-      const anchor = (event.target as HTMLElement | null)?.closest("a[href]") as HTMLAnchorElement | null;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("[data-skip-unsaved-check]")) return;
+      
+      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
       if (!anchor) return;
       if (anchor.target && anchor.target !== "_self") return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

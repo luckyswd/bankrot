@@ -150,6 +150,7 @@ export const DocumentsList = ({
                           variant="outline"
                           size="sm"
                           className="border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900"
+                          data-skip-unsaved-check="true"
                         >
                           <Download className="h-4 w-4" />
                         </Button>
