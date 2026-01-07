@@ -156,4 +156,20 @@ class ContractsPreCourtCreditor extends BaseEntity
 
         return $this;
     }
+
+    public function basisOccurrence(): string
+    {
+        if (empty($this->creditContractDate)) {
+            return '';
+        }
+
+        $formattedDate = $this->creditContractDate->format('d.m.Y');
+        $contractNumber = $this->creditContractNumber;
+
+        if (!empty($contractNumber)) {
+            return sprintf('Кредитный договор №%s от %sг.', $contractNumber, $formattedDate);
+        }
+
+        return sprintf('Кредитный договор от %sг.', $formattedDate);
+    }
 }
