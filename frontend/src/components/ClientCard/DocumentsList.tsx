@@ -146,7 +146,10 @@ export const DocumentsList = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button 
-                          onClick={() => onDownload(document)} 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDownload(document);
+                          }} 
                           variant="outline"
                           size="sm"
                           className="border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900"

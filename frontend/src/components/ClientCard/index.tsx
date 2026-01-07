@@ -245,7 +245,17 @@ function ClientCard() {
 
     const handleLinkClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target?.closest("[data-skip-unsaved-check]")) return;
+      
+      // Игнорируем клики по кнопкам и элементам с data-skip-unsaved-check
+      const path = event.composedPath ? event.composedPath() : [];
+
+      for (const element of path) {
+        if (element instanceof HTMLElement) {
+          if (element.tagName === "BUTTON" || element.hasAttribute("data-skip-unsaved-check")) {
+            return;
+          }
+        }
+      }
       
       const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
       if (!anchor) return;
@@ -361,6 +371,8 @@ function ClientCard() {
       link.href = downloadUrl;
       // Для шаблона с ID=200 используем расширение .xlsx
       link.download = `${doc?.name}.${doc.id === 200 ? 'xlsx' : 'docx'}`;
+      // Добавляем атрибут, чтобы обработчик несохраненных изменений игнорировал этот клик
+      link.setAttribute("data-skip-unsaved-check", "true");
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);
