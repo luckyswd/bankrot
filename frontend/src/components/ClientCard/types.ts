@@ -90,6 +90,7 @@ export type IntroductionFields = {
   executionDate: string
   procedureInitiationSpecialAccountNumber: string
   procedureInitiationIPEndings?: ExecutionTerminationItem[] | null
+  correspondenceAddress?: string | null
 }
 
 export type BasisItem = {
@@ -122,7 +123,6 @@ export type CreditorsClaimItem = {
 }
 
 export type ProcedureFields = {
-  correspondenceAddress?: string | null
   creditorsClaims?: CreditorsClaimItem[]
 }
 

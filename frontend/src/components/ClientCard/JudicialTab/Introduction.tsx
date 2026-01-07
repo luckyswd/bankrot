@@ -253,6 +253,17 @@ export const IntroductionTab = ({
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="judicial_procedure_initiation.correspondenceAddress">
+                Адрес для направления корреспонденции
+              </Label>
+              <Input
+                id="judicial_procedure_initiation.correspondenceAddress"
+                {...register("judicial_procedure_initiation.correspondenceAddress")}
+                placeholder="195112, г. Санкт-Петербург, а/я 16"
+              />
+            </div>
+
             <div className="col-span-full space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="font-medium text-lg">

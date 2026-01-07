@@ -90,17 +90,6 @@ export const ProcedureTab = ({
         </CardHeader>
         <CardContent>
           <div className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="judicial_procedure.correspondenceAddress">
-                Адрес для направления корреспонденции
-              </Label>
-              <Input
-                id="judicial_procedure.correspondenceAddress"
-                {...register("judicial_procedure.correspondenceAddress")}
-                placeholder="195112, г. Санкт-Петербург, а/я 16"
-              />
-            </div>
-
             <div className="flex items-center justify-between">
               <Label className="text-lg font-semibold">
                 Требования кредиторов

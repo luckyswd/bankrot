@@ -84,11 +84,10 @@ export const defaultIntroduction: IntroductionFields = {
   executionDate: "",
   procedureInitiationSpecialAccountNumber: "",
   procedureInitiationIPEndings: [],
-};
-
-export const defaultProcedure: ProcedureFields = {
   correspondenceAddress: null,
 };
+
+export const defaultProcedure: ProcedureFields = {};
 
 export const createDefaultFormValues = (): FormValues => ({
   basic_info: { ...defaultPrimaryInfo },
@@ -306,13 +305,15 @@ export const convertApiDataToFormValues = (
           ? apiData.judicial_procedure_initiation.procedureInitiationResolutionDate
           : undefined
       ),
+      correspondenceAddress: isRecord(apiData.judicial_procedure_initiation)
+        ? ((apiData.judicial_procedure_initiation as any).correspondenceAddress ?? null)
+        : isRecord(apiData.judicial_procedure)
+        ? ((apiData.judicial_procedure as any).correspondenceAddress ?? null)
+        : null,
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,
       ...asPartial<ProcedureFields>(apiData.judicial_procedure),
-      correspondenceAddress: isRecord(apiData.judicial_procedure)
-        ? ((apiData.judicial_procedure as any).correspondenceAddress ?? null)
-        : null,
     },
   };
 };

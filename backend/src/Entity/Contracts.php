@@ -322,7 +322,7 @@ class Contracts extends BaseEntity
     private Collection $creditorsClaims;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
     #[OA\Property(description: 'Адрес для направления корреспонденции', type: Types::STRING, example: '195112, г. Санкт-Петербург, а/я 16', nullable: true)]
     private ?string $correspondenceAddress = null;
 
