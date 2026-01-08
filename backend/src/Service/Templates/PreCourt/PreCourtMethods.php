@@ -28,11 +28,30 @@ class PreCourtMethods
      */
     public static function workDescription(Contracts $contract): string
     {
-        if ($contract->getWork()) {
-            return 'Должник временно трудоустроен.';
-        } else {
+        if (!$contract->getWork()) {
             return 'Должник временно не трудоустроен.';
         }
+
+        $name = $contract->getEmployerName();
+        $inn = $contract->getEmployerInn();
+
+        $employerInfo = [];
+
+        if (!empty($name)) {
+            $employerInfo[] = $name;
+        }
+
+        if (!empty($inn)) {
+            $employerInfo[] = $inn;
+        }
+
+        $result = 'Должник временно трудоустроен.';
+
+        if (!empty($employerInfo)) {
+            $result .= ' ' . implode(', ', $employerInfo);
+        }
+
+        return $result;
     }
 
     /**
