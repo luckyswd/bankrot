@@ -85,6 +85,7 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationSpecialAccountNumber: "",
   procedureInitiationIPEndings: [],
   correspondenceAddress: null,
+  procedureInitiationReportHearingDateTime: "",
 };
 
 export const defaultProcedure: ProcedureFields = {};
@@ -310,6 +311,9 @@ export const convertApiDataToFormValues = (
         : isRecord(apiData.judicial_procedure)
         ? ((apiData.judicial_procedure as any).correspondenceAddress ?? null)
         : null,
+      procedureInitiationReportHearingDateTime: isRecord(apiData.judicial_procedure_initiation)
+        ? ((apiData.judicial_procedure_initiation as any).procedureInitiationReportHearingDateTime ?? "")
+        : "",
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,

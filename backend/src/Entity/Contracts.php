@@ -402,6 +402,17 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Судебный пристав', type: 'object', nullable: true)]
     private ?Bailiff $procedureInitiationBailiff = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Информация о дате и времени рассмотрения отчёта',
+        type: Types::STRING,
+        format: 'date-time',
+        example: '2025-01-15T10:00:00',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $procedureInitiationReportHearingDateTime = null;
+
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
     #[OA\Property(
@@ -1155,6 +1166,18 @@ class Contracts extends BaseEntity
     public function setProcedureInitiationBailiff(?Bailiff $procedureInitiationBailiff): self
     {
         $this->procedureInitiationBailiff = $procedureInitiationBailiff;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationReportHearingDateTime(): ?\DateTimeInterface
+    {
+        return $this->procedureInitiationReportHearingDateTime;
+    }
+
+    public function setProcedureInitiationReportHearingDateTime(?\DateTimeInterface $procedureInitiationReportHearingDateTime): self
+    {
+        $this->procedureInitiationReportHearingDateTime = $procedureInitiationReportHearingDateTime;
 
         return $this;
     }

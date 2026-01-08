@@ -91,6 +91,7 @@ export type IntroductionFields = {
   procedureInitiationSpecialAccountNumber: string
   procedureInitiationIPEndings?: ExecutionTerminationItem[] | null
   correspondenceAddress?: string | null
+  procedureInitiationReportHearingDateTime: string
 }
 
 export type BasisItem = {

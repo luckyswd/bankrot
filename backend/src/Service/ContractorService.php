@@ -145,6 +145,7 @@ class ContractorService
             'hearingDateTime',
             'efrsbDateTime',
             'marriageTerminationDate',
+            'procedureInitiationReportHearingDateTime',
         ];
 
         foreach ($data as $key => $value) {
