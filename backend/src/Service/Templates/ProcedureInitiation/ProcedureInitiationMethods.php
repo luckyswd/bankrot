@@ -181,16 +181,25 @@ class ProcedureInitiationMethods
     {
         $status = $contract->getMaritalStatus();
         $isFemale = $contract->getGender() === 'female';
+        $spouseFullName = $contract->getSpouseFullName();
 
         // Текущие формы
         $current = $isFemale ? 'и его супруга' : 'и её супруги';
         $former  = $isFemale ? 'и его бывшего супруга' : 'и её бывшей супруги';
 
         if ($status === 'married') {
+            if (!empty($spouseFullName)) {
+                return $current . ' ' . $spouseFullName;
+            }
+
             return $current;
         }
 
         if ($status === 'married_3y_ago') {
+            if (!empty($spouseFullName)) {
+                return $former . ' ' . $spouseFullName;
+            }
+
             return $former;
         }
 
