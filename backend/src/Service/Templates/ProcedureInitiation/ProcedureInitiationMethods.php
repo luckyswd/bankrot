@@ -17,7 +17,7 @@ class ProcedureInitiationMethods
      */
     public static function financialManagerReportHearingDescription(Contracts $contract): string
     {
-        $hearingDateTime = $contract->getEfrsbDateTime();
+        $hearingDateTime = $contract->getProcedureInitiationReportHearingDateTime();
 
         if ($hearingDateTime === null || $contract->getCourt() === null) {
             return '';
