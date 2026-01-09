@@ -245,4 +245,25 @@ class ProcedureInitiationMethods
 
         return implode(', ', $parts);
     }
+
+    public static function dateTimeMeeting(Contracts $contract): string
+    {
+        $hearingDateTime = $contract->getProcedureInitiationReportHearingDateTime();
+        $room = $contract->getEfrsbCabinet();
+
+        if ($hearingDateTime === null) {
+            return '';
+        }
+
+        $date = $hearingDateTime->format('d.m.y');
+        $time = $hearingDateTime->format('H:i');
+
+        $result = sprintf('заседание %s в %s', $date, $time);
+
+        if ($room !== null && $room !== '') {
+            $result .= ', зал ' . $room;
+        }
+
+        return $result;
+    }
 }

@@ -1349,6 +1349,11 @@ class Contracts extends BaseEntity
         return ProcedureInitiationMethods::IPEndingsStr(contract: $this);
     }
 
+    public function dateTimeMeeting(): string
+    {
+        return ProcedureInitiationMethods::dateTimeMeeting(contract: $this);
+    }
+
     public function getCaseNumber(): ?string
     {
         return $this->caseNumber;
