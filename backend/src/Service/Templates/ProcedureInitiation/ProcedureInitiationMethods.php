@@ -33,6 +33,12 @@ class ProcedureInitiationMethods
         $courtName = $court->getShortName();
         $courtAddress = $court->getAddress() ?? '';
 
+        if (!empty($courtAddress)) {
+            $courtAddressArr = explode(',', $courtAddress);
+            unset($courtAddressArr[0]);
+            $courtAddress = implode(',', $courtAddressArr);
+        }
+
         $roomPart = '';
 
         if ($contract->getEfrsbCabinet() !== null && $contract->getEfrsbCabinet() !== '') {
