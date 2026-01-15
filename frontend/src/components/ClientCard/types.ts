@@ -36,6 +36,7 @@ export type PrimaryInfoFields = {
   passportDepartmentCode?: string | null
   maritalStatus?: string | null
   spouseFullName?: string | null
+  spouseFullNameGenitive?: string | null
   spouseBirthDate?: string | null
   marriageTerminationDate?: string | null
   hasMinorChildren?: boolean | null

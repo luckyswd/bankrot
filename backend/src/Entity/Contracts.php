@@ -178,6 +178,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'ФИО супруга', type: Types::STRING, example: 'Иванова Мария Петровна', nullable: true)]
     private ?string $spouseFullName = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
+    #[OA\Property(description: 'ФИО супруга в родительном падеже', type: Types::STRING, example: 'Ивановой Марии Петровны', nullable: true)]
+    private ?string $spouseFullNameGenitive = null;
+
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Дата рождения супруга', type: Types::STRING, format: 'date', example: '1992-03-25', nullable: true)]
@@ -876,12 +881,29 @@ class Contracts extends BaseEntity
 
     public function getSpouseFullName(): ?string
     {
+        if ($this->spouseFullNameGenitive) {
+            return $this->spouseFullNameGenitive;
+        }
+
         return $this->spouseFullName;
     }
 
     public function setSpouseFullName(?string $spouseFullName): self
     {
         $this->spouseFullName = $spouseFullName;
+
+        return $this;
+    }
+
+    public function getSpouseFullNameGenitive(): ?string
+    {
+
+        return $this->spouseFullNameGenitive;
+    }
+
+    public function setSpouseFullNameGenitive(?string $spouseFullNameGenitive): self
+    {
+        $this->spouseFullNameGenitive = $spouseFullNameGenitive;
 
         return $this;
     }

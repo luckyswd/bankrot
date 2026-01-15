@@ -227,6 +227,15 @@ export const FamilyInfo: FC<Props> = ({
               />
             </div>
 
+            <div className="space-y-1">
+              <Label htmlFor="basic_info.spouseFullNameGenitive">ФИО супруга в родительном падеже</Label>
+              <Input
+                id="basic_info.spouseFullNameGenitive"
+                placeholder="Петровой Елены Сергеевны"
+                {...register("basic_info.spouseFullNameGenitive")}
+              />
+            </div>
+
             <Controller
               control={control}
               name="basic_info.spouseBirthDate"
