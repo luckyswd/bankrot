@@ -1,24 +1,60 @@
+CONSOLE = php bin/console
+TEST_DB_URL = sqlite:///$(CURDIR)/var/test.db
+
+.DEFAULT_GOAL := help
+
+.PHONY: help install composer-install db-migrate db-diff cc \
+        check-code stan lint lint-fix test test-prepare seed jwt-gen
+
+help:
+	@echo "Разработка:"
+	@echo "  make install         composer install с dev-зависимостями"
+	@echo "  make check-code      stan + lint"
+	@echo "  make stan            PHPStan"
+	@echo "  make lint            PHP CS Fixer, только проверка"
+	@echo "  make lint-fix        PHP CS Fixer, применить исправления"
+	@echo "  make test            Пересоздать тестовую базу и запустить PHPUnit"
+	@echo ""
+	@echo "База данных:"
+	@echo "  make db-migrate      Применить миграции"
+	@echo "  make db-diff         Сгенерировать миграцию по изменениям сущностей"
+	@echo "  make seed            Загрузить фикстуры группы seed"
+	@echo ""
+	@echo "Обслуживание:"
+	@echo "  make cc              Очистить кэш Symfony и Doctrine"
+	@echo "  make jwt-gen         Сгенерировать пару JWT-ключей"
+	@echo "  make composer-install Установка без dev-зависимостей, для деплоя"
+
+install:
+	composer install --no-interaction --prefer-dist
+
 composer-install:
-	@bash -c 'if command -v composer &> /dev/null; then \
-		composer install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
+	@bash -c 'set -e; \
+	install_args="install --no-dev --optimize-autoloader --no-interaction --no-scripts"; \
+	if command -v composer > /dev/null 2>&1; then \
+		composer $$install_args; \
 	elif [ -f composer.phar ]; then \
-		php composer.phar install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
+		php composer.phar $$install_args; \
 	else \
-		echo "Composer not found. Installing..."; \
+		echo "Composer не найден, скачиваем"; \
 		php -r "copy(\"https://getcomposer.org/installer\", \"composer-setup.php\");"; \
 		php composer-setup.php --quiet; \
-		php composer.phar install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
-		rm -f composer-setup.php composer.phar; \
+		rm -f composer-setup.php; \
+		php composer.phar $$install_args; \
+		rm -f composer.phar; \
 	fi'
 
 db-migrate:
-	php bin/console doctrine:migrations:migrate --no-interaction
+	$(CONSOLE) doctrine:migrations:migrate --no-interaction
+
+db-diff:
+	$(CONSOLE) doctrine:migrations:diff --no-interaction
 
 cc:
-	php bin/console cache:clear --no-debug
-	php bin/console doctrine:cache:clear-result
-	php bin/console doctrine:cache:clear-query
-	php bin/console doctrine:cache:clear-metadata
+	$(CONSOLE) cache:clear --no-debug
+	$(CONSOLE) doctrine:cache:clear-result
+	$(CONSOLE) doctrine:cache:clear-query
+	$(CONSOLE) doctrine:cache:clear-metadata
 
 check-code: stan lint
 
@@ -28,21 +64,21 @@ stan:
 lint:
 	vendor/bin/php-cs-fixer fix --dry-run --config=.php-cs-fixer.dist.php -v --diff --ansi
 
-# Тестовая база данных SQLite (отдельная от основной MySQL базы)
-TEST_DB_URL = sqlite:///$(shell pwd)/var/test.db
+lint-fix:
+	vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --diff --ansi
 
 test-prepare:
 	mkdir -p var
+	rm -rf var/cache/test
 	rm -f var/test.db
-	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:schema:drop --force --no-interaction --full-database || true
-	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:schema:create --no-interaction
-	DATABASE_URL="$(TEST_DB_URL)" php bin/console doctrine:fixtures:load --group=seed --no-interaction
+	DATABASE_URL="$(TEST_DB_URL)" $(CONSOLE) doctrine:schema:create --no-interaction
+	DATABASE_URL="$(TEST_DB_URL)" $(CONSOLE) doctrine:fixtures:load --group=seed --no-interaction
 
 test: test-prepare
 	php bin/phpunit --no-coverage
 
 seed:
-	php bin/console doctrine:fixtures:load --group=seed
+	$(CONSOLE) doctrine:fixtures:load --group=seed
 
 jwt-gen:
-	php bin/console lexik:jwt:generate-keypair
+	$(CONSOLE) lexik:jwt:generate-keypair
