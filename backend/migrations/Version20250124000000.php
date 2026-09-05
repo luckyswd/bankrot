@@ -14,10 +14,20 @@ final class Version20250124000000 extends AbstractMigration
         return 'Удаление уникального индекса UNIQ_950A973E3184009 с court_id в таблице contracts';
     }
 
+    private function tableExists(string $tableName): bool
+    {
+        return (int)$this->connection->fetchOne(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            [$tableName]
+        ) > 0;
+    }
+
     public function up(Schema $schema): void
     {
         $connection = $this->connection;
         $tableName = 'contracts';
+
+        $this->skipIf(!$this->tableExists($tableName), 'Таблица contracts ещё не создана');
 
         // Проверяем существование внешнего ключа через INFORMATION_SCHEMA
         $fkExists = $connection->fetchOne(
@@ -69,6 +79,8 @@ final class Version20250124000000 extends AbstractMigration
     {
         $connection = $this->connection;
         $tableName = 'contracts';
+
+        $this->skipIf(!$this->tableExists($tableName), 'Таблица contracts ещё не создана');
 
         // Проверяем существование внешнего ключа
         $fkExists = $connection->fetchOne(

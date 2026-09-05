@@ -13,6 +13,9 @@ dist-ssr
 *.local
 docker/mysql
 
+# Секреты compose.prod.yml
+/.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

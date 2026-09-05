@@ -1,0 +1,50 @@
+FROM composer:2 AS composer
+
+FROM php:8.4-fpm-alpine3.19
+
+RUN apk add --no-cache \
+    git \
+    unzip \
+    bash \
+    make \
+    mysql-client \
+    libzip-dev \
+    libpng-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    icu-data-full \
+    icu-libs
+
+RUN apk add --no-cache --virtual .build-deps \
+    $PHPIZE_DEPS \
+    icu-dev \
+    zlib-dev \
+    g++ \
+    autoconf
+
+RUN docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install opcache \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install bcmath \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install intl
+
+RUN apk del .build-deps
+
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+COPY docker/php/config/php.production.ini /usr/local/etc/php/php.ini
+
+WORKDIR /var/www/html
+
+COPY backend/composer.json backend/composer.lock backend/symfony.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --no-autoloader
+
+COPY backend/ ./
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
+
+RUN mkdir -p var/document-templates var/cache var/log config/jwt \
+    && chown -R www-data:www-data var config/jwt
+
+CMD ["php-fpm"]

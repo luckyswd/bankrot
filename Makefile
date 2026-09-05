@@ -1,13 +1,17 @@
 DC ?= docker compose
+DC_PROD ?= docker compose -f compose.prod.yml
 PHP_SERVICE ?= php
 FRONTEND_SERVICE ?= frontend
 PHP_EXEC = $(DC) exec -T $(PHP_SERVICE)
+PROD_PHP_EXEC = $(DC_PROD) exec -T -u www-data $(PHP_SERVICE)
 
 .DEFAULT_GOAL := help
 
 .PHONY: help up down start stop restart build ps logs logs-php logs-frontend \
         install sh sh-frontend \
-        stan lint lint-fix test check-code cc db-migrate seed jwt-gen
+        stan lint lint-fix test check-code cc db-migrate seed jwt-gen \
+        prod-build prod-up prod-down prod-ps prod-logs prod-migrate prod-cc \
+        prod-jwt-gen prod-sh
 
 help:
 	@echo "Контейнеры:"
@@ -32,6 +36,17 @@ help:
 	@echo "  make db-migrate     Применить миграции Doctrine"
 	@echo "  make seed           Загрузить фикстуры группы seed"
 	@echo "  make jwt-gen        Сгенерировать пару JWT-ключей"
+	@echo ""
+	@echo "Сервер (compose.prod.yml, требует .env в корне):"
+	@echo "  make prod-build     Собрать prod-образы"
+	@echo "  make prod-up        Поднять prod-контейнеры"
+	@echo "  make prod-down      Остановить prod-контейнеры"
+	@echo "  make prod-ps        Статус prod-контейнеров"
+	@echo "  make prod-logs      Логи prod-контейнеров"
+	@echo "  make prod-sh        Shell в контейнере bankrot-php"
+	@echo "  make prod-migrate   Применить миграции на сервере"
+	@echo "  make prod-cc        Очистить кэш на сервере"
+	@echo "  make prod-jwt-gen   Сгенерировать JWT-ключи на сервере"
 
 up: install
 	$(DC) up -d
@@ -111,3 +126,30 @@ seed:
 
 jwt-gen:
 	$(PHP_EXEC) make jwt-gen
+
+prod-build:
+	$(DC_PROD) build
+
+prod-up:
+	$(DC_PROD) up -d
+
+prod-down:
+	$(DC_PROD) down
+
+prod-ps:
+	$(DC_PROD) ps
+
+prod-logs:
+	$(DC_PROD) logs -f --tail=100
+
+prod-sh:
+	$(DC_PROD) exec $(PHP_SERVICE) sh
+
+prod-migrate:
+	$(PROD_PHP_EXEC) make db-migrate
+
+prod-cc:
+	$(PROD_PHP_EXEC) make cc
+
+prod-jwt-gen:
+	$(PROD_PHP_EXEC) make jwt-gen

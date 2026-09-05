@@ -6,6 +6,10 @@ on:
       - staging
   workflow_dispatch:
 
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '20.19.5'
+
 jobs:
   changes:
     name: Определение изменений
@@ -39,11 +43,6 @@ jobs:
             frontend:
               - 'frontend/**'
 
-      - name: Вывод результатов проверки изменений
-        run: |
-          echo "Backend changes: ${{ steps.filter.outputs.backend }}"
-          echo "Frontend changes: ${{ steps.filter.outputs.frontend }}"
-
   phpstan:
     name: PHPStan
     needs: changes
@@ -56,34 +55,24 @@ jobs:
       - name: Настройка PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
           coverage: none
 
       - name: Получение кэша Composer
         uses: actions/cache@v4
         with:
-          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
       - name: Установка зависимостей Composer
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
-      - name: Создание минимального .env для PHPStan
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
-        run: |
-          if [ ! -f .env ]; then
-            echo "APP_ENV=dev" > .env
-            echo "APP_SECRET=temp_secret_for_phpstan" >> .env
-          fi
-          mkdir -p var/cache/dev
-          php bin/console cache:warmup --env=dev || true
-
       - name: Проверка кода PHPStan
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: make stan
 
   lint:
@@ -98,24 +87,24 @@ jobs:
       - name: Настройка PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
           coverage: none
 
       - name: Получение кэша Composer
         uses: actions/cache@v4
         with:
-          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
       - name: Установка зависимостей Composer
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Проверка стиля кода
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: make lint
 
   test:
@@ -130,195 +119,47 @@ jobs:
       - name: Настройка PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_mysql, pdo_sqlite, mbstring, xml, ctype, iconv, intl
           coverage: none
 
       - name: Получение кэша Composer
         uses: actions/cache@v4
         with:
-          path: ${{ secrets.LOCAL_BACKEND_DIR }}/vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', secrets.LOCAL_BACKEND_DIR)) }}
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
       - name: Установка зависимостей Composer
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
-      - name: Создание директории для базы данных
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
-        run: mkdir -p var
-
       - name: Создание .env файла для тестов
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         run: |
-          echo "APP_ENV=test" > .env
-          echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env
-          echo "DATABASE_URL=sqlite:///$(pwd)/var/test.db" >> .env
+          mkdir -p var
+          echo "APP_ENV=test" > .env.local
+          echo "APP_SECRET=test_secret_key_for_ci_cd" >> .env.local
+          echo "DATABASE_URL=sqlite:///$(pwd)/var/test.db" >> .env.local
 
       - name: Генерация JWT ключей
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         env:
-          APP_ENV: "test"
+          APP_ENV: test
         run: make jwt-gen
 
       - name: Запуск тестов
-        working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}
+        working-directory: backend
         env:
-          APP_ENV: "test"
-        run: |
-          export DATABASE_URL="sqlite:///$(pwd)/var/test.db"
-          make test
+          APP_ENV: test
+        run: make test
 
-  deploy-backend:
-    name: Деплой бэкенда
-    needs: [changes, phpstan, lint, test]
-    if: needs.changes.outputs.backend == 'true' && needs.phpstan.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Получение кода
-        uses: actions/checkout@v4
-
-      - name: Сохранение config/jwt перед очисткой
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            if [ -d config/jwt ]; then
-              mkdir -p /tmp/jwt-backup
-              cp -r config/jwt/* /tmp/jwt-backup/ 2>/dev/null || true
-            fi
-
-      - name: Очистка старых файлов бэкенда на сервере
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            # Удаляем старые файлы, но сохраняем vendor, var, .env файлы и .pem файлы
-            find . -maxdepth 1 -type f -name "*.php" ! -name "*.pem" -delete
-            find . -maxdepth 1 -type f -name "*.json" ! -name "*.pem" -delete
-            find . -maxdepth 1 -type f -name "*.lock" ! -name "*.pem" -delete
-            find . -maxdepth 1 -type f -name "*.xml" ! -name "*.pem" -delete
-            find . -maxdepth 1 -type f -name "*.neon" ! -name "*.pem" -delete
-            find . -maxdepth 1 -type f -name "Makefile" -delete
-            # Удаляем директории кроме vendor, var и config/jwt
-            rm -rf bin/ public/ src/ migrations/ templates/ translations/ || true
-            # Удаляем config, но сохраняем jwt и .pem файлы
-            if [ -d config ]; then
-              # Сохраняем .pem файлы отдельно
-              mkdir -p /tmp/pem-backup
-              find config/jwt -name "*.pem" -exec cp {} /tmp/pem-backup/ \; 2>/dev/null || true
-              # Удаляем config, но не трогаем .pem файлы
-              find config -type f ! -name "*.pem" -delete 2>/dev/null || true
-              find config -type d -empty -delete 2>/dev/null || true
-              # Восстанавливаем jwt с .pem файлами
-              if [ -d /tmp/jwt-backup ] || [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
-                mkdir -p config/jwt
-                if [ -d /tmp/jwt-backup ]; then
-                  cp -r /tmp/jwt-backup/* config/jwt/ 2>/dev/null || true
-                fi
-                if [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
-                  cp /tmp/pem-backup/*.pem config/jwt/ 2>/dev/null || true
-                fi
-              fi
-            fi
-
-      - name: Подготовка файлов для деплоя
-        run: |
-          # Создаем временную директорию для деплоя
-          mkdir -p backend-deploy
-          
-          # Копируем файлы бэкенда, исключая ненужные
-          cd ${{ secrets.LOCAL_BACKEND_DIR }}
-          rsync -av \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='tests' \
-            --exclude='var/cache/*' \
-            --exclude='var/log/*' \
-            --exclude='.env*' \
-            --exclude='.phpunit.cache' \
-            --exclude='phpunit.dist.xml' \
-            --exclude='docker-compose.yml' \
-            --exclude='Dockerfile' \
-            --exclude='www.conf' \
-            --exclude='*.log' \
-            --exclude='*.tmp' \
-            --exclude='config/jwt' \
-            . ../backend-deploy/
-
-      - name: Деплой бэкенда через SCP
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          port: 22
-          source: "backend-deploy/*"
-          target: ${{ secrets.STG_SERVER_BACKEND_DIR }}/
-          strip_components: 1
-          overwrite: true
-
-      - name: Восстановление config/jwt после деплоя
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            # Восстанавливаем jwt папку если она была сохранена
-            if [ -d /tmp/jwt-backup ] || [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
-              mkdir -p config/jwt
-              if [ -d /tmp/jwt-backup ]; then
-                cp -r /tmp/jwt-backup/* config/jwt/ 2>/dev/null || true
-              fi
-              # Восстанавливаем .pem файлы
-              if [ -n "$(ls -A /tmp/pem-backup 2>/dev/null)" ]; then
-                cp /tmp/pem-backup/*.pem config/jwt/ 2>/dev/null || true
-              fi
-            fi
-            # Очищаем временные файлы
-            rm -rf /tmp/jwt-backup /tmp/pem-backup || true
-
-      - name: Установка прав доступа
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            chmod -R 755 bin/ public/ src/ config/ migrations/
-            chmod 644 composer.json composer.lock symfony.lock
-
-      - name: Установка зависимостей и запуск миграций
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          script: |
-            cd ${{ secrets.STG_SERVER_BACKEND_DIR }}
-            cp .env.stage .env
-            make composer-install
-            make cc
-            make db-migrate
   type-check:
     name: TypeScript Type Check
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
     steps:
       - name: Получение кода
         uses: actions/checkout@v4
@@ -326,61 +167,45 @@ jobs:
       - name: Настройка Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.5'
-          cache: 'npm'
-          cache-dependency-path: ${{ secrets.LOCAL_FRONTEND_DIR }}/package-lock.json
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Установка зависимостей npm
-        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        working-directory: frontend
         run: npm ci
 
       - name: Проверка типов TypeScript
-        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
+        working-directory: frontend
         run: npx tsc --noEmit
 
-  deploy-frontend:
-    name: Деплой фронтенда
-    needs: [changes, type-check]
-    if: (needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && needs.type-check.result == 'success'
+  deploy:
+    name: Деплой на bankrot.shefcode.tech
+    needs: [changes, phpstan, lint, test, type-check]
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Получение кода
-        uses: actions/checkout@v4
-
-      - name: Настройка Node.js
-        uses: actions/setup-node@v4
+      - name: Сборка и запуск на сервере
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          node-version: '20.19.5'
-          cache: 'npm'
-          cache-dependency-path: ${{ secrets.LOCAL_FRONTEND_DIR }}/package-lock.json
-
-      - name: Установка зависимостей npm
-        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
-        run: npm ci
-
-      - name: Сборка фронтенда для staging
-        working-directory: ${{ secrets.LOCAL_FRONTEND_DIR }}
-        run: npm run build
-
-      - name: Очистка папки фронтенда на сервере
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
+          host: ${{ secrets.STG_SSH_HOST }}
+          username: ${{ secrets.STG_SSH_USER }}
+          key: ${{ secrets.STG_SSH_KEY }}
+          port: ${{ secrets.STG_SSH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 30m
           script: |
-            cd ${{ secrets.STG_SERVER_FRONTEND_DIR }}
-            rm -rf ./* || true
+            set -e
+            cd ${{ secrets.STG_PROJECT_DIR }}
 
-      - name: Деплой фронтенда через SCP
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.STG_FTP_IP }}
-          username: ${{ secrets.STG_FTP_USERNAME }}
-          password: ${{ secrets.STG_FTP_PASSWORD }}
-          port: 22
-          source: "${{ secrets.LOCAL_FRONTEND_DIR }}/dist/*"
-          target: ${{ secrets.STG_SERVER_FRONTEND_DIR }}/
-          strip_components: 1
-          overwrite: true
+            git fetch --prune origin staging
+            git reset --hard origin/staging
+
+            docker compose -f compose.prod.yml build
+            docker compose -f compose.prod.yml up -d
+
+            docker compose -f compose.prod.yml exec -T -u www-data php make db-migrate
+            docker compose -f compose.prod.yml exec -T -u www-data php make cc
+
+            HTTP_PORT=$(grep -E '^HTTP_PORT=' .env | cut -d= -f2)
+            curl -fsS --retry 10 --retry-delay 3 "http://127.0.0.1:${HTTP_PORT:-8094}/api/v1/health"
