@@ -51,35 +51,33 @@ class UserCreateAdminCommand extends Command
 
             /** @var QuestionHelper $helper */
             $helper = $this->getHelper('question');
-            $updateQ = new Question('Обновить роль на ROLE_ADMIN? (y/n): ', 'y');
+            $updateQ = new Question('Обновить роль на ROLE_ADMIN и задать новый пароль? (y/n): ', 'y');
             $update = strtolower(trim($helper->ask($input, $output, $updateQ)));
 
-            if ('y' === $update) {
-                $existingUser->setRoles(['ROLE_ADMIN']);
-                $this->em->flush();
-                $output->writeln("<info>Роль ROLE_ADMIN назначена пользователю '{$username}'.</info>");
-                $output->writeln('<info>Используйте существующий пароль для входа.</info>');
+            if ('y' !== $update) {
+                $output->writeln('<info>Текущие роли пользователя: ' . implode(', ', $existingUser->getRoles()) . '</info>');
 
                 return Command::SUCCESS;
             }
 
-            $output->writeln('<info>Текущие роли пользователя: ' . implode(', ', $existingUser->getRoles()) . '</info>');
+            $plainPassword = $this->resolvePassword($input, $output, $plainPassword);
+
+            if (null === $plainPassword) {
+                return Command::FAILURE;
+            }
+
+            $existingUser->setRoles(['ROLE_ADMIN']);
+            $existingUser->setPassword($this->hasher->hashPassword($existingUser, $plainPassword));
+            $this->em->flush();
+
+            $output->writeln("<info>Пользователю '{$username}' назначена роль ROLE_ADMIN и задан новый пароль.</info>");
 
             return Command::SUCCESS;
         }
 
-        if (!$plainPassword) {
-            /** @var QuestionHelper $helper */
-            $helper = $this->getHelper('question');
-            $passwordQ = new Question('Введите пароль администратора: ');
-            $passwordQ->setHidden(true);
-            $passwordQ->setHiddenFallback(false);
-            $plainPassword = trim($helper->ask($input, $output, $passwordQ));
-        }
+        $plainPassword = $this->resolvePassword($input, $output, $plainPassword);
 
-        if (empty($plainPassword)) {
-            $output->writeln('<error>Пароль не может быть пустым.</error>');
-
+        if (null === $plainPassword) {
             return Command::FAILURE;
         }
 
@@ -99,5 +97,25 @@ class UserCreateAdminCommand extends Command
         $output->writeln('  Roles: ' . implode(', ', $user->getRoles()));
 
         return Command::SUCCESS;
+    }
+
+    private function resolvePassword(InputInterface $input, OutputInterface $output, ?string $plainPassword): ?string
+    {
+        if (!$plainPassword) {
+            /** @var QuestionHelper $helper */
+            $helper = $this->getHelper('question');
+            $passwordQ = new Question('Введите пароль администратора: ');
+            $passwordQ->setHidden(true);
+            $passwordQ->setHiddenFallback(false);
+            $plainPassword = trim($helper->ask($input, $output, $passwordQ));
+        }
+
+        if (empty($plainPassword)) {
+            $output->writeln('<error>Пароль не может быть пустым.</error>');
+
+            return null;
+        }
+
+        return $plainPassword;
     }
 }

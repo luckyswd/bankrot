@@ -1,0 +1,93 @@
+# Боевой стек. Запускается на сервере из каталога сайта:
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+# Отличия от docker-compose.yml (разработка): исходники и собранная статика
+# запечены в образы (без монтирования с хоста), APP_ENV=prod, vite dev-сервера
+# нет, а nginx слушает только 127.0.0.1:${HTTP_PORT} — наружу его публикует
+# хостовый nginx, как это сделано для raschetnik.by -> :8092.
+services:
+    mysql:
+        image: mysql:8.0
+        container_name: bankrot-mysql
+        restart: unless-stopped
+        command: --max_allowed_packet=16M
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        volumes:
+            - db_data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 30s
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "3"
+
+    php:
+        image: bankrot-app
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile.prod
+        container_name: bankrot-php
+        restart: unless-stopped
+        depends_on:
+            mysql:
+                condition: service_healthy
+        environment:
+            # Symfony: реальные переменные окружения перекрывают значения из .env в репозитории
+            APP_ENV: prod
+            APP_DEBUG: "0"
+            APP_SECRET: ${APP_SECRET}
+            DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}?serverVersion=8.0&charset=utf8mb4"
+            JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+            JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+            JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+            CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+            # REMOTE_ADDR доверяет непосредственному прокси — им может быть
+            # только контейнерный nginx, других путей к php-fpm нет.
+            TRUSTED_PROXIES: ${TRUSTED_PROXIES:-REMOTE_ADDR}
+        volumes:
+            # Загруженные шаблоны документов, кэш и логи. Том, а не каталог с
+            # хоста: rsync при выкате идёт с --delete и снёс бы шаблоны,
+            # которых нет в репозитории.
+            - app_var:/var/www/html/var
+            # Ключи JWT генерируются один раз и переживают пересборку образа.
+            - app_jwt:/var/www/html/config/jwt
+        expose:
+            - "9000"
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "3"
+
+    nginx:
+        image: bankrot-web
+        build:
+            context: .
+            dockerfile: docker/frontend/Dockerfile.prod
+        container_name: bankrot-nginx
+        restart: unless-stopped
+        depends_on:
+            - php
+        # Единственный порт наружу, и тот на loopback. Заняты соседями:
+        # 8091 (promo), 8092 (raschetnik), 8093 (alimenty).
+        ports:
+            - "127.0.0.1:${HTTP_PORT}:80"
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "3"
+
+volumes:
+    db_data:
+    app_var:
+    app_jwt:

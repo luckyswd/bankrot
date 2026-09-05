@@ -1,8 +1,9 @@
-.git
-.github
-.idea
-.claude
+**/.git
+**/.github
+**/.idea
+**/.claude
 openspec
+deploy
 
 docker/mysql
 
@@ -12,10 +13,11 @@ frontend/dist
 backend/vendor
 backend/var
 backend/config/jwt
-backend/.env.local
-backend/.env.*.local
-backend/.php-cs-fixer.cache
-backend/.phpunit.cache
 backend/tests
+**/.env.local
+**/.env.*.local
+.env.prod
+**/.php-cs-fixer.cache
+**/.phpunit.cache
 
 **/*.log

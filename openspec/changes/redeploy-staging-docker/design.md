@@ -52,9 +52,9 @@
 
 ## Decisions
 
-### Решение 1. Отдельный `compose.prod.yml` вместо override-файла
+### Решение 1. Отдельный `docker-compose.prod.yml` вместо override-файла
 
-Берём самостоятельный `compose.prod.yml` с собственными именами сервисов,
+Берём самостоятельный `docker-compose.prod.yml` с собственными именами сервисов,
 контейнеров (`bankrot-nginx`, `bankrot-php`, `bankrot-mysql`), сети и томов.
 
 Почему не `docker-compose.override.yml` / `-f docker-compose.yml -f prod.yml`:
@@ -100,11 +100,11 @@ Symfony будет генерировать абсолютные ссылки п
 Альтернатива — прописать абсолютный `https://bankrot.shefcode.tech` — работает,
 но зашивает домен в бандл и возвращает CORS.
 
-### Решение 4. Секреты — переменные окружения в `compose.prod.yml`
+### Решение 4. Секреты — переменные окружения в `docker-compose.prod.yml`
 
 Все значения задаются через `environment:` сервисов и подставляются из файла
-`.env` рядом с `compose.prod.yml` (не в git, создаётся из отслеживаемого
-`compose.prod.env.example`): `APP_SECRET`, `JWT_PASSPHRASE`,
+`.env.prod` рядом с `docker-compose.prod.yml` (не в git, создаётся из отслеживаемого
+`.env.prod.example`): `APP_SECRET`, `JWT_PASSPHRASE`,
 `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `HTTP_PORT`, `CORS_ALLOW_ORIGIN`,
 `TRUSTED_PROXIES`. `DATABASE_URL` собирается в compose из реквизитов MySQL,
 поэтому пароль базы задан ровно в одном месте. Отсутствие обязательного
@@ -134,48 +134,59 @@ Symfony будет генерировать абсолютные ссылки п
 
 ### Решение 5. Состояние — именованные тома
 
-Три тома в `compose.prod.yml`:
+Три тома в `docker-compose.prod.yml`:
 
 | Том | Куда монтируется | Что хранит |
 |---|---|---|
-| `bankrot-db` | `/var/lib/mysql` контейнера MySQL | база |
-| `bankrot-var` | `/var/www/html/var` контейнера php | `document-templates`, кэш, логи |
-| `bankrot-jwt` | `/var/www/html/config/jwt` контейнера php | пара `*.pem` |
+| `db_data` | `/var/lib/mysql` контейнера MySQL | база |
+| `app_var` | `/var/www/html/var` контейнера php | `document-templates`, кэш, логи |
+| `app_jwt` | `/var/www/html/config/jwt` контейнера php | пара `*.pem` |
 
-`bankrot-var` монтируется поверх `var/` из образа — Symfony создаст `cache` и
+`app_var` монтируется поверх `var/` из образа — Symfony создаст `cache` и
 `log` сам при прогреве. Ключи JWT генерируются один раз при первой установке
 (`make jwt-gen` внутри контейнера) и дальше живут в томе, поэтому исчезает
 вся логика бэкапа `config/jwt` в `/tmp` из старого workflow.
 
 Не используем bind-mount в `/srv/sites/...`, как `docker/mysql/var/mysql`
-локально: именованный том не зависит от прав пользователя на хосте и не
-попадает под `git clean`.
+локально: `rsync --delete` при выкате снёс бы загруженные шаблоны, которых нет
+в репозитории, а именованный том вдобавок не зависит от прав пользователя на
+хосте.
 
-### Решение 6. Деплой — `git pull` + пересборка на сервере
+### Решение 6. Деплой — `rsync` + пересборка на сервере, как у соседей
 
-Шаг деплоя в workflow — один `appleboy/ssh-action` со скриптом:
+Раскладка повторяет `raschetnik.by`, который живёт на том же сервере: один и тот
+же приём для всех проектов дешевле в обслуживании, чем свой у каждого.
 
-1. `cd /srv/sites/bankrot.shefcode.tech && git fetch --prune && git reset --hard origin/staging`
-   (`reset --hard`, а не `pull`: каталог сервера — реплика ветки, локальных
-   правок там быть не должно, а `pull` вставал бы на конфликтах);
-2. `docker compose -f compose.prod.yml build`;
-3. `docker compose -f compose.prod.yml up -d`;
-4. ожидание готовности MySQL, затем `docker compose exec -T php make db-migrate`
-   и `make cc`;
-5. проверка `curl -fsS http://127.0.0.1:8094/api/v1/health`.
+1. `sshpass -e rsync -az --delete` выкладывает рабочую копию из runner'а в
+   `/srv/sites/bankrot.shefcode.tech`, исключая `.git`, `vendor`,
+   `node_modules`, `backend/var` и `.env.prod`;
+2. `sshpass -e ssh ... bash -s` выполняет на сервере
+   `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build --remove-orphans`;
+3. `exec -T -u www-data php make db-migrate` и `make cc`;
+4. проверка `curl -fsS http://127.0.0.1:${HTTP_PORT}/api/v1/health`;
+5. `docker image prune -f`.
+
+Почему rsync, а не `git pull` на сервере: серверу не нужен доступ к приватному
+репозиторию, то есть не нужен deploy key и его ротация. Выкладывается ровно то,
+что проверил CI, а не то, что сервер сумел вытянуть из GitHub.
+
+Аутентификация по паролю (`sshpass`, секрет `DEPLOY_SSH_PASSWORD`) — как у
+соседних проектов, чтобы доступы к серверу были однотипными. Секреты:
+`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_PASSWORD`, `DEPLOY_PORT`.
 
 Composer-зависимости ставятся на этапе сборки образа
 (`composer install --no-dev --optimize-autoloader`), а не на живом сервере —
 падение сети во время `composer install` больше не оставляет систему с
 полусобранным `vendor/`.
 
+Ловушка, найденная в выкате соседа и учтённая здесь: скрипт приезжает на сервер
+через `ssh bash -s`, то есть по stdin, и `docker compose exec` читает тот же
+stdin. Без `< /dev/null` первый же `exec` дочитывает остаток скрипта, bash
+упирается в EOF и выходит кодом 0 — выкат зелёный, а миграции не выполнены.
+
 Порядок «сначала контейнеры, потом миграции» означает, что между стартом нового
 кода и применением миграции есть окно в несколько секунд. Для одного staging-
 контура это принято; zero-downtime — вне рамок.
-
-Аутентификация SSH — по ключу (`key: ${{ secrets.STG_SSH_KEY }}`), а не по
-паролю, как сейчас. Новые секреты: `STG_SSH_HOST`, `STG_SSH_USER`,
-`STG_SSH_KEY`, `STG_PROJECT_DIR`.
 
 ### Решение 7. Пути в джобах качества
 
@@ -195,12 +206,12 @@ MySQL в CI не поднимаем.
 
 ### Решение 9. Отдельное имя проекта compose
 
-`compose.prod.yml` объявляет `name: bankrot-prod`. Без этого compose берёт имя
-проекта из каталога — `bankrot`, то есть ровно то же, что у dev-профиля, и
-`docker compose -f compose.prod.yml up` пересоздаёт dev-контейнеры вместо
-запуска отдельного стека (проверено: `bankruptcy-php`, `bankruptcy-mysql` и
-`bankruptcy-nginx` были пересозданы). На сервере конфликт бы не проявился, зато
-локальная проверка prod-профиля ломала бы разработку.
+`.env.prod` задаёт `COMPOSE_PROJECT_NAME=bankrot-prod`. Без этого compose берёт
+имя проекта из каталога — при локальной проверке это `bankrot`, ровно то же, что
+у dev-профиля, и запуск боевого стека пересоздаёт dev-контейнеры вместо своих
+(проверено: `bankruptcy-php`, `bankruptcy-mysql` и `bankruptcy-nginx` были
+пересозданы). На сервере каталог называется иначе и конфликт бы не проявился,
+зато локальная проверка ломала бы разработку.
 
 ### Решение 10. Цепочка миграций чинится, а не обходится
 
@@ -234,14 +245,14 @@ MySQL в CI не поднимаем.
 - **Сборка на сервере грузит общий CPU и может задеть соседей** → сборка
   запускается только на push в `staging`; при частых деплоях перейти на
   Решение «образы в GHCR» (сейчас вне рамок).
-- **`git reset --hard` затрёт ручные правки на сервере** → все изменяемые
-  файлы (`backend/.env.local`, `.env` рядом с compose) добавлены в
-  `.gitignore` и не отслеживаются; правило «на сервере руками код не правим»
-  фиксируется в README.
-- **Первая выкладка на пустой базе оставит систему без пользователей** →
-  задача установки включает ручное заведение администратора; без него в
-  систему не войти.
-- **Потеря тома `bankrot-var` = потеря всех загруженных шаблонов документов**
+- **`rsync --delete` затрёт ручные правки на сервере** → `.env.prod`,
+  `backend/var`, `vendor` и `node_modules` вынесены в исключения rsync;
+  правило «на сервере руками код не правим» зафиксировано в README.
+- **Миграция `Version20251104101442` заводит пользователя `admin` с bcrypt-хэшем,
+  лежащим в git** → до смены пароля вход открыт всем, кто видел репозиторий.
+  Смена пароля вынесена отдельным шагом установки; `app:user-create-admin`
+  доработана так, чтобы задавать пароль и существующему пользователю.
+- **Потеря тома `app_var` = потеря всех загруженных шаблонов документов**
   → резервное копирование вне рамок, но факт зафиксирован в README, чтобы это
   не стало сюрпризом.
 - **Symfony в `prod` кэширует конфигурацию** → `make cc` обязателен в скрипте
@@ -258,18 +269,18 @@ MySQL в CI не поднимаем.
 Разовая установка (руками, до первой автоматической выкладки):
 
 1. DNS `bankrot.shefcode.tech` -> IP сервера.
-2. `git clone` ветки `staging` в `/srv/sites/bankrot.shefcode.tech`.
-3. Создать `backend/.env.local` и `.env` для compose с новыми секретами.
-4. `docker compose -f compose.prod.yml build && up -d`, дождаться healthy MySQL.
-5. `make db-migrate`, `make jwt-gen`, завести администратора.
-6. Конфиг host-nginx `bankrot.shefcode.tech.conf` -> `proxy_pass
-   http://127.0.0.1:8094`, `client_max_body_size 100M` (как в контейнерном
-   конфиге сейчас), сертификат, `nginx -t && systemctl reload nginx`.
+2. Создать `/srv/sites/bankrot.shefcode.tech` и залить туда код (первый раз
+   вручную либо запуском workflow, дальше это делает CI).
+3. Создать `.env.prod` из `.env.prod.example` с новыми секретами.
+4. `make prod-up`, дождаться healthy MySQL.
+5. `make prod-migrate`, `make prod-jwt-gen`, сменить пароль `admin`.
+6. Конфиг host-nginx из `deploy/nginx-bankrot.shefcode.tech.conf`, затем
+   `certbot --nginx -d bankrot.shefcode.tech`.
 7. Проверить чек-лист сценариев из спецификации.
-8. Прописать секреты GitHub, снести неиспользуемые `STG_FTP_*`.
+8. Прописать секреты GitHub, снести неиспользуемые `STG_FTP_*` и `LOCAL_*_DIR`.
 
-Откат: `git reset --hard <предыдущий коммит>` в каталоге проекта и повторная
-сборка. Данные при откате не трогаются; обратной миграции Doctrine скрипт не
+Откат: запуск workflow на предыдущем коммите — rsync вернёт прежнее состояние
+и пересоберёт образы. Данные при откате не трогаются; обратной миграции Doctrine скрипт не
 выполняет — если откатываемая версия содержала миграцию, её нужно откатить
 вручную (`doctrine:migrations:migrate prev`).
 

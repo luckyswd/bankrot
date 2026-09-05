@@ -15,13 +15,15 @@
 ## What Changes
 
 - **BREAKING** Старый способ деплоя (SCP файлов + выполнение `make` по SSH на
-  голом сервере) заменяется на сборку и запуск docker-образов на сервере.
-  Секреты GitHub `STG_FTP_*`, `STG_SERVER_BACKEND_DIR`, `STG_SERVER_FRONTEND_DIR`,
-  `LOCAL_BACKEND_DIR`, `LOCAL_FRONTEND_DIR` перестают использоваться.
+  голом сервере) заменяется на `rsync` рабочей копии и сборку docker-образов на
+  сервере — той же схемой, что у соседнего `raschetnik.by`. Секреты GitHub
+  `STG_FTP_*`, `STG_SERVER_BACKEND_DIR`, `STG_SERVER_FRONTEND_DIR`,
+  `LOCAL_BACKEND_DIR`, `LOCAL_FRONTEND_DIR` перестают использоваться, вместо них
+  — `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_PASSWORD`, `DEPLOY_PORT`.
 - **BREAKING** Адрес системы меняется на `https://bankrot.shefcode.tech`.
   Фронтенд и API живут на одном origin: SPA отдаётся с `/`, API доступен по
   `/api/v1/*`. Отдельного поддомена `api.*` больше нет.
-- Появляется production-профиль docker compose (`compose.prod.yml`): php-fpm с
+- Появляется production-профиль docker compose (`docker-compose.prod.yml`): php-fpm с
   вкомпилированным кодом и `composer install --no-dev`, nginx проекта, MySQL 8,
   собранная статика фронтенда. Vite dev-сервер в проде не запускается.
 - Контейнер nginx проекта публикуется только на `127.0.0.1:8094` (порты 8091,
@@ -29,13 +31,17 @@
 - Загруженные шаблоны документов (`backend/var/document-templates`), JWT-ключи
   (`backend/config/jwt`) и данные MySQL выносятся в именованные docker-тома,
   чтобы пересборка образа их не стирала.
-- **BREAKING** `backend/.env.stage` перестаёт быть источником секретов: файл
-  `.env.local` создаётся на сервере вручную и в репозиторий не попадает.
-  Сейчас `APP_SECRET` и `JWT_PASSPHRASE` лежат в git открытым текстом, и на
-  staging стоит `APP_ENV=dev` — оба факта исправляются.
+- **BREAKING** `backend/.env.stage` перестаёт быть источником секретов: они
+  задаются переменными окружения из `.env.prod`, который создаётся на сервере
+  вручную и в репозиторий не попадает. Сейчас `APP_SECRET` и `JWT_PASSPHRASE`
+  лежат в git открытым текстом, и на staging стоит `APP_ENV=dev` — оба факта
+  исправляются.
 - `.github/workflows/staging.yml` переписывается: джобы качества (PHPStan,
-  PHP CS Fixer, PHPUnit, `tsc --noEmit`) сохраняются как гейт, шаг деплоя
-  становится одним SSH-вызовом `git pull` + пересборка compose + миграции.
+  PHP CS Fixer, PHPUnit, `tsc --noEmit`) сохраняются как гейт, шаг деплоя —
+  `rsync` на сервер и пересборка стека с миграциями.
+- Пароль пользователя `admin`, заводимого миграцией `Version20251104101442` с
+  хэшем из git, меняется при установке; `app:user-create-admin` дорабатывается,
+  чтобы уметь задавать пароль существующему пользователю.
 - Деплой считается успешным только после ответа `200` от `/api/v1/health`.
 
 ## Capabilities
@@ -66,11 +72,16 @@
 
 **Файлы репозитория.**
 - `.github/workflows/staging.yml` — переписывается целиком.
-- `compose.prod.yml`, `docker/nginx/prod.conf`, `docker/php/Dockerfile.prod`,
-  `docker/frontend/Dockerfile.prod` — новые файлы.
+- `docker-compose.prod.yml`, `.env.prod.example`, `docker/nginx/prod.conf`,
+  `docker/php/Dockerfile.prod`, `docker/frontend/Dockerfile.prod`,
+  `deploy/nginx-bankrot.shefcode.tech.conf` — новые файлы.
 - `docker-compose.yml`, `Makefile`, `docker/nginx/default.conf` — локальная
   разработка не ломается, добавляются только prod-цели в `Makefile`.
-- `backend/.env.stage`, `backend/.env.prod` — чистятся от секретов.
+- `backend/.env.stage` удаляется, `backend/.env.prod` чистится от секретов.
+- `backend/src/Command/UserCreateAdminCommand.php` — умеет задавать пароль
+  существующему пользователю.
+- `backend/src/Controller/HealthController.php`, миграции
+  `Version20250124000000` и `Version20260905090000` — см. tasks.md.
 - `frontend/.env.production` — `VITE_API_URL` становится пустым
   (относительные пути `/api/v1`).
 - `backend/config/packages/nelmio_cors.yaml` не меняется, но `CORS_ALLOW_ORIGIN`
@@ -79,11 +90,11 @@
 **Инфраструктура сервера** (за пределами репозитория, выполняется руками):
 каталог `/srv/sites/bankrot.shefcode.tech`, конфиг
 `/etc/nginx/sites-available/bankrot.shefcode.tech.conf`, TLS-сертификат,
-DNS-запись `bankrot.shefcode.tech`, SSH-ключ деплоя в секретах GitHub.
+DNS-запись `bankrot.shefcode.tech`, доступы к серверу в секретах GitHub.
 
 **Данные.** База создаётся пустой, наполняется миграциями Doctrine; перенос
-данных с `appbankrot.ru` в рамки не входит. Первый пользователь заводится
-вручную после выкладки.
+данных с `appbankrot.ru` в рамки не входит. Пользователь `admin` создаётся
+миграцией, при установке ему задаётся новый пароль.
 
 ## Вне рамок (Non-goals)
 

@@ -1,5 +1,5 @@
 DC ?= docker compose
-DC_PROD ?= docker compose -f compose.prod.yml
+DC_PROD ?= docker compose --env-file .env.prod -f docker-compose.prod.yml
 PHP_SERVICE ?= php
 FRONTEND_SERVICE ?= frontend
 PHP_EXEC = $(DC) exec -T $(PHP_SERVICE)
@@ -37,7 +37,7 @@ help:
 	@echo "  make seed           Загрузить фикстуры группы seed"
 	@echo "  make jwt-gen        Сгенерировать пару JWT-ключей"
 	@echo ""
-	@echo "Сервер (compose.prod.yml, требует .env в корне):"
+	@echo "Сервер (docker-compose.prod.yml, требует .env.prod в корне):"
 	@echo "  make prod-build     Собрать prod-образы"
 	@echo "  make prod-up        Поднять prod-контейнеры"
 	@echo "  make prod-down      Остановить prod-контейнеры"
@@ -131,7 +131,8 @@ prod-build:
 	$(DC_PROD) build
 
 prod-up:
-	$(DC_PROD) up -d
+	$(DC_PROD) up -d --build --remove-orphans
+	docker image prune -f
 
 prod-down:
 	$(DC_PROD) down

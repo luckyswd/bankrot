@@ -27,27 +27,29 @@
   проброс `HTTPS`/`X-Forwarded-Proto` в fastcgi-параметры; проверить
   `nginx -t` внутри собранного образа
 
-## 3. compose.prod.yml
+## 3. docker-compose.prod.yml
 
-- [x] 3.1 Создать `compose.prod.yml` с `name: bankrot-prod` (без своего имени
-  проект совпадёт с dev по имени каталога и пересоздаст dev-контейнеры),
-  сервисами `nginx`, `php`, `mysql`, именами контейнеров `bankrot-nginx`,
-  `bankrot-php`, `bankrot-mysql`, отдельной сетью и публикацией только
-  `127.0.0.1:${HTTP_PORT:-8094}:80` у nginx; проверить
-  `docker compose -f compose.prod.yml config` — валидный вывод, у `mysql` нет
-  секции `ports`
-- [x] 3.2 Описать именованные тома `bankrot-db` -> `/var/lib/mysql`,
-  `bankrot-var` -> `/var/www/html/var`, `bankrot-jwt` -> `/var/www/html/config/jwt`;
-  проверить, что `docker compose -f compose.prod.yml config --volumes`
-  перечисляет ровно эти три тома и bind-mount исходников нет ни у одного сервиса
+- [x] 3.1 Создать `docker-compose.prod.yml` по образцу `raschetnik.by`:
+  сервисы `nginx`, `php`, `mysql`, контейнеры `bankrot-nginx`, `bankrot-php`,
+  `bankrot-mysql`, публикация только `127.0.0.1:${HTTP_PORT}:80` у nginx,
+  ограничение размера логов; `COMPOSE_PROJECT_NAME=bankrot-prod` в `.env.prod`
+  (без него имя проекта совпадёт с dev по имени каталога и пересоздаст
+  dev-контейнеры); проверить
+  `docker compose --env-file .env.prod -f docker-compose.prod.yml config` —
+  валидный вывод, у `mysql` нет секции `ports`
+- [x] 3.2 Описать именованные тома `db_data` -> `/var/lib/mysql`,
+  `app_var` -> `/var/www/html/var`, `app_jwt` -> `/var/www/html/config/jwt`;
+  проверить, что `config --volumes` перечисляет ровно эти три тома и
+  bind-mount исходников нет ни у одного сервиса
 - [x] 3.3 Добавить `healthcheck` MySQL через `mysqladmin ping` и
   `depends_on: {mysql: {condition: service_healthy}}` у php, `depends_on: php`
-  у nginx; проверить локальным запуском `docker compose -f compose.prod.yml up -d`,
-  что php стартует только после `healthy` базы
-- [x] 3.4 Добавить `.env` рядом с `compose.prod.yml` в `.gitignore` и создать
-  отслеживаемый образец `compose.prod.env.example` с ключами `HTTP_PORT`,
-  `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`;
-  проверить `git status` — реальный `.env` не отслеживается
+  у nginx; проверить локальным запуском `make prod-up`, что php стартует
+  только после `healthy` базы
+- [x] 3.4 Добавить `/.env.prod` в `.gitignore` и создать отслеживаемый образец
+  `.env.prod.example` с ключами `COMPOSE_PROJECT_NAME`, `HTTP_PORT`,
+  `MYSQL_*`, `APP_SECRET`, `JWT_PASSPHRASE`, `CORS_ALLOW_ORIGIN`,
+  `TRUSTED_PROXIES`; проверить `git status` — реальный `.env.prod` не
+  отслеживается
 
 ## 4. Конфигурация окружения
 
@@ -56,11 +58,11 @@
   только старым шагом `cp .env.stage .env`); проверить
   `git grep -n "7dbe335d9e2699cc7f51374cd9ca9360\|a415378c7a137af4dea44f5d207da97c"` —
   совпадений в отслеживаемых файлах нет, кроме локального `backend/.env`
-- [x] 4.2 Передавать секреты через `environment:` в `compose.prod.yml`, а не
-  через `backend/.env.local` (Symfony грузит `.env.prod` после `.env.local`, и
-  он бы его перекрыл; реальные переменные окружения имеют приоритет над всеми
-  dotenv-файлами). Обязательные ключи объявить как `${VAR:?...}`; проверить,
-  что `docker compose -f compose.prod.yml config` падает без `.env`
+- [x] 4.2 Передавать секреты через `environment:` в `docker-compose.prod.yml`,
+  подставляя их из `.env.prod` (`--env-file`), а не через `backend/.env.local`:
+  Symfony грузит `.env.prod` после `.env.local` и перекрыл бы его, тогда как
+  реальные переменные окружения имеют приоритет над всеми dotenv-файлами;
+  проверить `docker compose --env-file .env.prod -f docker-compose.prod.yml config`
 - [x] 4.3 Настроить доверие к обратному прокси: `framework.trusted_proxies` и
   `trusted_headers` в `backend/config/packages/framework.yaml` через переменную
   окружения; проверить, что при запросе с `X-Forwarded-Proto: https` Symfony
@@ -81,6 +83,11 @@
   `doctrine:schema:validate` на чистой базе — схема в синхроне, и прогон на
   копии существующей базы — миграция применяется без ошибок
 
+- [x] 4.7 Дописать `app:user-create-admin` так, чтобы существующему
+  пользователю задавался новый пароль, а не только роль (миграция
+  `Version20251104101442` заводит `admin` с хэшем из git, и сменить пароль было
+  нечем); проверить смену пароля и вход через `POST /api/v1/login`
+
 ## 5. Workflow деплоя
 
 - [x] 5.1 Заменить `working-directory: ${{ secrets.LOCAL_BACKEND_DIR }}` и
@@ -90,12 +97,15 @@
 - [x] 5.2 Удалить джобы `deploy-backend` и `deploy-frontend` целиком со всей
   логикой бэкапа `config/jwt` через `/tmp`; проверить, что в файле не осталось
   упоминаний `appleboy/scp-action` и `STG_FTP_*`
-- [x] 5.3 Добавить джоб `deploy`, зависящий от всех джобов качества, с одним
-  шагом `appleboy/ssh-action` по ключу (`STG_SSH_HOST`, `STG_SSH_USER`,
-  `STG_SSH_KEY`, `STG_PROJECT_DIR`): `git fetch --prune` +
-  `git reset --hard origin/staging`, `docker compose -f compose.prod.yml build`,
-  `up -d`, `exec -T php make db-migrate`, `exec -T php make cc`; проверить, что
-  условие джоба не пропускает деплой при падении любой проверки
+- [x] 5.3 Добавить джоб `deploy` по образцу `raschetnik.by`: `sshpass` +
+  `rsync -az --delete` рабочей копии в `/srv/sites/bankrot.shefcode.tech`
+  (исключая `.git`, `vendor`, `node_modules`, `backend/var`, `.env.prod`), затем
+  `ssh ... bash -s` с `up -d --build --remove-orphans`, `make db-migrate`,
+  `make cc` и `docker image prune`. Каждому `docker compose exec` закрыть stdin
+  через `< /dev/null`, иначе он дочитает остаток скрипта, приехавшего по stdin,
+  и выкат станет зелёным без миграций. Секреты: `DEPLOY_HOST`, `DEPLOY_USER`,
+  `DEPLOY_SSH_PASSWORD`, `DEPLOY_PORT`; проверить, что условие джоба не
+  пропускает деплой при падении любой проверки
 - [x] 5.4 Добавить в конец скрипта деплоя проверку
   `curl -fsS --retry 10 --retry-delay 3 http://127.0.0.1:${HTTP_PORT}/api/v1/health`;
   проверить, что при заведомо сломанном контейнере джоб падает, а не завершается
@@ -104,7 +114,7 @@
 ## 6. Локальные команды и документация
 
 - [x] 6.1 Добавить в корневой `Makefile` цели `prod-build`, `prod-up`,
-  `prod-down`, `prod-logs`, `prod-migrate` поверх `compose.prod.yml`, не трогая
+  `prod-down`, `prod-logs`, `prod-migrate` поверх `docker-compose.prod.yml`, не трогая
   существующие цели (`stan`, `lint`, `test`, `cc`, `db-migrate`, `jwt-gen`
   переименовывать нельзя — их вызывает CI); проверить `make` — новые цели видны
   в справке
@@ -118,19 +128,20 @@
 
 - [ ] 7.1 Убедиться, что порт свободен: `ss -ltnp | grep 8094` — пусто; при
   занятости выбрать другой и записать его в `HTTP_PORT`
-- [ ] 7.2 Клонировать ветку `staging` в `/srv/sites/bankrot.shefcode.tech`,
-  создать в корне проекта `.env` из `compose.prod.env.example` с новыми
-  значениями `APP_SECRET`, `JWT_PASSPHRASE`, `MYSQL_ROOT_PASSWORD`,
-  `MYSQL_PASSWORD` (старые из git считать скомпрометированными); проверить
-  `docker compose -f compose.prod.yml config`
+- [ ] 7.2 Создать `/srv/sites/bankrot.shefcode.tech`, залить туда код, создать
+  `.env.prod` из `.env.prod.example` с новыми значениями `APP_SECRET`,
+  `JWT_PASSPHRASE`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD` (старые из git
+  считать скомпрометированными); проверить `docker compose --env-file .env.prod
+  -f docker-compose.prod.yml config`
 - [ ] 7.3 Собрать и поднять контейнеры, дождаться `healthy` у `bankrot-mysql`,
   выполнить `make db-migrate` и `make jwt-gen`; проверить `docker ps` — три
   контейнера `bankrot-*` в статусе `Up`, соседние проекты не перезапускались
-- [ ] 7.4 Завести администратора (`ROLE_ADMIN`) в пустой базе и проверить вход
-  через `POST /api/v1/login`
-- [ ] 7.5 Настроить `/etc/nginx/sites-available/bankrot.shefcode.tech.conf`:
-  `proxy_pass http://127.0.0.1:8094`, `client_max_body_size 100M`, редирект
-  `http -> https`, TLS-сертификат; проверить `nginx -t` и
+- [ ] 7.4 Сменить пароль пользователя `admin`, заведённого миграцией
+  `Version20251104101442` с хэшем из git (`app:user-create-admin --username=admin`),
+  и проверить вход через `POST /api/v1/login`
+- [ ] 7.5 Положить `deploy/nginx-bankrot.shefcode.tech.conf` в
+  `/etc/nginx/sites-available/`, включить симлинком, выпустить сертификат
+  (`certbot --nginx -d bankrot.shefcode.tech`); проверить `nginx -t` и
   `systemctl reload nginx` без ошибок
 
 ## 8. Приёмка по спецификации

@@ -13,8 +13,8 @@ dist-ssr
 *.local
 docker/mysql
 
-# Секреты compose.prod.yml
-/.env
+# Секреты боевого стека, живут только на сервере
+/.env.prod
 
 # Editor directories and files
 .vscode/*

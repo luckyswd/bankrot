@@ -182,30 +182,85 @@ jobs:
   deploy:
     name: Деплой на bankrot.shefcode.tech
     needs: [changes, phpstan, lint, test, type-check]
-    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
+    env:
+      DEST: /srv/sites/bankrot.shefcode.tech
     steps:
-      - name: Сборка и запуск на сервере
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STG_SSH_HOST }}
-          username: ${{ secrets.STG_SSH_USER }}
-          key: ${{ secrets.STG_SSH_KEY }}
-          port: ${{ secrets.STG_SSH_PORT || 22 }}
-          script_stop: true
-          command_timeout: 30m
-          script: |
-            set -e
-            cd ${{ secrets.STG_PROJECT_DIR }}
+      - name: Получение кода
+        uses: actions/checkout@v4
 
-            git fetch --prune origin staging
-            git reset --hard origin/staging
+      - name: Установка sshpass и rsync
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
 
-            docker compose -f compose.prod.yml build
-            docker compose -f compose.prod.yml up -d
+      - name: Копирование репозитория на сервер
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          sshpass -e rsync -az --delete \
+            -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.idea' \
+            --exclude 'node_modules' \
+            --exclude 'dist' \
+            --exclude 'vendor' \
+            --exclude 'backend/var' \
+            --exclude 'docker/mysql' \
+            --exclude '.env.prod' \
+            --exclude '.env.local' \
+            --exclude '.env.*.local' \
+            ./ "$SSH_USER@$SSH_HOST:$DEST/"
 
-            docker compose -f compose.prod.yml exec -T -u www-data php make db-migrate
-            docker compose -f compose.prod.yml exec -T -u www-data php make cc
+      - name: Сборка и запуск боевого стека
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          sshpass -e ssh -p "$PORT" \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            "$SSH_USER@$SSH_HOST" \
+            "DEST='$DEST' DOCKERHUB_USER='$DOCKERHUB_USER' DOCKERHUB_TOKEN='$DOCKERHUB_TOKEN' bash -s" <<'REMOTE'
+          set -eu
+          cd "$DEST"
 
-            HTTP_PORT=$(grep -E '^HTTP_PORT=' .env | cut -d= -f2)
-            curl -fsS --retry 10 --retry-delay 3 "http://127.0.0.1:${HTTP_PORT:-8094}/api/v1/health"
+          COMPOSE="docker compose --env-file .env.prod -f docker-compose.prod.yml"
+
+          # Аутентифицированные пуллы Docker Hub считаются по аккаунту, а не по
+          # анонимному IP — это снимает 429 при сборке базовых образов.
+          if [ -n "${DOCKERHUB_TOKEN:-}" ]; then
+            echo "$DOCKERHUB_TOKEN" | docker login -u "${DOCKERHUB_USER:-luckyswd}" --password-stdin
+          fi
+
+          $COMPOSE up -d --build --remove-orphans
+
+          # У каждого «docker compose exec» ниже stdin закрыт. Это не
+          # перестраховка: скрипт приезжает на сервер через «ssh bash -s», то
+          # есть по stdin, а exec его же stdin и читает. Первый же exec дочитал
+          # бы остаток скрипта, bash упёрся бы в EOF и вышел кодом 0 — выкат
+          # зелёный, а миграции и сброс кэша не выполнены.
+          #
+          # От имени www-data: под root консоль оставила бы в томе app_var файлы
+          # кэша, которые php-fpm потом не сможет перезаписать.
+          $COMPOSE exec -T -u www-data php make db-migrate < /dev/null
+          $COMPOSE exec -T -u www-data php make cc < /dev/null
+
+          # Единственная проверка, что выкат состоялся: контейнеры могут быть
+          # подняты, а приложение при этом не отвечать.
+          HTTP_PORT="$(grep -E '^HTTP_PORT=' .env.prod | cut -d= -f2)"
+          curl -fsS --retry 10 --retry-delay 3 "http://127.0.0.1:${HTTP_PORT:-8094}/api/v1/health"
+
+          # Оба сайта живут на одном сервере и выкатываются одним движением.
+          # Параллельная уборка образов отвечает «a prune operation is already
+          # running» — это столкновение соседей, а не поломка выката.
+          docker image prune -f || echo "уборка образов пропущена: занята соседним выкатом"
+          REMOTE

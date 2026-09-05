@@ -85,57 +85,74 @@ make stop    # Остановить контейнеры (не удаляя)
 Рабочий адрес — **https://bankrot.shefcode.tech**. Фронтенд и API живут на
 одном домене: SPA отдаётся с `/`, API доступен по `/api/v1/*`.
 
-Сервер общий, на нём работают и другие проекты. Контейнеры описаны в
-`compose.prod.yml`, наружу публикуется единственный порт **127.0.0.1:8094**,
-перед ним стоит системный nginx хоста, который терминирует TLS.
+Сервер общий, на нём работают `raschetnik.by`, `alimenty.by` и
+`promo.shefcode.tech`. Схема та же, что у соседей: контейнеры описаны в
+`docker-compose.prod.yml`, наружу публикуется единственный порт
+**127.0.0.1:8094**, перед ним стоит системный nginx хоста, который терминирует
+TLS. Код приезжает на сервер по `rsync`, git на сервере не нужен.
 
 ### Разовая установка
 
-1. Проверить, что порт свободен: `ss -ltnp | grep 8094`.
-   Заняты соседними проектами: `8091`, `8092`, `8093`.
-2. Склонировать ветку `staging` в `/srv/sites/bankrot.shefcode.tech`.
-3. Создать в корне проекта файл `.env` из `compose.prod.env.example` и задать
-   **новые** значения `APP_SECRET`, `JWT_PASSPHRASE`, `MYSQL_ROOT_PASSWORD`,
-   `MYSQL_PASSWORD`. Значения из `backend/.env` и `backend/.env.dev` лежат в git
-   открытым текстом — на сервере их использовать нельзя.
-4. Собрать и поднять контейнеры:
+1. A-запись `bankrot.shefcode.tech` -> IP сервера.
+2. Проверить, что порт свободен: `ss -ltnp | grep 8094`.
+   Заняты соседними проектами: `8091` (promo), `8092` (raschetnik),
+   `8093` (alimenty).
+3. Создать каталог и залить в него код (первый раз — вручную, дальше это делает
+   CI):
 
    ```bash
-   make prod-build
-   make prod-up
+   mkdir -p /srv/sites/bankrot.shefcode.tech
    ```
 
-5. Применить миграции и сгенерировать ключи JWT:
+4. Создать `.env.prod` из `.env.prod.example` и задать **новые** значения
+   `APP_SECRET`, `JWT_PASSPHRASE`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`.
+   Значения из `backend/.env` и `backend/.env.dev` лежат в git открытым
+   текстом — на сервере их использовать нельзя.
 
    ```bash
+   cd /srv/sites/bankrot.shefcode.tech
+   cp .env.prod.example .env.prod && nano .env.prod
+   ```
+
+5. Собрать и поднять контейнеры, применить миграции, сгенерировать ключи JWT:
+
+   ```bash
+   make prod-up
    make prod-migrate
    make prod-jwt-gen
    ```
 
-6. Завести администратора (`ROLE_ADMIN`) — без него в систему не войти.
-7. Настроить `/etc/nginx/sites-available/bankrot.shefcode.tech.conf`:
-   редирект `http -> https`, TLS-сертификат, `client_max_body_size 100M`,
-   `proxy_pass http://127.0.0.1:8094` и проброс заголовков
-   `X-Forwarded-For`, `X-Forwarded-Proto`, `Host`.
-8. Прописать в секретах GitHub `STG_SSH_HOST`, `STG_SSH_USER`, `STG_SSH_KEY`,
-   `STG_PROJECT_DIR`.
+6. **Сменить пароль администратора.** Миграция `Version20251104101442` заводит
+   пользователя `admin` с хэшем пароля, который лежит в git — до смены пароля
+   вход в систему открыт всем, кто видел репозиторий:
+
+   ```bash
+   docker compose --env-file .env.prod -f docker-compose.prod.yml \
+       exec -u www-data php php bin/console app:user-create-admin --username=admin
+   ```
+
+7. Настроить хостовый nginx по шаблону
+   [`deploy/nginx-bankrot.shefcode.tech.conf`](deploy/nginx-bankrot.shefcode.tech.conf),
+   затем выпустить сертификат: `certbot --nginx -d bankrot.shefcode.tech`.
+8. Прописать в секретах GitHub `DEPLOY_HOST`, `DEPLOY_USER`,
+   `DEPLOY_SSH_PASSWORD`, при необходимости `DEPLOY_PORT`.
 
 ### Обновление
 
 Push в ветку `staging` запускает `.github/workflows/staging.yml`: PHPStan,
-PHP CS Fixer, PHPUnit и проверка типов TypeScript, затем деплой по SSH —
-`git reset --hard origin/staging`, пересборка образов, миграции, очистка кэша и
-проверка `/api/v1/health`. При падении любой проверки деплой не выполняется.
+PHP CS Fixer, PHPUnit и проверка типов TypeScript, затем деплой — `rsync`
+репозитория на сервер, пересборка образов, миграции, очистка кэша и проверка
+`/api/v1/health`. При падении любой проверки деплой не выполняется.
 
 ### Что важно знать
 
-- **Код на сервере руками не правим.** Деплой делает `git reset --hard`, любые
-  локальные изменения в рабочей копии будут стёрты. Не отслеживаются только
-  `.env` в корне и `backend/.env.local`.
-- **Состояние живёт в docker-томах:** `bankrot-db` (база), `bankrot-var`
-  (загруженные шаблоны документов, кэш, логи), `bankrot-jwt` (ключи JWT).
-  Удаление тома `bankrot-var` уничтожит все загруженные шаблоны — резервное
-  копирование не настроено.
-- Откат: `git reset --hard <коммит>` в каталоге проекта и `make prod-build`,
-  `make prod-up`. Миграции автоматически не откатываются.
+- **Код на сервере руками не правим.** Деплой делает `rsync --delete`, любые
+  локальные изменения будут стёрты. Из синхронизации исключены `.env.prod`,
+  `backend/var`, `vendor` и `node_modules`.
+- **Состояние живёт в docker-томах:** `db_data` (база), `app_var` (загруженные
+  шаблоны документов, кэш, логи), `app_jwt` (ключи JWT). Удаление тома
+  `app_var` уничтожит все загруженные шаблоны — резервное копирование не
+  настроено. Обычный `make prod-down` безопасен, `down -v` — нет.
+- Откат: выкатить предыдущий коммит через **Actions -> Run workflow** на нужной
+  ветке. Миграции автоматически не откатываются.
 
