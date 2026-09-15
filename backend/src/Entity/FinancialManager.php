@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\InsuranceStatus;
 use App\Repository\FinancialManagerRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +14,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'financial_managers')]
 class FinancialManager extends BaseEntity
 {
+    private const string COMPARABLE_DATE_FORMAT = 'Y-m-d';
+    private const string DOCUMENT_DATE_FORMAT = 'd.m.Y';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -53,6 +57,18 @@ class FinancialManager extends BaseEntity
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $aauAddress = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $insuranceContractNumber = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $insuranceContractDate = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $insuranceStartDate = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $insuranceEndDate = null;
 
     public function getId(): ?int
     {
@@ -245,5 +261,93 @@ class FinancialManager extends BaseEntity
         $this->fioGenitive = $fioGenitive;
 
         return $this;
+    }
+
+    public function getInsuranceContractNumber(): ?string
+    {
+        return $this->insuranceContractNumber;
+    }
+
+    public function setInsuranceContractNumber(?string $insuranceContractNumber): self
+    {
+        $this->insuranceContractNumber = $insuranceContractNumber;
+
+        return $this;
+    }
+
+    public function getInsuranceContractDate(): ?\DateTimeInterface
+    {
+        return $this->insuranceContractDate;
+    }
+
+    public function setInsuranceContractDate(?\DateTimeInterface $insuranceContractDate): self
+    {
+        $this->insuranceContractDate = $insuranceContractDate;
+
+        return $this;
+    }
+
+    public function getInsuranceStartDate(): ?\DateTimeInterface
+    {
+        return $this->insuranceStartDate;
+    }
+
+    public function setInsuranceStartDate(?\DateTimeInterface $insuranceStartDate): self
+    {
+        $this->insuranceStartDate = $insuranceStartDate;
+
+        return $this;
+    }
+
+    public function getInsuranceEndDate(): ?\DateTimeInterface
+    {
+        return $this->insuranceEndDate;
+    }
+
+    public function setInsuranceEndDate(?\DateTimeInterface $insuranceEndDate): self
+    {
+        $this->insuranceEndDate = $insuranceEndDate;
+
+        return $this;
+    }
+
+    public function getInsuranceStatus(\DateTimeInterface $today): InsuranceStatus
+    {
+        if ($this->insuranceEndDate === null) {
+            return InsuranceStatus::MISSING;
+        }
+
+        if ($this->insuranceEndDate->format(self::COMPARABLE_DATE_FORMAT) < $today->format(self::COMPARABLE_DATE_FORMAT)) {
+            return InsuranceStatus::EXPIRED;
+        }
+
+        return InsuranceStatus::VALID;
+    }
+
+    public function getInsuranceContractDescription(): string
+    {
+        $contract = implode(' ', array_filter([
+            $this->insuranceContractNumber,
+            $this->formatDocumentDate(preposition: 'от', date: $this->insuranceContractDate),
+        ]));
+
+        $validity = implode(' ', array_filter([
+            $this->formatDocumentDate(preposition: 'с', date: $this->insuranceStartDate),
+            $this->formatDocumentDate(preposition: 'по', date: $this->insuranceEndDate),
+        ]));
+
+        return implode(', ', array_filter([
+            $contract,
+            $validity === '' ? '' : 'срок действия ' . $validity,
+        ]));
+    }
+
+    private function formatDocumentDate(string $preposition, ?\DateTimeInterface $date): string
+    {
+        if ($date === null) {
+            return '';
+        }
+
+        return sprintf('%s %s г.', $preposition, $date->format(self::DOCUMENT_DATE_FORMAT));
     }
 }

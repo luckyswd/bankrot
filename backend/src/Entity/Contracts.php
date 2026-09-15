@@ -6,7 +6,11 @@ namespace App\Entity;
 
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
+use App\Entity\Enum\ProcedureExtensionStatus;
 use App\Repository\ContractsRepository;
+use App\Service\DateHelperService;
+use App\Service\MoneyHelperService;
+use App\Service\Templates\JudicialReport\ReportMethods;
 use App\Service\Templates\PreCourt\PreCourtMethods;
 use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,6 +27,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Contracts extends BaseEntity
 {
+    public const string DEFAULT_ZAGS_DEPARTMENT = 'отдел ЗАГС Комитета по делам ЗАГС Правительства Санкт-Петербурга';
+    private const int REGISTRY_CLOSING_MONTHS = 2;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -464,6 +471,124 @@ class Contracts extends BaseEntity
         nullable: true
     )]
     private ?array $procedureInitiationIPEndings = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Номер сообщения ЕФРСБ о признании гражданина банкротом', type: Types::STRING, example: '3134699', nullable: true)]
+    private ?string $procedureInitiationEfrsbMessageNumber = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Дата сообщения ЕФРСБ о признании гражданина банкротом', type: Types::STRING, format: 'date', example: '2025-02-18', nullable: true)]
+    private ?\DateTimeInterface $procedureInitiationEfrsbMessageDate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Номер издания газеты «Коммерсантъ»', type: Types::STRING, example: '139 (7101)', nullable: true)]
+    private ?string $procedureInitiationKommersantIssueNumber = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Номер объявления в газете «Коммерсантъ»', type: Types::STRING, example: '78230149776', nullable: true)]
+    private ?string $procedureInitiationKommersantAdNumber = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Дата публикации в газете «Коммерсантъ»', type: Types::STRING, format: 'date', example: '2025-02-07', nullable: true)]
+    private ?\DateTimeInterface $procedureInitiationKommersantPublicationDate = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Стоимость публикации в газете «Коммерсантъ»', type: Types::STRING, example: '7866.05', nullable: true)]
+    private ?string $procedureInitiationKommersantPublicationCost = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(description: 'Дата направления кредиторам уведомлений о введении процедуры', type: Types::STRING, format: 'date', example: '2025-02-20', nullable: true)]
+    private ?\DateTimeInterface $procedureInitiationCreditorsNotificationDate = null;
+
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: ProcedureExtensionStatus::class)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Продление процедуры реализации имущества', type: Types::STRING, enum: ['extended', 'not_extended', 'no_acts'], example: 'extended', nullable: true)]
+    private ?ProcedureExtensionStatus $procedureExtensionStatus = null;
+
+    /**
+     * @var array<int, string>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Даты судебных актов о продлении процедуры', type: 'array', items: new OA\Items(type: Types::STRING, format: 'date', example: '2026-03-12'), nullable: true)]
+    private ?array $procedureExtensionDates = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата описи имущества должника', type: Types::STRING, format: 'date', example: '2025-07-02', nullable: true)]
+    private ?\DateTimeInterface $propertyInventoryDate = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Отдел ЗАГС, в который направлен запрос', type: Types::STRING, example: 'отдел ЗАГС Комитета по делам ЗАГС Правительства Санкт-Петербурга', nullable: true)]
+    private ?string $zagsDepartment = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Начало периода справки ЗАГС', type: Types::STRING, format: 'date', example: '2009-02-11', nullable: true)]
+    private ?\DateTimeInterface $zagsCertificatePeriodFrom = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Окончание периода справки ЗАГС', type: Types::STRING, format: 'date', example: '2025-07-10', nullable: true)]
+    private ?\DateTimeInterface $zagsCertificatePeriodTo = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Число требований, включённых в реестр', type: 'integer', example: 2, nullable: true)]
+    private ?int $claimsIncludedCount = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Число требований, во включении которых отказано', type: 'integer', example: 0, nullable: true)]
+    private ?int $claimsRejectedCount = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Расходы на опубликование сообщений на ЕФРСБ', type: Types::STRING, example: '560.55', nullable: true)]
+    private ?string $efrsbExpensesAmount = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Погашенные расходы на опубликование сообщений на ЕФРСБ', type: Types::STRING, example: '29.67', nullable: true)]
+    private ?string $efrsbExpensesPaid = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Почтовые расходы', type: Types::STRING, example: '1490.00', nullable: true)]
+    private ?string $postalExpensesAmount = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Погашенные почтовые расходы', type: Types::STRING, example: '0.00', nullable: true)]
+    private ?string $postalExpensesPaid = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Погашенные расходы на опубликование сообщений в газетах', type: Types::STRING, example: '0.00', nullable: true)]
+    private ?string $newspaperExpensesPaid = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Будущие расходы на опубликование сообщений на ЕФРСБ', type: Types::STRING, example: '1121.10', nullable: true)]
+    private ?string $futureEfrsbExpensesAmount = null;
+
+    #[ORM\Column(type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Погашенные будущие расходы на опубликование сообщений на ЕФРСБ', type: Types::STRING, example: '0.00', nullable: true)]
+    private ?string $futureEfrsbExpensesPaid = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата публикации в ЕФРСБ о признаках фиктивного и преднамеренного банкротства', type: Types::STRING, format: 'date', example: '2026-05-14', nullable: true)]
+    private ?\DateTimeInterface $bankruptcySignsEfrsbPublicationDate = null;
 
     public function __construct()
     {
@@ -1693,5 +1818,483 @@ class Contracts extends BaseEntity
         }
 
         return $result;
+    }
+
+    public function getProcedureInitiationEfrsbMessageNumber(): ?string
+    {
+        return $this->procedureInitiationEfrsbMessageNumber;
+    }
+
+    public function setProcedureInitiationEfrsbMessageNumber(?string $procedureInitiationEfrsbMessageNumber): self
+    {
+        $this->procedureInitiationEfrsbMessageNumber = $procedureInitiationEfrsbMessageNumber;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationEfrsbMessageDate(): ?\DateTimeInterface
+    {
+        return $this->procedureInitiationEfrsbMessageDate;
+    }
+
+    public function setProcedureInitiationEfrsbMessageDate(?\DateTimeInterface $procedureInitiationEfrsbMessageDate): self
+    {
+        $this->procedureInitiationEfrsbMessageDate = $procedureInitiationEfrsbMessageDate;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationKommersantIssueNumber(): ?string
+    {
+        return $this->procedureInitiationKommersantIssueNumber;
+    }
+
+    public function setProcedureInitiationKommersantIssueNumber(?string $procedureInitiationKommersantIssueNumber): self
+    {
+        $this->procedureInitiationKommersantIssueNumber = $procedureInitiationKommersantIssueNumber;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationKommersantAdNumber(): ?string
+    {
+        return $this->procedureInitiationKommersantAdNumber;
+    }
+
+    public function setProcedureInitiationKommersantAdNumber(?string $procedureInitiationKommersantAdNumber): self
+    {
+        $this->procedureInitiationKommersantAdNumber = $procedureInitiationKommersantAdNumber;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationKommersantPublicationDate(): ?\DateTimeInterface
+    {
+        return $this->procedureInitiationKommersantPublicationDate;
+    }
+
+    public function setProcedureInitiationKommersantPublicationDate(?\DateTimeInterface $procedureInitiationKommersantPublicationDate): self
+    {
+        $this->procedureInitiationKommersantPublicationDate = $procedureInitiationKommersantPublicationDate;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationKommersantPublicationCost(): ?string
+    {
+        return $this->procedureInitiationKommersantPublicationCost;
+    }
+
+    public function setProcedureInitiationKommersantPublicationCost(?string $procedureInitiationKommersantPublicationCost): self
+    {
+        $this->procedureInitiationKommersantPublicationCost = $procedureInitiationKommersantPublicationCost;
+
+        return $this;
+    }
+
+    public function getProcedureInitiationCreditorsNotificationDate(): ?\DateTimeInterface
+    {
+        return $this->procedureInitiationCreditorsNotificationDate;
+    }
+
+    public function setProcedureInitiationCreditorsNotificationDate(?\DateTimeInterface $procedureInitiationCreditorsNotificationDate): self
+    {
+        $this->procedureInitiationCreditorsNotificationDate = $procedureInitiationCreditorsNotificationDate;
+
+        return $this;
+    }
+
+    public function getProcedureExtensionStatus(): ?ProcedureExtensionStatus
+    {
+        return $this->procedureExtensionStatus;
+    }
+
+    /**
+     * @return array<int, string>|null
+     */
+    public function getProcedureExtensionDates(): ?array
+    {
+        return $this->procedureExtensionDates;
+    }
+
+    /**
+     * @param array<int, string> $dates
+     */
+    public function changeProcedureExtension(?ProcedureExtensionStatus $status, array $dates): self
+    {
+        $this->procedureExtensionStatus = $status;
+        $this->procedureExtensionDates = $status === ProcedureExtensionStatus::EXTENDED && $dates !== [] ? array_values($dates) : null;
+
+        return $this;
+    }
+
+    public function getPropertyInventoryDate(): ?\DateTimeInterface
+    {
+        return $this->propertyInventoryDate;
+    }
+
+    public function setPropertyInventoryDate(?\DateTimeInterface $propertyInventoryDate): self
+    {
+        $this->propertyInventoryDate = $propertyInventoryDate;
+
+        return $this;
+    }
+
+    public function getZagsDepartment(): ?string
+    {
+        return $this->zagsDepartment;
+    }
+
+    public function setZagsDepartment(?string $zagsDepartment): self
+    {
+        $this->zagsDepartment = $zagsDepartment;
+
+        return $this;
+    }
+
+    public function getZagsCertificatePeriodFrom(): ?\DateTimeInterface
+    {
+        return $this->zagsCertificatePeriodFrom;
+    }
+
+    public function setZagsCertificatePeriodFrom(?\DateTimeInterface $zagsCertificatePeriodFrom): self
+    {
+        $this->zagsCertificatePeriodFrom = $zagsCertificatePeriodFrom;
+
+        return $this;
+    }
+
+    public function getZagsCertificatePeriodTo(): ?\DateTimeInterface
+    {
+        return $this->zagsCertificatePeriodTo;
+    }
+
+    public function setZagsCertificatePeriodTo(?\DateTimeInterface $zagsCertificatePeriodTo): self
+    {
+        $this->zagsCertificatePeriodTo = $zagsCertificatePeriodTo;
+
+        return $this;
+    }
+
+    public function getClaimsIncludedCount(): ?int
+    {
+        return $this->claimsIncludedCount;
+    }
+
+    public function setClaimsIncludedCount(?int $claimsIncludedCount): self
+    {
+        $this->claimsIncludedCount = $claimsIncludedCount;
+
+        return $this;
+    }
+
+    public function getClaimsRejectedCount(): ?int
+    {
+        return $this->claimsRejectedCount;
+    }
+
+    public function setClaimsRejectedCount(?int $claimsRejectedCount): self
+    {
+        $this->claimsRejectedCount = $claimsRejectedCount;
+
+        return $this;
+    }
+
+    public function getEfrsbExpensesAmount(): ?string
+    {
+        return $this->efrsbExpensesAmount;
+    }
+
+    public function setEfrsbExpensesAmount(?string $efrsbExpensesAmount): self
+    {
+        $this->efrsbExpensesAmount = $efrsbExpensesAmount;
+
+        return $this;
+    }
+
+    public function getEfrsbExpensesPaid(): ?string
+    {
+        return $this->efrsbExpensesPaid;
+    }
+
+    public function setEfrsbExpensesPaid(?string $efrsbExpensesPaid): self
+    {
+        $this->efrsbExpensesPaid = $efrsbExpensesPaid;
+
+        return $this;
+    }
+
+    public function getPostalExpensesAmount(): ?string
+    {
+        return $this->postalExpensesAmount;
+    }
+
+    public function setPostalExpensesAmount(?string $postalExpensesAmount): self
+    {
+        $this->postalExpensesAmount = $postalExpensesAmount;
+
+        return $this;
+    }
+
+    public function getPostalExpensesPaid(): ?string
+    {
+        return $this->postalExpensesPaid;
+    }
+
+    public function setPostalExpensesPaid(?string $postalExpensesPaid): self
+    {
+        $this->postalExpensesPaid = $postalExpensesPaid;
+
+        return $this;
+    }
+
+    public function getNewspaperExpensesPaid(): ?string
+    {
+        return $this->newspaperExpensesPaid;
+    }
+
+    public function setNewspaperExpensesPaid(?string $newspaperExpensesPaid): self
+    {
+        $this->newspaperExpensesPaid = $newspaperExpensesPaid;
+
+        return $this;
+    }
+
+    public function getFutureEfrsbExpensesAmount(): ?string
+    {
+        return $this->futureEfrsbExpensesAmount;
+    }
+
+    public function setFutureEfrsbExpensesAmount(?string $futureEfrsbExpensesAmount): self
+    {
+        $this->futureEfrsbExpensesAmount = $futureEfrsbExpensesAmount;
+
+        return $this;
+    }
+
+    public function getFutureEfrsbExpensesPaid(): ?string
+    {
+        return $this->futureEfrsbExpensesPaid;
+    }
+
+    public function setFutureEfrsbExpensesPaid(?string $futureEfrsbExpensesPaid): self
+    {
+        $this->futureEfrsbExpensesPaid = $futureEfrsbExpensesPaid;
+
+        return $this;
+    }
+
+    public function getBankruptcySignsEfrsbPublicationDate(): ?\DateTimeInterface
+    {
+        return $this->bankruptcySignsEfrsbPublicationDate;
+    }
+
+    public function setBankruptcySignsEfrsbPublicationDate(?\DateTimeInterface $bankruptcySignsEfrsbPublicationDate): self
+    {
+        $this->bankruptcySignsEfrsbPublicationDate = $bankruptcySignsEfrsbPublicationDate;
+
+        return $this;
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    public function getRegistryClosingDate(): ?\DateTimeImmutable
+    {
+        if ($this->procedureInitiationKommersantPublicationDate === null) {
+            return null;
+        }
+
+        return DateHelperService::addMonthsKeepingMonthEnd(
+            date: $this->procedureInitiationKommersantPublicationDate,
+            months: self::REGISTRY_CLOSING_MONTHS,
+        );
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getClaimsConsideredCount(): ?int
+    {
+        if ($this->claimsIncludedCount === null && $this->claimsRejectedCount === null) {
+            return null;
+        }
+
+        return ($this->claimsIncludedCount ?? 0) + ($this->claimsRejectedCount ?? 0);
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getNewspaperExpensesAmount(): ?string
+    {
+        return $this->procedureInitiationKommersantPublicationCost;
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getEfrsbExpensesUnpaid(): ?string
+    {
+        return $this->calculateUnpaid(amount: $this->efrsbExpensesAmount, paid: $this->efrsbExpensesPaid);
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getPostalExpensesUnpaid(): ?string
+    {
+        return $this->calculateUnpaid(amount: $this->postalExpensesAmount, paid: $this->postalExpensesPaid);
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getNewspaperExpensesUnpaid(): ?string
+    {
+        return $this->calculateUnpaid(amount: $this->procedureInitiationKommersantPublicationCost, paid: $this->newspaperExpensesPaid);
+    }
+
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    public function getFutureEfrsbExpensesUnpaid(): ?string
+    {
+        return $this->calculateUnpaid(amount: $this->futureEfrsbExpensesAmount, paid: $this->futureEfrsbExpensesPaid);
+    }
+
+    public function getPreviousFullName(): string
+    {
+        return ReportMethods::previousFullName(contract: $this);
+    }
+
+    public function getProcedureExtensionText(): string
+    {
+        return ReportMethods::procedureExtensionText(contract: $this);
+    }
+
+    public function getSpouseInstrumental(): string
+    {
+        return ReportMethods::spouseInstrumental(contract: $this);
+    }
+
+    public function getShortFullNameGenitive(): string
+    {
+        return ReportMethods::shortFullNameGenitive(contract: $this);
+    }
+
+    public function getProcedureInitiationDateShort(): string
+    {
+        return ReportMethods::procedureInitiationDateShort(contract: $this);
+    }
+
+    public function getZagsDepartmentText(): string
+    {
+        return ReportMethods::zagsDepartmentText(contract: $this);
+    }
+
+    public function getZagsCertificatePeriodText(): string
+    {
+        return ReportMethods::zagsCertificatePeriodText(contract: $this);
+    }
+
+    public function getNotifiedCreditorsList(): string
+    {
+        return ReportMethods::notifiedCreditorsList(contract: $this);
+    }
+
+    public function getRegistryCreditorsCount(): int
+    {
+        return ReportMethods::registryCreditorsCount(contract: $this);
+    }
+
+    public function getMinorChildrenDependantsText(): string
+    {
+        return ReportMethods::minorChildrenDependantsText(contract: $this);
+    }
+
+    public function getPropertyInventoryDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->propertyInventoryDate);
+    }
+
+    public function getProcedureInitiationKommersantPublicationDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->procedureInitiationKommersantPublicationDate);
+    }
+
+    public function getProcedureInitiationEfrsbMessageDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->procedureInitiationEfrsbMessageDate);
+    }
+
+    public function getProcedureInitiationCreditorsNotificationDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->procedureInitiationCreditorsNotificationDate);
+    }
+
+    public function getRegistryClosingDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->getRegistryClosingDate());
+    }
+
+    public function getBankruptcySignsEfrsbPublicationDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->bankruptcySignsEfrsbPublicationDate);
+    }
+
+    public function getEfrsbExpensesAmountText(): string
+    {
+        return MoneyHelperService::format(amount: $this->efrsbExpensesAmount);
+    }
+
+    public function getEfrsbExpensesPaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->efrsbExpensesPaid);
+    }
+
+    public function getEfrsbExpensesUnpaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->getEfrsbExpensesUnpaid());
+    }
+
+    public function getPostalExpensesAmountText(): string
+    {
+        return MoneyHelperService::format(amount: $this->postalExpensesAmount);
+    }
+
+    public function getPostalExpensesPaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->postalExpensesPaid);
+    }
+
+    public function getPostalExpensesUnpaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->getPostalExpensesUnpaid());
+    }
+
+    public function getNewspaperExpensesAmountText(): string
+    {
+        return MoneyHelperService::format(amount: $this->getNewspaperExpensesAmount());
+    }
+
+    public function getNewspaperExpensesPaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->newspaperExpensesPaid);
+    }
+
+    public function getNewspaperExpensesUnpaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->getNewspaperExpensesUnpaid());
+    }
+
+    public function getFutureEfrsbExpensesAmountText(): string
+    {
+        return MoneyHelperService::format(amount: $this->futureEfrsbExpensesAmount);
+    }
+
+    public function getFutureEfrsbExpensesPaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->futureEfrsbExpensesPaid);
+    }
+
+    public function getFutureEfrsbExpensesUnpaidText(): string
+    {
+        return MoneyHelperService::format(amount: $this->getFutureEfrsbExpensesUnpaid());
+    }
+
+    private function calculateUnpaid(?string $amount, ?string $paid): ?string
+    {
+        if ($amount === null && $paid === null) {
+            return null;
+        }
+
+        return MoneyHelperService::subtract(minuend: $amount, subtrahend: $paid);
     }
 }

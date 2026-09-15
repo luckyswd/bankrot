@@ -251,6 +251,9 @@ jobs:
           #
           # От имени www-data: под root консоль оставила бы в томе app_var файлы
           # кэша, которые php-fpm потом не сможет перезаписать.
+          # Шаблоны раскладываются до миграций: миграция переводит пути в базе
+          # на src/document-templates, и к этому моменту файлы должны там быть.
+          $COMPOSE exec -T -u www-data php make templates-sync < /dev/null
           $COMPOSE exec -T -u www-data php make db-migrate < /dev/null
           $COMPOSE exec -T -u www-data php make cc < /dev/null
 

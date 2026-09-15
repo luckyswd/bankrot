@@ -1,0 +1,350 @@
+<title>Семь документов стадии отчёта</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=PT+Sans:wght@400;700&family=PT+Mono&display=swap">
+<style>
+  :root {
+    --paper:        #f2f3f6;
+    --sheet:        #ffffff;
+    --sheet-sunk:   #eceef2;
+    --ink:          #171a21;
+    --ink-soft:     #4b5262;
+    --ink-faint:    #7c8496;
+    --rule:         #d7dbe3;
+    --rule-soft:    #e6e9ef;
+    --accent:       #26365c;
+    --have:         #0e7343;
+    --have-bg:      #e6f2ea;
+    --mid:          #8a5a08;
+    --mid-bg:       #f7eeda;
+    --miss:         #a8271f;
+    --miss-bg:      #f8e9e7;
+
+    --f-display: "Spectral", "PT Serif", Georgia, serif;
+    --f-body:    "PT Sans", "Segoe UI", system-ui, sans-serif;
+    --f-mono:    "PT Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101319; --sheet: #171b23; --sheet-sunk: #1e232d;
+      --ink: #e7eaf0; --ink-soft: #a7b0c0; --ink-faint: #78818f;
+      --rule: #2b323e; --rule-soft: #232935; --accent: #9db3e0;
+      --have: #59c48c; --have-bg: #16291f;
+      --mid: #d8ac5c;  --mid-bg: #2b2313;
+      --miss: #ef8d84; --miss-bg: #2c1a18;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #101319; --sheet: #171b23; --sheet-sunk: #1e232d;
+    --ink: #e7eaf0; --ink-soft: #a7b0c0; --ink-faint: #78818f;
+    --rule: #2b323e; --rule-soft: #232935; --accent: #9db3e0;
+    --have: #59c48c; --have-bg: #16291f;
+    --mid: #d8ac5c;  --mid-bg: #2b2313;
+    --miss: #ef8d84; --miss-bg: #2c1a18;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; gap: 44px; }
+
+  .masthead { display: flex; flex-direction: column; gap: 18px; padding-bottom: 28px; border-bottom: 2px solid var(--ink); }
+  .eyebrow { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+  h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(30px, 5vw, 44px); line-height: 1.12; letter-spacing: -.015em; margin: 0; text-wrap: balance; }
+  .lede { font-size: 16.5px; color: var(--ink-soft); max-width: 64ch; margin: 0; }
+
+  .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(146px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 8px; }
+  .figure { background: var(--sheet); padding: 16px 18px; display: flex; flex-direction: column; gap: 3px; }
+  .figure b { font-family: var(--f-mono); font-size: 25px; font-weight: 400; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .figure span { font-size: 12.5px; color: var(--ink-faint); line-height: 1.35; }
+  .figure.hi b { color: var(--accent); }
+  .figure.g b  { color: var(--have); }
+  .figure.m b  { color: var(--mid); }
+  .figure.r b  { color: var(--miss); }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+  h2 { font-family: var(--f-display); font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0; letter-spacing: -.01em; display: flex; align-items: baseline; gap: 12px; }
+  h3 { font-family: var(--f-body); font-weight: 700; font-size: 14.5px; margin: 0; color: var(--ink); display: flex; align-items: baseline; gap: 10px; }
+  h3 .badge { font-family: var(--f-mono); font-size: 11.5px; font-weight: 400; padding: 1px 7px; border-radius: 2px; color: var(--miss); background: var(--miss-bg); white-space: nowrap; }
+  h3 .badge.ok { color: var(--have); background: var(--have-bg); }
+
+  p { margin: 0; max-width: 72ch; }
+  p.muted { color: var(--ink-soft); }
+
+  code, .mono { font-family: var(--f-mono); font-size: .87em; background: var(--sheet-sunk); padding: .1em .35em; border-radius: 2px; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--sheet); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  thead th { font-weight: 700; font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); background: var(--sheet-sunk); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.n, th.n { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.g { color: var(--have); } td.m { color: var(--mid); } td.r { color: var(--miss); }
+  td.pct { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 700; }
+  tr.total td { border-top: 2px solid var(--ink); border-bottom: none; font-weight: 700; background: var(--sheet-sunk); }
+  tr.sub td { border-bottom: none; background: var(--sheet-sunk); color: var(--ink-soft); }
+  td .doc { font-weight: 700; }
+  td .sub { display: block; font-size: 12.5px; color: var(--ink-faint); line-height: 1.4; margin-top: 2px; }
+  td .where { color: var(--ink-soft); }
+  .dup { font-family: var(--f-mono); font-size: 11px; color: var(--mid); background: var(--mid-bg); padding: 0 5px; border-radius: 2px; white-space: nowrap; }
+
+  .q { color: var(--ink); }
+  .q::before { content: '«'; color: var(--ink-faint); }
+  .q::after  { content: '»'; color: var(--ink-faint); }
+  .tab { font-family: var(--f-body); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 2px; white-space: nowrap; display: inline-block; }
+  .tab.report { color: var(--accent); background: var(--sheet-sunk); }
+  .tab.init   { color: var(--have); background: var(--have-bg); }
+  .tab.proc   { color: var(--mid);  background: var(--mid-bg); }
+  .tab.pre    { color: var(--miss); background: var(--miss-bg); }
+  .tab.basic  { color: var(--ink-soft); background: var(--sheet-sunk); }
+  .tab.ref    { color: var(--ink-soft); background: var(--sheet-sunk); border: 1px dashed var(--rule); }
+
+  .bar { display: block; height: 4px; background: var(--rule-soft); margin-top: 5px; border-radius: 2px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--have); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { font-family: var(--f-mono); font-size: 11.5px; line-height: 1.6; padding: 1px 6px; border-radius: 2px; color: var(--have); background: var(--have-bg); }
+  .chip.m { color: var(--mid); background: var(--mid-bg); }
+
+  .panel { background: var(--sheet); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 15px 17px; display: flex; flex-direction: column; gap: 9px; }
+  .panel b { font-size: 13.5px; }
+  .panel p { font-size: 13.5px; color: var(--ink-soft); }
+  pre { font-family: var(--f-mono); font-size: 12px; background: var(--sheet-sunk); padding: 11px 13px; margin: 0; overflow-x: auto; line-height: 1.55; color: var(--ink-soft); border-radius: 2px; }
+
+  .docs { display: flex; flex-direction: column; gap: 26px; }
+  .docblock { display: flex; flex-direction: column; gap: 10px; }
+
+  ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; color: var(--ink-soft); font-size: 14px; max-width: 80ch; }
+  ul.plain b { color: var(--ink); }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 12.5px; color: var(--ink-faint); display: flex; flex-direction: column; gap: 5px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Стадия judicial_report · 7 документов</div>
+    <h1>Семь документов стадии отчёта</h1>
+    <p class="lede">
+      Учитываются только фрагменты, выделенные в исходных файлах зелёным и красным.
+      Каждый путь проверен прогоном через <code>EntityDataResolver</code> на деле №&nbsp;209.
+    </p>
+    <div class="figures">
+      <div class="figure g"><b>59 %</b><span>меток закрыто тем, что уже есть</span></div>
+      <div class="figure r"><b>41 %</b><span>требует новых полей</span></div>
+      <div class="figure g"><b>41</b><span>значение закрыто: 30 готовых путей + 11 методов</span></div>
+      <div class="figure r"><b>57</b><span>новых колонок завести</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Готовность по документам</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Документ</th>
+            <th class="n">Позиций</th>
+            <th class="n">Есть путь</th>
+            <th class="n">Нужен метод</th>
+            <th class="n">Нет поля</th>
+            <th class="n">Готово</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="doc">1. Отчёт финансового управляющего</span><span class="sub">Публикации, реестр, текущие платежи, прожиточный минимум</span></td>
+            <td class="n">52</td><td class="n g">18</td><td class="n m">5</td><td class="n r">29</td>
+            <td class="pct">44 %<span class="bar"><i style="width:44%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">2. Реестр требований кредиторов</span><span class="sub">Размечены только части 2 и 4 третьей очереди</span></td>
+            <td class="n">17</td><td class="n g">4</td><td class="n m">6</td><td class="n r">7</td>
+            <td class="pct">59 %<span class="bar"><i style="width:59%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">3. Опись имущества гражданина</span><span class="sub">Размечена только шапка, таблицы имущества — прочерки</span></td>
+            <td class="n">11</td><td class="n g">10</td><td class="n m">0</td><td class="n r">1</td>
+            <td class="pct">91 %<span class="bar"><i style="width:91%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">4. Заключение об оспаривании сделок</span><span class="sub">Анкета плюс четыре процессуальные даты</span></td>
+            <td class="n">17</td><td class="n g">13</td><td class="n m">0</td><td class="n r">4</td>
+            <td class="pct">76 %<span class="bar"><i style="width:76%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">5. Заключение о фиктивном / преднамеренном</span><span class="sub">Своих новых полей нет вообще</span></td>
+            <td class="n">15</td><td class="n g">13</td><td class="n m">0</td><td class="n r">2</td>
+            <td class="pct">87 %<span class="bar"><i style="width:87%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">6. Анализ финансового состояния</span><span class="sub">Прожиточный минимум региона и доходы по годам</span></td>
+            <td class="n">25</td><td class="n g">8</td><td class="n m">2</td><td class="n r">15</td>
+            <td class="pct">40 %<span class="bar"><i style="width:40%"></i></span></td>
+          </tr>
+          <tr>
+            <td><span class="doc">7. Ходатайство о завершении реализации</span><span class="sub">Тело готово, отдельный блок — перечень приложений</span></td>
+            <td class="n">13</td><td class="n g">7</td><td class="n m">2</td><td class="n r">4</td>
+            <td class="pct">69 %<span class="bar"><i style="width:69%"></i></span></td>
+          </tr>
+          <tr class="total">
+            <td>Всего меток, с повторами между файлами</td>
+            <td class="n">150</td><td class="n">73</td><td class="n">15</td><td class="n">62</td>
+            <td class="pct">59 %</td>
+          </tr>
+          <tr class="total">
+            <td>После дедупликации</td>
+            <td class="n">98</td><td class="n">30</td><td class="n">11</td><td class="n">57</td>
+            <td class="pct">42 %</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px">
+      «Готово» = (есть путь + нужен метод) ÷ позиций: метод — это код поверх уже имеющихся данных,
+      новых полей он не требует. Колонки по документам не суммируются: договор страхования встречается
+      в четырёх файлах, ФИО должника — во всех семи.
+    </p>
+  </section>
+
+  <section>
+    <h2>Каких полей нет — по документам</h2>
+    <p class="muted">Во второй колонке — строка из самого документа: её можно скопировать и найти поиском в файле. В последней — вкладка карточки дела, куда поле нужно добавить.</p>
+
+    <div class="docs">
+
+      <div class="docblock">
+        <h3>1. Отчёт финансового управляющего <span class="badge">29 полей</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Даты принятия судебных актов о продлении реализации имущества гражданина</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">Номер договора страхования, дата его заключения и срок действия</span></td><td>строка</td><td><span class="tab ref">Справочник «Финуправляющие»</span></td></tr>
+<tr><td class="n">3</td><td><span class="q">1. Недвижимое имущество всего, в том числе:</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">4</td><td><span class="q">* указана кадастровая стоимость объекта недвижимости</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">5</td><td><span class="q">Опись имущества должника проведена</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">6</td><td><span class="q">6) направлен запрос в отдел ЗАГС</span></td><td>строка</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">7–8</td><td><span class="q">справка об отсутствии факта государственной регистрации акта гражданского состояния за период с</span></td><td>2 даты</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">9</td><td><span class="q">АО «Коммерсантъ. Издательский Дом» №</span></td><td>строка</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">10</td><td><span class="q">объявление №</span></td><td>строка</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">11</td><td><span class="q">объявление № … от</span></td><td>дата</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">12</td><td><span class="q">«Единый федеральный реестр сведений о банкротстве» сообщение №</span></td><td>строка</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">13</td><td><span class="q">сообщение № … от</span></td><td>дата</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">14</td><td><span class="q">Уведомление кредиторов о признании гражданина банкротом и введении реализации имущества гражданина</span></td><td>дата</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">15</td><td><span class="q">Дата закрытия реестра кредиторов</span></td><td>дата</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">16</td><td><span class="q">— об отказе включить требования в реестр</span></td><td>флаг в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">17–18</td><td><span class="q">Расходы на опубликование сообщений на ЕФРСБ</span></td><td>размер + остаток</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">19–20</td><td><span class="q">Почтовые расходы</span></td><td>размер + остаток</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">21–22</td><td><span class="q">Расходы на опубликование сообщений в газетах</span></td><td>размер + остаток</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">23–24</td><td><span class="q">Будущие расходы на опубликование сообщений на ЕФРСБ</span></td><td>размер + остаток</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">25</td><td><span class="q">Финансовый анализ проведен</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">26–27</td><td><span class="q">За период с … по … проведена следующая работа</span></td><td>2 даты</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">28</td><td><span class="q">в адрес кредиторов, включенных в реестр требований кредиторов на дату окончания квартала</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">29</td><td><span class="q">руководствуясь величиной прожиточного минимума, установленной</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+</tbody></table></div>
+      </div>
+
+      <div class="docblock">
+        <h3>2. Реестр требований кредиторов <span class="badge">7 полей</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Дата открытия:</span></td><td>дата</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">Дата внесения записи о кредиторе в реестр</span></td><td>дата в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">3</td><td><span class="q">Вид обязательства</span></td><td>строка в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">4</td><td><span class="q">Определение Арбитражного суда … по делу № … /тр.1</span></td><td>строка в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">5</td><td><span class="q">Дата возникновения требования</span></td><td>дата в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">6</td><td><span class="q">Сумма погашения в рублях</span></td><td>сумма в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+<tr><td class="n">7</td><td><span class="q">Всего требований кредиторов, исключенных из реестра</span></td><td>флаг в строке требования</td><td><span class="tab proc">Судебка&nbsp;— процедура</span></td></tr>
+</tbody></table></div>
+        <p class="muted" style="font-size:13px">
+          Дата составления реестра закрывается <code>ТЕКУЩАЯ_ДАТА</code>, все итоговые суммы и проценты —
+          агрегатами по уже существующим полям требования.
+        </p>
+      </div>
+
+      <div class="docblock">
+        <h3>3. Опись имущества гражданина <span class="badge">1 поле</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Опись имущества гражданина проведена</span></td><td>дата — тот же, что в док. 1</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+</tbody></table></div>
+      </div>
+
+      <div class="docblock">
+        <h3>4. Заключение об оспаривании сделок <span class="badge">4 поля</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Дата подачи в Арбитражный суд заявления о признании несостоятельным (банкротом)</span></td><td>дата</td><td><span class="tab pre">Досудебка</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">Дата возбуждения дела о несостоятельности (банкротстве)</span></td><td>дата</td><td><span class="tab pre">Досудебка</span></td></tr>
+<tr><td class="n">3</td><td><span class="q">Номер договора страхования, дата его заключения и срок действия</span></td><td>строка — дубль док. 1</td><td><span class="tab ref">Справочник «Финуправляющие»</span></td></tr>
+<tr><td class="n">4</td><td><span class="q">были проанализированы условия исполнения сделок, заключенных должником в период с</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+</tbody></table></div>
+        <p class="muted" style="font-size:13px">
+          Конец периода сделок равен дате введения процедуры — берётся из существующего
+          <code>procedureInitiationDateForPublication</code>.
+        </p>
+      </div>
+
+      <div class="docblock">
+        <h3>5. Заключение о фиктивном / преднамеренном банкротстве <span class="badge">2 поля, оба дубли</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Номер договора страхования, дата его заключения и срок действия</span></td><td>строка — дубль док. 1</td><td><span class="tab ref">Справочник «Финуправляющие»</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">На основании Определения Арбитражного суда … дело о несостоятельности (банкротстве) № … возбуждено</span></td><td>дата — дубль док. 4</td><td><span class="tab pre">Досудебка</span></td></tr>
+</tbody></table></div>
+        <p class="muted" style="font-size:13px">Своих новых полей у этого документа нет вообще — он поедет вместе с документом 4.</p>
+      </div>
+
+      <div class="docblock">
+        <h3>6. Анализ финансового состояния гражданина <span class="badge">15 полей, из них 12 своих</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Дата и место проведения финансового анализа</span></td><td>дата — дубль док. 1</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">Дополнен «09» августа 2026 г.</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">3</td><td><span class="q">Номер договора страхования, дата его заключения и срок действия</span></td><td>строка — дубль док. 1</td><td><span class="tab ref">Справочник «Финуправляющие»</span></td></tr>
+<tr><td class="n">4</td><td><span class="q">Так, за 2022 год средний ежемесячный доход должника после налогообложения составил</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">5</td><td><span class="q">Получателем пенсий, пособий и иных социальных выплат должник не является</span></td><td>флаг</td><td><span class="tab basic">Основная информация</span></td></tr>
+<tr><td class="n">6</td><td><span class="q">Недвижимое имущество, зарегистрированное за Должником –</span></td><td>текст — дубль док. 1</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">7</td><td><span class="q">Движимое имущество, зарегистрированное за Должником –</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">8</td><td><span class="q">Актуальный размер прожиточного минимума для населения</span></td><td>строка</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">9</td><td><span class="q">установлен Постановлением Правительства … №</span></td><td>строка</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">10</td><td><span class="q">№ … от 11 ноября 2025 года</span></td><td>дата</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">11</td><td><span class="q">установлена величина прожиточного минимума на … год</span></td><td>число</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">12</td><td><span class="q">в расчете на душу населения –</span></td><td>сумма</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">13</td><td><span class="q">для трудоспособного населения –</span></td><td>сумма</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">14</td><td><span class="q">пенсионеров –</span></td><td>сумма</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">15</td><td><span class="q">детей –</span></td><td>сумма</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+</tbody></table></div>
+      </div>
+
+      <div class="docblock">
+        <h3>7. Ходатайство о завершении реализации <span class="badge">3 поля + таблица</span></h3>
+        <div class="scroll"><table>
+<thead><tr><th class="n">#</th><th>Где в документе — искать по этой строке</th><th>Тип</th><th>Вкладка</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><span class="q">Исх. №</span></td><td>строка</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">2</td><td><span class="q">и введена процедура реализации имущества гражданина сроком на шесть месяцев</span></td><td>число месяцев</td><td><span class="tab init">Судебка&nbsp;— введение процедуры</span></td></tr>
+<tr><td class="n">3</td><td><span class="q">В приложении к настоящему ходатайству представлен отчет финансового управляющего</span></td><td>текст</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+<tr><td class="n">4</td><td><span class="q">Приложение: — весь блок из 20 позиций</span></td><td>таблица: наименование, реквизиты, листов</td><td><span class="tab report">Судебка&nbsp;— отчёт</span></td></tr>
+</tbody></table></div>
+        <p class="muted" style="font-size:13px">Дата исходящего закрывается <code>ТЕКУЩАЯ_ДАТА</code>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div>Метки извлечены автоматическим разбором цвета шрифта в семи файлах <code>new_docs/</code>. Пути проверены прогоном <code>EntityDataResolver</code> в контейнере <code>bankruptcy-php</code>, ветка <code>staging</code>.</div>
+  </footer>
+
+</div>

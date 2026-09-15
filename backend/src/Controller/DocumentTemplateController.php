@@ -15,6 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -35,14 +36,14 @@ class DocumentTemplateController extends AbstractController
         private readonly DocumentTemplateProcessor $templateProcessor,
         private readonly ContractsRepository $contractsRepository,
         private readonly DocumentXlsxService $documentXlsxService,
+        #[Autowire(param: 'app.document_templates_dir')]
+        private readonly string $documentTemplatesDir,
     ) {
     }
 
     private function getUploadDir(): string
     {
-        $projectDir = $this->getParameter('kernel.project_dir');
-
-        return $projectDir . '/var/document-templates';
+        return $this->documentTemplatesDir;
     }
 
     private function ensureUploadDirExists(string $uploadDir): void
@@ -456,60 +457,6 @@ class DocumentTemplateController extends AbstractController
             'name' => $template->getName(),
             'category' => $template->getCategory()->getLabel(),
         ]);
-    }
-
-    #[Route('/{id}', name: 'api_document_templates_delete', methods: ['DELETE'])]
-    #[OA\Delete(
-        path: '/api/v1/document-templates/{id}',
-        summary: 'Удалить шаблон документа',
-        security: [['Bearer' => []]],
-        tags: ['DocumentTemplates'],
-        parameters: [
-            new OA\Parameter(
-                name: 'id',
-                description: 'ID шаблона',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'integer', example: 1)
-            ),
-        ],
-        responses: [
-            new OA\Response(
-                response: 204,
-                description: 'Шаблон успешно удален'
-            ),
-            new OA\Response(
-                response: 404,
-                description: 'Шаблон не найден'
-            ),
-            new OA\Response(
-                response: 401,
-                description: 'Неавторизован'
-            ),
-            new OA\Response(
-                response: 403,
-                description: 'Доступ запрещен (требуется роль ROLE_ADMIN)'
-            ),
-        ]
-    )]
-    public function delete(int $id): JsonResponse
-    {
-        $template = $this->documentTemplateRepository->find($id);
-
-        if (!$template instanceof DocumentTemplate) {
-            return $this->json(data: ['error' => 'Шаблон не найден'], status: 404);
-        }
-
-        $filePath = $template->getPath();
-
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-
-        $this->entityManager->remove($template);
-        $this->entityManager->flush();
-
-        return $this->json(data: [], status: 204);
     }
 
     #[Route('/{id}/generate', name: 'api_document_templates_generate', methods: ['POST'])]

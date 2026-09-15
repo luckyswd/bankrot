@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ReferenceData } from "@/types/reference";
+import { FinancialManagerInsuranceAlert } from "@/components/shared/InsuranceStatusAlert";
 
 interface Props {
   control: any;
@@ -63,6 +64,10 @@ export const ManagerInfo: FC<Props> = ({ control, referenceData }) => {
                   ))}
                 </SelectContent>
               </Select>
+              <FinancialManagerInsuranceAlert
+                managerId={field.value ? toIdString(field.value) : null}
+                financialManagers={referenceData?.financialManagers}
+              />
             </div>
           )}
         />

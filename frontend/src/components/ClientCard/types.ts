@@ -93,6 +93,13 @@ export type IntroductionFields = {
   procedureInitiationIPEndings?: ExecutionTerminationItem[] | null
   correspondenceAddress?: string | null
   procedureInitiationReportHearingDateTime: string
+  procedureInitiationEfrsbMessageNumber?: string | null
+  procedureInitiationEfrsbMessageDate?: string | null
+  procedureInitiationKommersantIssueNumber?: string | null
+  procedureInitiationKommersantAdNumber?: string | null
+  procedureInitiationKommersantPublicationDate?: string | null
+  procedureInitiationKommersantPublicationCost?: string | null
+  procedureInitiationCreditorsNotificationDate?: string | null
 }
 
 export type BasisItem = {
@@ -124,8 +131,26 @@ export type CreditorsClaimItem = {
   judicialActDate?: string | null
 }
 
+export type ProcedureExtensionStatus = "extended" | "not_extended" | "no_acts"
+
 export type ProcedureFields = {
   creditorsClaims?: CreditorsClaimItem[]
+  procedureExtensionStatus?: ProcedureExtensionStatus | null
+  procedureExtensionDates?: string[]
+  propertyInventoryDate?: string | null
+  zagsDepartment?: string | null
+  zagsCertificatePeriodFrom?: string | null
+  zagsCertificatePeriodTo?: string | null
+  claimsIncludedCount?: string | null
+  claimsRejectedCount?: string | null
+  efrsbExpensesAmount?: string | null
+  efrsbExpensesPaid?: string | null
+  postalExpensesAmount?: string | null
+  postalExpensesPaid?: string | null
+  newspaperExpensesPaid?: string | null
+  futureEfrsbExpensesAmount?: string | null
+  futureEfrsbExpensesPaid?: string | null
+  bankruptcySignsEfrsbPublicationDate?: string | null
 }
 
 export type FormSections = {

@@ -8,9 +8,8 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { notify } from './ui/toast'
-import { Upload, Download, FileText, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { Upload, Download, FileText, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from './shared/Loading'
-import { useModalStore } from './Modals/ModalProvider'
 
 const CATEGORIES = [
   { value: 'basic_info', label: 'Основная информация' },
@@ -34,7 +33,6 @@ export default function DocumentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [templateName, setTemplateName] = useState('')
   const [templateCategory, setTemplateCategory] = useState('')
-  const { openModal } = useModalStore()
   
   // Поиск и фильтры
   const [search, setSearch] = useState('')
@@ -185,20 +183,7 @@ export default function DocumentsPage() {
 
   const handleDownload = async (template: Template) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}document-templates/${template.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Ошибка при скачивании файла')
-      }
-
-      const blob = await response.blob()
+      const blob = await apiRequest(`/document-templates/${template.id}`, { responseType: 'blob' })
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -212,22 +197,6 @@ export default function DocumentsPage() {
       console.error('Ошибка при скачивании шаблона:', error)
       notify({ message: 'Не удалось скачать шаблон', type: 'error' })
     }
-  }
-
-  const handleDeleteClick = (template: Template) => {
-    openModal('confirm', {
-      title: 'Удаление шаблона',
-      description: `Вы уверены, что хотите удалить шаблон "${template.name}"? Это действие нельзя отменить.`,
-      confirmLabel: 'Удалить',
-      confirmVariant: 'destructive',
-      onConfirm: async () => {
-        await apiRequest(`/document-templates/${template.id}`, {
-          method: 'DELETE',
-        })
-        notify({ message: 'Шаблон успешно удален', type: 'success' })
-        await fetchTemplates()
-      },
-    })
   }
 
   const getCategoryColor = (category: string) => {
@@ -403,15 +372,6 @@ export default function DocumentsPage() {
                               title="Скачать шаблон"
                             >
                               <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(template)}
-                              title="Удалить"
-                              className="text-red-400"
-                            >
-                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>

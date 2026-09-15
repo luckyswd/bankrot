@@ -40,6 +40,7 @@ make test            # пересоздать SQLite-базу, загрузит�
 
 make db-migrate      # применить миграции
 make db-diff         # сгенерировать миграцию по изменениям сущностей
+make templates-sync  # разложить шаблоны документов в src/document-templates
 make seed            # фикстуры группы seed
 make cc              # очистить кэш Symfony и Doctrine
 make jwt-gen         # сгенерировать пару JWT-ключей
@@ -136,6 +137,15 @@ tests/              функциональные тесты
 
 `DocumentTemplate` хранит путь к загруженному `.docx` / `.xlsx` и
 категорию-стадию. Обработчик — `Service\Templates\DocumentTemplateProcessor`.
+
+Все файлы шаблонов лежат в `src/document-templates` — параметр
+`app.document_templates_dir`, в тестах он указывает на `var/test/document-templates`.
+Загрузка через `/documents` пишет туда же. На проде этот каталог — том
+`app_document_templates`, чтобы загруженные через интерфейс шаблоны пережили
+пересборку образа. При деплое `make templates-sync` докладывает в том шаблоны из
+репозитория (образ хранит их копию в `/opt/document-templates`) и без перезаписи
+переносит загрузки, сделанные до переноса в `var/document-templates`. Шаг идёт до
+`make db-migrate`.
 
 | Конструкция | Пример | Кто обрабатывает |
 |---|---|---|

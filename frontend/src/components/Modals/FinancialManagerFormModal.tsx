@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { apiRequest } from "@/config/api"
+import { InsuranceStatusAlert, resolveInsuranceStatus } from "@/components/shared/InsuranceStatusAlert"
 import { Button } from "@/components/ui/button"
+import { DatePickerInput } from "@/components/ui/DatePickerInput"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +23,10 @@ type FinancialManager = {
   aauOgrn?: string
   aauInn?: string
   aauAddress?: string
+  insuranceContractNumber?: string | null
+  insuranceContractDate?: string | null
+  insuranceStartDate?: string | null
+  insuranceEndDate?: string | null
 }
 
 type FinancialManagerFormModalProps = {
@@ -42,12 +49,17 @@ const emptyForm = {
   aauOgrn: "",
   aauInn: "",
   aauAddress: "",
+  insuranceContractNumber: "",
+  insuranceContractDate: "",
+  insuranceStartDate: "",
+  insuranceEndDate: "",
 }
 
 export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, onSuccess, onError }: FinancialManagerFormModalProps) => {
   const [formData, setFormData] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (isOpen) {
@@ -63,6 +75,10 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
         aauOgrn: financialManager?.aauOgrn ?? "",
         aauInn: financialManager?.aauInn ?? "",
         aauAddress: financialManager?.aauAddress ?? "",
+        insuranceContractNumber: financialManager?.insuranceContractNumber ?? "",
+        insuranceContractDate: financialManager?.insuranceContractDate ?? "",
+        insuranceStartDate: financialManager?.insuranceStartDate ?? "",
+        insuranceEndDate: financialManager?.insuranceEndDate ?? "",
       })
       setError(null)
       setSubmitting(false)
@@ -88,6 +104,10 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
       aauOgrn: formData.aauOgrn.trim() || null,
       aauInn: formData.aauInn.trim() || null,
       aauAddress: formData.aauAddress.trim() || null,
+      insuranceContractNumber: formData.insuranceContractNumber.trim() || null,
+      insuranceContractDate: formData.insuranceContractDate || null,
+      insuranceStartDate: formData.insuranceStartDate || null,
+      insuranceEndDate: formData.insuranceEndDate || null,
     }
 
     try {
@@ -112,6 +132,7 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
         })
         await onSuccess?.("Финансовый управляющий успешно создан")
       }
+      await queryClient.invalidateQueries({ queryKey: ["references"] })
       onClose()
     } catch (err) {
       console.error("Ошибка при сохранении финансового управляющего:", err)
@@ -278,6 +299,47 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
                 value={formData.aauAddress}
                 onChange={(e) => setFormData((prev) => ({ ...prev, aauAddress: e.target.value }))}
                 placeholder="191124, город Санкт-Петербург, Суворовский пр-кт, д. 65 литер Б, пом. 8-Н-43"
+                disabled={submitting}
+              />
+            </div>
+          </div>
+
+          <div className="border-t pt-4 mt-4 space-y-4">
+            <h3 className="text-lg font-semibold">Договор страхования ответственности</h3>
+            <InsuranceStatusAlert
+              status={resolveInsuranceStatus(formData.insuranceEndDate)}
+              endDate={formData.insuranceEndDate}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="insuranceContractNumber">Номер договора страхования</Label>
+                <Input
+                  id="insuranceContractNumber"
+                  value={formData.insuranceContractNumber}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, insuranceContractNumber: e.target.value }))}
+                  placeholder="Arbitr-3980975400-26366"
+                  disabled={submitting}
+                />
+              </div>
+              <DatePickerInput
+                id="insuranceContractDate"
+                label="Дата заключения"
+                value={formData.insuranceContractDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, insuranceContractDate: value }))}
+                disabled={submitting}
+              />
+              <DatePickerInput
+                id="insuranceStartDate"
+                label="Действует с"
+                value={formData.insuranceStartDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, insuranceStartDate: value }))}
+                disabled={submitting}
+              />
+              <DatePickerInput
+                id="insuranceEndDate"
+                label="Действует по"
+                value={formData.insuranceEndDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, insuranceEndDate: value }))}
                 disabled={submitting}
               />
             </div>

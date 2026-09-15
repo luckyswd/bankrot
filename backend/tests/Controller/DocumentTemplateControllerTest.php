@@ -447,11 +447,7 @@ class DocumentTemplateControllerTest extends BaseTestCase
         $this->assertResponseStatusCodeSame(expectedCode: 401);
     }
 
-    /**
-     * Тест удаления шаблона документа.
-     * Проверяет, что API успешно удаляет шаблон.
-     */
-    public function testDeleteDocumentTemplate(): void
+    public function testDocumentTemplateCannotBeDeleted(): void
     {
         $admin = $this->getUser(reference: 'admin');
 
@@ -464,49 +460,12 @@ class DocumentTemplateControllerTest extends BaseTestCase
 
         $this->client->request(method: 'DELETE', uri: '/api/v1/document-templates/' . $templateId);
 
-        $this->assertResponseStatusCodeSame(expectedCode: 204);
+        $this->assertResponseStatusCodeSame(expectedCode: 405);
 
-        // Проверяем, что шаблон удален из БД
         self::$em->clear();
-        /** @var DocumentTemplateRepository $repository */
-        $repository = self::$em->getRepository(DocumentTemplate::class);
-        $deletedTemplate = $repository->find($templateId);
 
-        $this->assertNull($deletedTemplate);
-        $this->assertFileDoesNotExist($filePath);
-    }
-
-    /**
-     * Тест удаления несуществующего шаблона.
-     * Проверяет, что API возвращает ошибку 404.
-     */
-    public function testDeleteNonExistentDocumentTemplate(): void
-    {
-        $admin = $this->getUser(reference: 'admin');
-
-        $token = $this->getAuthToken(user: $admin);
-        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
-
-        $this->client->request(method: 'DELETE', uri: '/api/v1/document-templates/99999');
-
-        $this->assertResponseStatusCodeSame(expectedCode: 404);
-        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
-
-        $this->assertIsArray($response);
-        $this->assertArrayHasKey('error', $response);
-    }
-
-    /**
-     * Тест удаления шаблона без авторизации.
-     * Проверяет, что API возвращает ошибку 401.
-     */
-    public function testDeleteDocumentTemplateWithoutAuth(): void
-    {
-        $template = $this->createTestTemplate();
-
-        $this->client->request(method: 'DELETE', uri: '/api/v1/document-templates/' . $template->getId());
-
-        $this->assertResponseStatusCodeSame(expectedCode: 401);
+        $this->assertNotNull(self::$em->getRepository(DocumentTemplate::class)->find($templateId));
+        $this->assertFileExists($filePath);
     }
 
     /**
@@ -540,8 +499,7 @@ class DocumentTemplateControllerTest extends BaseTestCase
     {
         $container = $this->client->getContainer();
         $parameterBag = $container->get('parameter_bag');
-        $projectDir = $parameterBag->get('kernel.project_dir');
-        $uploadDir = $projectDir . '/var/document-templates';
+        $uploadDir = $parameterBag->get('app.document_templates_dir');
 
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);

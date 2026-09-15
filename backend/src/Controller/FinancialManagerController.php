@@ -17,6 +17,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class FinancialManagerController extends AbstractController
 {
+    private const string DATE_FORMAT = 'Y-m-d';
+
     public function __construct(
         private readonly FinancialManagerRepository $financialManagerRepository,
         private readonly EntityManagerInterface $entityManager,
@@ -95,7 +97,12 @@ class FinancialManagerController extends AbstractController
         }
 
         $financialManager = new FinancialManager();
-        $this->setFinancialManagerFields($financialManager, $data);
+
+        try {
+            $this->setFinancialManagerFields($financialManager, $data);
+        } catch (\InvalidArgumentException $exception) {
+            return $this->json(data: ['error' => $exception->getMessage()], status: 400);
+        }
 
         $this->entityManager->persist($financialManager);
         $this->entityManager->flush();
@@ -117,7 +124,11 @@ class FinancialManagerController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        $this->setFinancialManagerFields($financialManager, $data);
+        try {
+            $this->setFinancialManagerFields($financialManager, $data);
+        } catch (\InvalidArgumentException $exception) {
+            return $this->json(data: ['error' => $exception->getMessage()], status: 400);
+        }
 
         $this->entityManager->flush();
 
@@ -184,6 +195,38 @@ class FinancialManagerController extends AbstractController
         if (isset($data['aauAddress'])) {
             $financialManager->setAauAddress(!empty(trim($data['aauAddress'])) ? trim($data['aauAddress']) : null);
         }
+
+        if (array_key_exists('insuranceContractNumber', $data)) {
+            $number = trim((string)$data['insuranceContractNumber']);
+            $financialManager->setInsuranceContractNumber($number === '' ? null : $number);
+        }
+
+        if (array_key_exists('insuranceContractDate', $data)) {
+            $financialManager->setInsuranceContractDate($this->parseDate(field: 'insuranceContractDate', value: $data['insuranceContractDate']));
+        }
+
+        if (array_key_exists('insuranceStartDate', $data)) {
+            $financialManager->setInsuranceStartDate($this->parseDate(field: 'insuranceStartDate', value: $data['insuranceStartDate']));
+        }
+
+        if (array_key_exists('insuranceEndDate', $data)) {
+            $financialManager->setInsuranceEndDate($this->parseDate(field: 'insuranceEndDate', value: $data['insuranceEndDate']));
+        }
+    }
+
+    private function parseDate(string $field, mixed $value): ?\DateTimeInterface
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $date = is_string($value) ? \DateTime::createFromFormat('!' . self::DATE_FORMAT, $value) : false;
+
+        if ($date === false || $date->format(self::DATE_FORMAT) !== $value) {
+            throw new \InvalidArgumentException(sprintf('Неверный формат даты в поле %s, ожидается ГГГГ-ММ-ДД', $field));
+        }
+
+        return $date;
     }
 
     private function serializeFinancialManager(FinancialManager $financialManager): array
@@ -195,6 +238,8 @@ class FinancialManagerController extends AbstractController
             'snils' => $financialManager->getSnils(),
             'email' => $financialManager->getEmail(),
             'phone' => $financialManager->getPhone(),
+            'insuranceEndDate' => $financialManager->getInsuranceEndDate()?->format(self::DATE_FORMAT),
+            'insuranceStatus' => $financialManager->getInsuranceStatus(today: new \DateTimeImmutable('today'))->value,
         ];
     }
 
@@ -213,6 +258,11 @@ class FinancialManagerController extends AbstractController
             'aauOgrn' => $financialManager->getAauOgrn(),
             'aauInn' => $financialManager->getAauInn(),
             'aauAddress' => $financialManager->getAauAddress(),
+            'insuranceContractNumber' => $financialManager->getInsuranceContractNumber(),
+            'insuranceContractDate' => $financialManager->getInsuranceContractDate()?->format(self::DATE_FORMAT),
+            'insuranceStartDate' => $financialManager->getInsuranceStartDate()?->format(self::DATE_FORMAT),
+            'insuranceEndDate' => $financialManager->getInsuranceEndDate()?->format(self::DATE_FORMAT),
+            'insuranceStatus' => $financialManager->getInsuranceStatus(today: new \DateTimeImmutable('today'))->value,
         ];
     }
 }

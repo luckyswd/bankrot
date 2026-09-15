@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Templates;
 
+use App\Service\DateHelperService;
+
 class CustomFunction
 {
     /**
@@ -116,6 +118,7 @@ class CustomFunction
         ];
 
         $result = str_replace('дд', sprintf('%02d', $day), $result);
+        $result = str_replace('ММММР', DateHelperService::getMonthNameGenitive(monthNumber: (string)$month), $result);
         $result = str_replace('ММММ', $monthNamesFull[$month], $result);
         $result = str_replace('МММ', $monthNamesShort[$month], $result);
         $result = str_replace('ММ', sprintf('%02d', $month), $result);

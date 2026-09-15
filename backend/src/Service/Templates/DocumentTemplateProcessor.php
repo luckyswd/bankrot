@@ -7,6 +7,7 @@ namespace App\Service\Templates;
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
+use App\Service\Templates\JudicialReport\ReportMethods;
 use App\Service\Templates\PreCourt\PreCourtMethods;
 use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
 use Doctrine\Common\Collections\Collection;
@@ -15,6 +16,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 readonly class DocumentTemplateProcessor
 {
+    private const array FORMULATION_CLASSES = [
+        'PreCourtMethods' => PreCourtMethods::class,
+        'ProcedureInitiationMethods' => ProcedureInitiationMethods::class,
+        'ReportMethods' => ReportMethods::class,
+    ];
+
     public function __construct(
         private EntityDataResolver $entityDataResolver,
         private CustomFunction $customFunction,
@@ -592,24 +599,14 @@ readonly class DocumentTemplateProcessor
             }
         }
 
-        // Ищем вызовы статических методов из ProcedureInitiationMethods
-        if (preg_match_all('/ProcedureInitiationMethods::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $piMatches)) {
-            foreach ($piMatches[1] as $staticMethodName) {
-                $this->analyzeStaticMethod(
-                    className: ProcedureInitiationMethods::class,
-                    methodName: $staticMethodName,
-                    objectClass: $objectClass,
-                    allProperties: $allProperties,
-                    analyzedMethods: $analyzedMethods
-                );
+        foreach (self::FORMULATION_CLASSES as $shortClassName => $formulationClass) {
+            if (!preg_match_all('/\b' . $shortClassName . '::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $staticMatches)) {
+                continue;
             }
-        }
 
-        // Ищем вызовы статических методов из PreCourtMethods
-        if (preg_match_all('/PreCourtMethods::([a-zA-Z_][a-zA-Z0-9_]*)\(/', $methodCode, $pcMatches)) {
-            foreach ($pcMatches[1] as $staticMethodName) {
+            foreach ($staticMatches[1] as $staticMethodName) {
                 $this->analyzeStaticMethod(
-                    className: PreCourtMethods::class,
+                    className: $formulationClass,
                     methodName: $staticMethodName,
                     objectClass: $objectClass,
                     allProperties: $allProperties,

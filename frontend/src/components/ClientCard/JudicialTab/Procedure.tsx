@@ -23,6 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2 } from "lucide-react";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
+import { ProcedureReportSections } from "./ProcedureReportSections";
 import type { ReferenceData } from "@/types/reference";
 
 interface ProcedureTabProps {
@@ -519,6 +520,8 @@ export const ProcedureTab = ({
               );
             })}
           </div>
+
+          <ProcedureReportSections />
 
           <DocumentsList
             documents={documents}

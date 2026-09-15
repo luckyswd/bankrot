@@ -44,7 +44,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 COPY backend/ ./
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
 
-RUN mkdir -p var/document-templates var/cache var/log config/jwt \
-    && chown -R www-data:www-data var config/jwt
+RUN mkdir -p var/document-templates var/cache var/log config/jwt src/document-templates /opt/document-templates \
+    && cp -R src/document-templates/. /opt/document-templates/ \
+    && chown -R www-data:www-data var config/jwt src/document-templates
 
 CMD ["php-fpm"]

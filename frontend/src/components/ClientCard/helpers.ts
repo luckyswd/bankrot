@@ -8,6 +8,7 @@ import {
   PrimaryInfoFields,
   ProcedureFields,
 } from "./types";
+import { DEFAULT_ZAGS_DEPARTMENT, toDateOnly } from "./utils/judicialCalculations";
 
 export const defaultPrimaryInfo: PrimaryInfoFields = {
   lastName: null,
@@ -86,9 +87,20 @@ export const defaultIntroduction: IntroductionFields = {
   procedureInitiationIPEndings: [],
   correspondenceAddress: null,
   procedureInitiationReportHearingDateTime: "",
+  procedureInitiationEfrsbMessageNumber: "",
+  procedureInitiationEfrsbMessageDate: "",
+  procedureInitiationKommersantIssueNumber: "",
+  procedureInitiationKommersantAdNumber: "",
+  procedureInitiationKommersantPublicationDate: "",
+  procedureInitiationKommersantPublicationCost: "",
+  procedureInitiationCreditorsNotificationDate: "",
 };
 
-export const defaultProcedure: ProcedureFields = {};
+export const defaultProcedure: ProcedureFields = {
+  procedureExtensionStatus: null,
+  procedureExtensionDates: [],
+  zagsDepartment: DEFAULT_ZAGS_DEPARTMENT,
+};
 
 export const createDefaultFormValues = (): FormValues => ({
   basic_info: { ...defaultPrimaryInfo },
@@ -206,6 +218,14 @@ export const convertApiDataToFormValues = (
   const basicInfoRecord = isRecord(apiData.basic_info)
     ? (apiData.basic_info as Record<string, unknown>)
     : {};
+  const initiationRecord = isRecord(apiData.judicial_procedure_initiation)
+    ? apiData.judicial_procedure_initiation
+    : {};
+  const procedureRecord = isRecord(apiData.judicial_procedure)
+    ? apiData.judicial_procedure
+    : {};
+  const toCountString = (value: unknown): string =>
+    typeof value === "number" || typeof value === "string" ? String(value) : "";
   // const introductionData =
   //   apiData.judicial_procedure_initiation ?? apiData.procedure_initiation;
   // const introductionRecord = isRecord(introductionData)
@@ -314,10 +334,23 @@ export const convertApiDataToFormValues = (
       procedureInitiationReportHearingDateTime: isRecord(apiData.judicial_procedure_initiation)
         ? ((apiData.judicial_procedure_initiation as any).procedureInitiationReportHearingDateTime ?? "")
         : "",
+      procedureInitiationEfrsbMessageDate: toDateOnly(initiationRecord.procedureInitiationEfrsbMessageDate),
+      procedureInitiationKommersantPublicationDate: toDateOnly(initiationRecord.procedureInitiationKommersantPublicationDate),
+      procedureInitiationCreditorsNotificationDate: toDateOnly(initiationRecord.procedureInitiationCreditorsNotificationDate),
     },
     judicial_procedure: {
       ...defaults.judicial_procedure,
       ...asPartial<ProcedureFields>(apiData.judicial_procedure),
+      procedureExtensionDates: Array.isArray(procedureRecord.procedureExtensionDates)
+        ? procedureRecord.procedureExtensionDates.filter((date): date is string => typeof date === "string")
+        : [],
+      propertyInventoryDate: toDateOnly(procedureRecord.propertyInventoryDate),
+      zagsDepartment: pickString(procedureRecord.zagsDepartment) || DEFAULT_ZAGS_DEPARTMENT,
+      zagsCertificatePeriodFrom: toDateOnly(procedureRecord.zagsCertificatePeriodFrom),
+      zagsCertificatePeriodTo: toDateOnly(procedureRecord.zagsCertificatePeriodTo),
+      claimsIncludedCount: toCountString(procedureRecord.claimsIncludedCount),
+      claimsRejectedCount: toCountString(procedureRecord.claimsRejectedCount),
+      bankruptcySignsEfrsbPublicationDate: toDateOnly(procedureRecord.bankruptcySignsEfrsbPublicationDate),
     },
   };
 };

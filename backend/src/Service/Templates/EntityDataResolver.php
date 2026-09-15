@@ -38,11 +38,9 @@ readonly class EntityDataResolver
 
         // Если один элемент - это свойство контракта
         if ($partsCount === 1) {
-            $value = $this->formatValue(
+            return $this->formatValue(
                 value: $this->getPropertyValue(object: $currentObject, propertyName: $parts[0])
             );
-
-            return empty($value) ? self::DEFAULT_VALUE : $value;
         }
 
         // Если 2+ элемента: первые N-1 - цепочка связей, последний - свойство

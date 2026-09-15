@@ -79,6 +79,7 @@ export const JudicialTab = ({
           <ReportTab
             openDocument={openDocument}
             onDownload={onDownload}
+            referenceData={referenceData}
             contractData={contractData}
             onNavigateToField={onNavigateToField}
           />

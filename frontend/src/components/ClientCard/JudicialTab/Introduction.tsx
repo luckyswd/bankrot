@@ -13,6 +13,7 @@ import {Label} from "@/components/ui/label";
 import {TabsContent} from "@/components/ui/tabs";
 import {FormValues} from "../types";
 import {DocumentsList} from "../DocumentsList";
+import {IntroductionReportSections} from "./IntroductionReportSections";
 import {
     Select,
     SelectContent,
@@ -501,6 +502,8 @@ export const IntroductionTab = ({
                             />
                         </div>
                     </div>
+
+                    <IntroductionReportSections/>
 
                     <DocumentsList
                         documents={documents}

@@ -8,6 +8,7 @@ import { Input } from '../ui/input'
 import { notify } from '../ui/toast'
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useModalStore } from '../Modals/ModalProvider'
+import { InsuranceStatusBadge, type InsuranceStatus } from '@/components/shared/InsuranceStatusAlert'
 
 interface FinancialManager {
   id: number
@@ -16,6 +17,8 @@ interface FinancialManager {
   snils?: string
   email?: string
   phone?: string
+  insuranceStatus?: InsuranceStatus
+  insuranceEndDate?: string | null
   [key: string]: unknown
 }
 
@@ -166,7 +169,15 @@ export default function FinancialManagersDatabase() {
                     ) : (
                       financialManagers.map((financialManager) => (
                         <TableRow key={financialManager.id}>
-                          <TableCell className="font-medium">{financialManager.fio || '-'}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col gap-1">
+                              <span>{financialManager.fio || '-'}</span>
+                              <InsuranceStatusBadge
+                                status={financialManager.insuranceStatus}
+                                endDate={financialManager.insuranceEndDate}
+                              />
+                            </div>
+                          </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{financialManager.inn || '-'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{financialManager.snils || '-'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{financialManager.email || '-'}</TableCell>

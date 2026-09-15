@@ -54,9 +54,14 @@ services:
             # только контейнерный nginx, других путей к php-fpm нет.
             TRUSTED_PROXIES: ${TRUSTED_PROXIES:-REMOTE_ADDR}
         volumes:
-            # Загруженные шаблоны документов, кэш и логи. Том, а не каталог с
-            # хоста: rsync при выкате идёт с --delete и снёс бы шаблоны,
-            # которых нет в репозитории.
+            # Шаблоны документов. Том, а не каталог из образа: загруженные через
+            # интерфейс шаблоны должны пережить пересборку. Шаблоны из
+            # репозитория докладываются в том при деплое командой
+            # app:document-templates:sync.
+            - app_document_templates:/var/www/html/src/document-templates
+            # Кэш, логи и загрузки шаблонов, сделанные до переноса в
+            # src/document-templates. Том, а не каталог с хоста: rsync при
+            # выкате идёт с --delete.
             - app_var:/var/www/html/var
             # Ключи JWT генерируются один раз и переживают пересборку образа.
             - app_jwt:/var/www/html/config/jwt
@@ -89,5 +94,6 @@ services:
 
 volumes:
     db_data:
+    app_document_templates:
     app_var:
     app_jwt:

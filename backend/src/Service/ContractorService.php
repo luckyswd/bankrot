@@ -7,6 +7,7 @@ use App\Entity\ContractsCreditorsClaim;
 use App\Entity\ContractsPreCourtCreditor;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
+use App\Entity\Enum\ProcedureExtensionStatus;
 use App\Repository\BailiffRepository;
 use App\Repository\ContractsCreditorsClaimRepository;
 use App\Repository\ContractsPreCourtCreditorRepository;
@@ -24,6 +25,10 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class ContractorService
 {
+    private const string PROCEDURE_EXTENSION_STATUS_KEY = 'procedureExtensionStatus';
+    private const string PROCEDURE_EXTENSION_DATES_KEY = 'procedureExtensionDates';
+    private const string ISO_DATE_FORMAT = 'Y-m-d';
+
     public function __construct(
         private readonly DocumentTemplateProcessor $documentTemplateProcessor,
         private readonly DocumentTemplateRepository $documentTemplateRepository,
@@ -140,6 +145,13 @@ class ContractorService
             'procedureInitiationDecisionDate',
             'procedureInitiationResolutionDate',
             'procedureInitiationDocumentDate',
+            'procedureInitiationEfrsbMessageDate',
+            'procedureInitiationKommersantPublicationDate',
+            'procedureInitiationCreditorsNotificationDate',
+            'propertyInventoryDate',
+            'zagsCertificatePeriodFrom',
+            'zagsCertificatePeriodTo',
+            'bankruptcySignsEfrsbPublicationDate',
         ];
         $dateTimeFields = [
             'hearingDateTime',
@@ -147,6 +159,10 @@ class ContractorService
             'marriageTerminationDate',
             'procedureInitiationReportHearingDateTime',
         ];
+
+        if (array_key_exists(self::PROCEDURE_EXTENSION_STATUS_KEY, $data) || array_key_exists(self::PROCEDURE_EXTENSION_DATES_KEY, $data)) {
+            $this->updateProcedureExtension(contract: $contract, data: $data);
+        }
 
         foreach ($data as $key => $value) {
             if ($key === 'court') {
@@ -538,5 +554,44 @@ class ContractorService
 
             $method->invoke($contract, $value);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function updateProcedureExtension(Contracts $contract, array $data): void
+    {
+        $status = array_key_exists(self::PROCEDURE_EXTENSION_STATUS_KEY, $data)
+            ? ProcedureExtensionStatus::tryFrom((string)$data[self::PROCEDURE_EXTENSION_STATUS_KEY])
+            : $contract->getProcedureExtensionStatus();
+
+        $dates = array_key_exists(self::PROCEDURE_EXTENSION_DATES_KEY, $data)
+            ? $this->filterIsoDates(value: $data[self::PROCEDURE_EXTENSION_DATES_KEY])
+            : $contract->getProcedureExtensionDates() ?? [];
+
+        $contract->changeProcedureExtension(status: $status, dates: $dates);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function filterIsoDates(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $value,
+            static function (mixed $date): bool {
+                if (!is_string($date)) {
+                    return false;
+                }
+
+                $parsed = \DateTime::createFromFormat('!' . self::ISO_DATE_FORMAT, $date);
+
+                return $parsed !== false && $parsed->format(self::ISO_DATE_FORMAT) === $date;
+            }
+        ));
     }
 }

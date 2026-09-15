@@ -3,7 +3,7 @@ TEST_DB_URL = sqlite:///$(CURDIR)/var/test.db
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install composer-install db-migrate db-diff cc \
+.PHONY: help install composer-install db-migrate db-diff templates-sync cc \
         check-code stan lint lint-fix test test-prepare seed jwt-gen
 
 help:
@@ -23,6 +23,7 @@ help:
 	@echo "Обслуживание:"
 	@echo "  make cc              Очистить кэш Symfony и Doctrine"
 	@echo "  make jwt-gen         Сгенерировать пару JWT-ключей"
+	@echo "  make templates-sync  Разложить шаблоны документов в src/document-templates"
 	@echo "  make composer-install Установка без dev-зависимостей, для деплоя"
 
 install:
@@ -49,6 +50,9 @@ db-migrate:
 
 db-diff:
 	$(CONSOLE) doctrine:migrations:diff --no-interaction
+
+templates-sync:
+	$(CONSOLE) app:document-templates:sync --no-interaction
 
 cc:
 	$(CONSOLE) cache:clear --no-debug
