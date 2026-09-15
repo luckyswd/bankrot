@@ -95,6 +95,7 @@ export const FinancialManagerFormModal = ({ isOpen, onClose, financialManager, o
 
     const payload: Record<string, string | null> = {
       fio: formData.fio.trim() || null,
+      fioGenitive: formData.fioGenitive.trim() || null,
       inn: formData.inn.trim() || null,
       snils: formData.snils.trim() || null,
       arbitrationManagerRegistryNumber: formData.arbitrationManagerRegistryNumber.trim() || null,
