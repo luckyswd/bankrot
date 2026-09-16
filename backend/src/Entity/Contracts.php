@@ -32,6 +32,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Contracts extends BaseEntity
 {
+    /**
+     * @var array<int, PropertyKind>
+     */
+    private const array MONEY_KINDS = [PropertyKind::BANK_ACCOUNT, PropertyKind::CASH];
+
+    /**
+     * @var array<int, PropertyKind>
+     */
+    private const array OTHER_PROPERTY_KINDS = [PropertyKind::VALUABLES, PropertyKind::EXCLUSIVE_RIGHTS];
+
     public const string DEFAULT_ZAGS_DEPARTMENT = 'отдел ЗАГС Комитета по делам ЗАГС Правительства Санкт-Петербурга';
     private const int REGISTRY_CLOSING_MONTHS = 2;
 
@@ -2360,9 +2370,65 @@ class Contracts extends BaseEntity
     /**
      * @return Collection<int, PropertyRow>
      */
+    public function getInventoryBankAccounts(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::BANK_ACCOUNT);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryCashes(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::CASH);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryShares(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::SHARES);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventorySecurities(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::SECURITIES);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryValuables(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::VALUABLES);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryReceivables(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::RECEIVABLES);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryExclusiveRights(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::EXCLUSIVE_RIGHTS);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
     public function getReportRealEstates(): Collection
     {
-        return PropertyMethods::reportRows(contract: $this, kind: PropertyKind::REAL_ESTATE);
+        return PropertyMethods::reportRows(contract: $this, kinds: [PropertyKind::REAL_ESTATE]);
     }
 
     /**
@@ -2370,37 +2436,152 @@ class Contracts extends BaseEntity
      */
     public function getReportMovables(): Collection
     {
-        return PropertyMethods::reportRows(contract: $this, kind: PropertyKind::MOVABLE);
+        return PropertyMethods::reportRows(contract: $this, kinds: [PropertyKind::MOVABLE]);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportMoneys(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kinds: self::MONEY_KINDS);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportReceivables(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kinds: [PropertyKind::RECEIVABLES]);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportShares(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kinds: [PropertyKind::SHARES]);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportSecurities(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kinds: [PropertyKind::SECURITIES]);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportOthers(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kinds: self::OTHER_PROPERTY_KINDS);
     }
 
     public function getRealEstateManagerTotal(): string
     {
-        return PropertyMethods::managerTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+        return PropertyMethods::managerTotal(contract: $this, kinds: [PropertyKind::REAL_ESTATE]);
     }
 
     public function getRealEstateAppraiserTotal(): string
     {
-        return PropertyMethods::appraiserTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: [PropertyKind::REAL_ESTATE]);
     }
 
     public function getRealEstateExcludedTotal(): string
     {
-        return PropertyMethods::excludedTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+        return PropertyMethods::excludedTotal(contract: $this, kinds: [PropertyKind::REAL_ESTATE]);
     }
 
     public function getMovableManagerTotal(): string
     {
-        return PropertyMethods::managerTotal(contract: $this, kind: PropertyKind::MOVABLE);
+        return PropertyMethods::managerTotal(contract: $this, kinds: [PropertyKind::MOVABLE]);
     }
 
     public function getMovableAppraiserTotal(): string
     {
-        return PropertyMethods::appraiserTotal(contract: $this, kind: PropertyKind::MOVABLE);
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: [PropertyKind::MOVABLE]);
     }
 
     public function getMovableExcludedTotal(): string
     {
-        return PropertyMethods::excludedTotal(contract: $this, kind: PropertyKind::MOVABLE);
+        return PropertyMethods::excludedTotal(contract: $this, kinds: [PropertyKind::MOVABLE]);
+    }
+
+    public function getMoneyManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kinds: self::MONEY_KINDS);
+    }
+
+    public function getMoneyAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: self::MONEY_KINDS);
+    }
+
+    public function getMoneyExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kinds: self::MONEY_KINDS);
+    }
+
+    public function getReceivablesManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kinds: [PropertyKind::RECEIVABLES]);
+    }
+
+    public function getReceivablesAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: [PropertyKind::RECEIVABLES]);
+    }
+
+    public function getReceivablesExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kinds: [PropertyKind::RECEIVABLES]);
+    }
+
+    public function getSharesManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kinds: [PropertyKind::SHARES]);
+    }
+
+    public function getSharesAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: [PropertyKind::SHARES]);
+    }
+
+    public function getSharesExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kinds: [PropertyKind::SHARES]);
+    }
+
+    public function getSecuritiesManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kinds: [PropertyKind::SECURITIES]);
+    }
+
+    public function getSecuritiesAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: [PropertyKind::SECURITIES]);
+    }
+
+    public function getSecuritiesExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kinds: [PropertyKind::SECURITIES]);
+    }
+
+    public function getOtherPropertyManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kinds: self::OTHER_PROPERTY_KINDS);
+    }
+
+    public function getOtherPropertyAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kinds: self::OTHER_PROPERTY_KINDS);
+    }
+
+    public function getOtherPropertyExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kinds: self::OTHER_PROPERTY_KINDS);
     }
 
     public function getPropertyManagerTotal(): string
@@ -2420,12 +2601,66 @@ class Contracts extends BaseEntity
 
     public function getRealEstateSummaryText(): string
     {
-        return PropertyMethods::summaryText(contract: $this, kind: PropertyKind::REAL_ESTATE);
+        return PropertyMethods::summaryText(contract: $this, kinds: [PropertyKind::REAL_ESTATE]);
     }
 
     public function getMovableSummaryText(): string
     {
-        return PropertyMethods::summaryText(contract: $this, kind: PropertyKind::MOVABLE);
+        return PropertyMethods::summaryText(contract: $this, kinds: [PropertyKind::MOVABLE]);
+    }
+
+    public function getBankAccountsSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::BANK_ACCOUNT],
+            notFound: PropertyMethods::NOT_FOUND_PLURAL,
+        );
+    }
+
+    public function getCashSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::CASH],
+            notFound: PropertyMethods::NOT_FOUND_PLURAL,
+        );
+    }
+
+    public function getSharesSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::SHARES],
+            notFound: PropertyMethods::NOT_FOUND_PLURAL,
+        );
+    }
+
+    public function getSecuritiesSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::SECURITIES],
+            notFound: PropertyMethods::NOT_FOUND_PLURAL,
+        );
+    }
+
+    public function getValuablesSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::VALUABLES],
+            notFound: PropertyMethods::NOT_FOUND_PLURAL,
+        );
+    }
+
+    public function getReceivablesSummaryText(): string
+    {
+        return PropertyMethods::summaryText(
+            contract: $this,
+            kinds: [PropertyKind::RECEIVABLES],
+            notFound: PropertyMethods::NOT_FOUND_FEMININE,
+        );
     }
 
     public function getReportHearingHeaderText(): string

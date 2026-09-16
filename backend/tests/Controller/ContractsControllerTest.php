@@ -644,6 +644,20 @@ class ContractsControllerTest extends BaseTestCase
                             'identificationNumber' => 'XTA219010K0512345',
                             'managerValuation' => '253 453,82',
                         ],
+                        [
+                            'subtype' => 'bank_account',
+                            'name' => 'ПАО «Сбербанк России»',
+                            'accountType' => 'текущий, рубли',
+                            'openedAt' => '2019-03-12',
+                            'amount' => '50 000,00',
+                        ],
+                        [
+                            'subtype' => 'receivables',
+                            'name' => 'Иванов Иван Иванович',
+                            'amount' => '30 000,00',
+                            'obligationContent' => 'заём по расписке',
+                            'basisText' => 'расписка от 01.02.2020 г.',
+                        ],
                     ],
                 ],
             ]),
@@ -653,12 +667,19 @@ class ContractsControllerTest extends BaseTestCase
         $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
         $property = $response['judicial_procedure']['property'];
 
-        $this->assertCount(2, $property);
+        $this->assertCount(4, $property);
         $this->assertSame('apartment', $property[0]['subtype']);
         $this->assertSame('real_estate', $property[0]['kind']);
         $this->assertSame('78,8', $property[0]['area']);
         $this->assertSame('movable', $property[1]['kind']);
         $this->assertSame('XTA219010K0512345', $property[1]['identificationNumber']);
+        $this->assertSame('bank_account', $property[2]['kind']);
+        $this->assertSame('текущий, рубли', $property[2]['accountType']);
+        $this->assertStringStartsWith('2019-03-12', $property[2]['openedAt']);
+        $this->assertSame(MoneyHelperService::normalize(amount: '50 000,00'), $property[2]['amount']);
+        $this->assertSame('receivables', $property[3]['kind']);
+        $this->assertSame('заём по расписке', $property[3]['obligationContent']);
+        $this->assertSame('расписка от 01.02.2020 г.', $property[3]['basisText']);
 
         $this->client->request(
             method: 'PUT',

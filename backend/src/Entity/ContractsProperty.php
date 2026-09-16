@@ -88,11 +88,164 @@ class ContractsProperty extends BaseEntity
     #[OA\Property(description: 'Стоимость имущества, исключаемого из конкурсной массы', type: 'string', example: '1000000.00', nullable: true)]
     private ?string $excludedValuation = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Вид и валюта счёта', type: 'string', example: 'текущий, рубли', nullable: true)]
+    private ?string $accountType = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата открытия счёта', type: Types::STRING, format: 'date', example: '2019-03-12', nullable: true)]
+    private ?\DateTimeInterface $openedAt = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Сумма: остаток на счёте, наличные, уставный капитал, номинальная величина или сумма задолженности', type: 'string', example: '50000.00', nullable: true)]
+    private ?string $amount = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Валюта', type: 'string', example: 'рубли', nullable: true)]
+    private ?string $currency = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Лицо, выпустившее ценную бумагу', type: 'string', example: 'ПАО «Газпром»', nullable: true)]
+    private ?string $issuer = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Доля участия', type: 'string', example: '25%', nullable: true)]
+    private ?string $participationShare = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Общее количество', type: 'string', example: '100', nullable: true)]
+    private ?string $quantity = null;
+
+    #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Содержание обязательства', type: 'string', example: 'заём по расписке', nullable: true)]
+    private ?string $obligationContent = null;
+
+    #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Основание участия или возникновения', type: 'string', example: 'договор займа от 01.02.2020 г.', nullable: true)]
+    private ?string $basisText = null;
+
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
     #[OA\Property(description: 'Вид имущества', type: 'string', example: 'real_estate')]
     public function getKind(): PropertyKind
     {
         return $this->subtype->getKind();
+    }
+
+    public function getAccountType(): ?string
+    {
+        return $this->accountType;
+    }
+
+    public function setAccountType(?string $accountType): self
+    {
+        $this->accountType = $accountType;
+
+        return $this;
+    }
+
+    public function getOpenedAt(): ?\DateTimeInterface
+    {
+        return $this->openedAt;
+    }
+
+    public function setOpenedAt(?\DateTimeInterface $openedAt): self
+    {
+        $this->openedAt = $openedAt;
+
+        return $this;
+    }
+
+    public function getAmount(): ?string
+    {
+        return $this->amount;
+    }
+
+    public function setAmount(?string $amount): self
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?string $currency): self
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getIssuer(): ?string
+    {
+        return $this->issuer;
+    }
+
+    public function setIssuer(?string $issuer): self
+    {
+        $this->issuer = $issuer;
+
+        return $this;
+    }
+
+    public function getParticipationShare(): ?string
+    {
+        return $this->participationShare;
+    }
+
+    public function setParticipationShare(?string $participationShare): self
+    {
+        $this->participationShare = $participationShare;
+
+        return $this;
+    }
+
+    public function getQuantity(): ?string
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(?string $quantity): self
+    {
+        $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getObligationContent(): ?string
+    {
+        return $this->obligationContent;
+    }
+
+    public function setObligationContent(?string $obligationContent): self
+    {
+        $this->obligationContent = $obligationContent;
+
+        return $this;
+    }
+
+    public function getBasisText(): ?string
+    {
+        return $this->basisText;
+    }
+
+    public function setBasisText(?string $basisText): self
+    {
+        $this->basisText = $basisText;
+
+        return $this;
     }
 
     public function getId(): ?int

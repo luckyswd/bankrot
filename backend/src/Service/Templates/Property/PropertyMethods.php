@@ -13,24 +13,35 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class PropertyMethods
 {
+    public const string NOT_FOUND_NEUTER = 'не выявлено';
+    public const string NOT_FOUND_PLURAL = 'не выявлены';
+    public const string NOT_FOUND_FEMININE = 'не выявлена';
+
     private const string INVENTORY_DASH = '—';
     private const string REPORT_DASH = '–';
     private const string ZERO_AMOUNT = '0.00';
-    private const string NOT_FOUND_TEXT = 'не выявлено';
     private const string LIST_SEPARATOR = '; ';
     private const string SUBTYPE_SEPARATOR = ': ';
-    private const string EXCLUSION_SEPARATOR = ', ';
+    private const string PART_SEPARATOR = ', ';
+    private const string DATE_FORMAT = 'd.m.Y';
 
     /**
      * @return ArrayCollection<int, PropertyRow>
      */
     public static function inventoryRows(Contracts $contract, PropertyKind $kind): ArrayCollection
     {
-        $items = self::itemsOfKind(contract: $contract, kind: $kind);
+        $items = self::itemsOfKinds(contract: $contract, kinds: [$kind]);
 
         if ($items === []) {
+            if (!$kind->hasSubtypeLabels()) {
+                return new ArrayCollection([self::emptyRow(dash: self::INVENTORY_DASH, name: self::INVENTORY_DASH)]);
+            }
+
             return new ArrayCollection(array_map(
-                static fn (PropertySubtype $subtype): PropertyRow => self::emptySubtypeRow(subtype: $subtype),
+                static fn (PropertySubtype $subtype): PropertyRow => self::emptyRow(
+                    dash: self::INVENTORY_DASH,
+                    name: $subtype->getLabel() . ':',
+                ),
                 $kind->getSubtypes(),
             ));
         }
@@ -38,7 +49,7 @@ class PropertyMethods
         return new ArrayCollection(array_map(
             static fn (ContractsProperty $property): PropertyRow => self::itemRow(
                 property: $property,
-                withSubtype: true,
+                withSubtype: $kind->hasSubtypeLabels(),
                 dash: self::INVENTORY_DASH,
             ),
             $items,
@@ -46,14 +57,16 @@ class PropertyMethods
     }
 
     /**
+     * @param array<int, PropertyKind> $kinds
+     *
      * @return ArrayCollection<int, PropertyRow>
      */
-    public static function reportRows(Contracts $contract, PropertyKind $kind): ArrayCollection
+    public static function reportRows(Contracts $contract, array $kinds): ArrayCollection
     {
-        $items = self::itemsOfKind(contract: $contract, kind: $kind);
+        $items = self::itemsOfKinds(contract: $contract, kinds: $kinds);
 
         if ($items === []) {
-            return new ArrayCollection([self::emptyReportRow()]);
+            return new ArrayCollection([self::emptyRow(dash: self::REPORT_DASH, name: self::REPORT_DASH)]);
         }
 
         return new ArrayCollection(array_map(
@@ -66,39 +79,51 @@ class PropertyMethods
         ));
     }
 
-    public static function managerTotal(Contracts $contract, ?PropertyKind $kind = null): string
+    /**
+     * @param array<int, PropertyKind> $kinds
+     */
+    public static function managerTotal(Contracts $contract, array $kinds = []): string
     {
         return self::total(
             contract: $contract,
-            kind: $kind,
+            kinds: $kinds,
             amount: static fn (ContractsProperty $property): ?string => $property->getManagerValuation(),
         );
     }
 
-    public static function appraiserTotal(Contracts $contract, ?PropertyKind $kind = null): string
+    /**
+     * @param array<int, PropertyKind> $kinds
+     */
+    public static function appraiserTotal(Contracts $contract, array $kinds = []): string
     {
         return self::total(
             contract: $contract,
-            kind: $kind,
+            kinds: $kinds,
             amount: static fn (ContractsProperty $property): ?string => $property->getAppraiserValuation(),
         );
     }
 
-    public static function excludedTotal(Contracts $contract, ?PropertyKind $kind = null): string
+    /**
+     * @param array<int, PropertyKind> $kinds
+     */
+    public static function excludedTotal(Contracts $contract, array $kinds = []): string
     {
         return self::total(
             contract: $contract,
-            kind: $kind,
+            kinds: $kinds,
             amount: static fn (ContractsProperty $property): ?string => $property->getExcludedValuation(),
         );
     }
 
-    public static function summaryText(Contracts $contract, PropertyKind $kind): string
+    /**
+     * @param array<int, PropertyKind> $kinds
+     */
+    public static function summaryText(Contracts $contract, array $kinds, string $notFound = self::NOT_FOUND_NEUTER): string
     {
-        $items = self::itemsOfKind(contract: $contract, kind: $kind);
+        $items = self::itemsOfKinds(contract: $contract, kinds: $kinds);
 
         if ($items === []) {
-            return self::NOT_FOUND_TEXT;
+            return $notFound;
         }
 
         return implode(self::LIST_SEPARATOR, array_map(
@@ -108,13 +133,15 @@ class PropertyMethods
     }
 
     /**
+     * @param array<int, PropertyKind> $kinds
+     *
      * @return array<int, ContractsProperty>
      */
-    private static function itemsOfKind(Contracts $contract, PropertyKind $kind): array
+    private static function itemsOfKinds(Contracts $contract, array $kinds): array
     {
         $items = array_values(array_filter(
             $contract->getProperty()->toArray(),
-            static fn (ContractsProperty $property): bool => $property->getKind() === $kind,
+            static fn (ContractsProperty $property): bool => $kinds === [] || in_array($property->getKind(), $kinds, true),
         ));
 
         usort(
@@ -142,36 +169,41 @@ class PropertyMethods
             managerValuation: MoneyHelperService::formatPlain(amount: $property->getManagerValuation()),
             appraiserValuation: MoneyHelperService::formatPlain(amount: $property->getAppraiserValuation()),
             exclusionText: self::exclusionText(property: $property),
+            accountType: self::textOrDash(value: $property->getAccountType(), dash: $dash),
+            openedAt: self::textOrDash(value: $property->getOpenedAt()?->format(self::DATE_FORMAT), dash: $dash),
+            amount: self::amountOrDash(amount: $property->getAmount(), dash: $dash),
+            currency: self::textOrDash(value: $property->getCurrency(), dash: $dash),
+            issuer: self::textOrDash(value: $property->getIssuer(), dash: $dash),
+            participationShare: self::textOrDash(value: $property->getParticipationShare(), dash: $dash),
+            quantity: self::textOrDash(value: $property->getQuantity(), dash: $dash),
+            obligationContent: self::textOrDash(value: $property->getObligationContent(), dash: $dash),
+            basisText: self::textOrDash(value: $property->getBasisText(), dash: $dash),
         );
     }
 
-    private static function emptySubtypeRow(PropertySubtype $subtype): PropertyRow
+    private static function emptyRow(string $dash, string $name): PropertyRow
     {
-        return new PropertyRow(
-            name: $subtype->getLabel() . ':',
-            ownershipType: self::INVENTORY_DASH,
-            location: self::INVENTORY_DASH,
-            area: self::INVENTORY_DASH,
-            identificationNumber: self::INVENTORY_DASH,
-            pledgeInfo: self::INVENTORY_DASH,
-            managerValuation: MoneyHelperService::formatPlain(amount: self::ZERO_AMOUNT),
-            appraiserValuation: MoneyHelperService::formatPlain(amount: self::ZERO_AMOUNT),
-            exclusionText: MoneyHelperService::formatPlain(amount: self::ZERO_AMOUNT),
-        );
-    }
+        $valuation = $dash === self::REPORT_DASH ? $dash : MoneyHelperService::formatPlain(amount: self::ZERO_AMOUNT);
 
-    private static function emptyReportRow(): PropertyRow
-    {
         return new PropertyRow(
-            name: self::REPORT_DASH,
-            ownershipType: self::REPORT_DASH,
-            location: self::REPORT_DASH,
-            area: self::REPORT_DASH,
-            identificationNumber: self::REPORT_DASH,
-            pledgeInfo: self::REPORT_DASH,
-            managerValuation: self::REPORT_DASH,
-            appraiserValuation: self::REPORT_DASH,
-            exclusionText: self::REPORT_DASH,
+            name: $name,
+            ownershipType: $dash,
+            location: $dash,
+            area: $dash,
+            identificationNumber: $dash,
+            pledgeInfo: $dash,
+            managerValuation: $valuation,
+            appraiserValuation: $valuation,
+            exclusionText: $valuation,
+            accountType: $dash,
+            openedAt: $dash,
+            amount: $dash,
+            currency: $dash,
+            issuer: $dash,
+            participationShare: $dash,
+            quantity: $dash,
+            obligationContent: $dash,
+            basisText: $dash,
         );
     }
 
@@ -184,7 +216,7 @@ class PropertyMethods
             return $amount;
         }
 
-        return $amount . self::EXCLUSION_SEPARATOR . $reason;
+        return $amount . self::PART_SEPARATOR . $reason;
     }
 
     private static function itemDescription(ContractsProperty $property): string
@@ -194,21 +226,18 @@ class PropertyMethods
             trim((string)$property->getLocation()),
         ]);
 
-        return implode(self::EXCLUSION_SEPARATOR, $parts);
+        return implode(self::PART_SEPARATOR, $parts);
     }
 
     /**
+     * @param array<int, PropertyKind> $kinds
      * @param callable(ContractsProperty): ?string $amount
      */
-    private static function total(Contracts $contract, ?PropertyKind $kind, callable $amount): string
+    private static function total(Contracts $contract, array $kinds, callable $amount): string
     {
-        $items = $kind === null
-            ? $contract->getProperty()->toArray()
-            : self::itemsOfKind(contract: $contract, kind: $kind);
-
         $total = self::ZERO_AMOUNT;
 
-        foreach ($items as $property) {
+        foreach (self::itemsOfKinds(contract: $contract, kinds: $kinds) as $property) {
             $total = MoneyHelperService::add(first: $total, second: $amount($property));
         }
 
@@ -220,5 +249,12 @@ class PropertyMethods
         $text = trim((string)$value);
 
         return $text === '' ? $dash : $text;
+    }
+
+    private static function amountOrDash(?string $amount, string $dash): string
+    {
+        $normalized = MoneyHelperService::normalize(amount: $amount);
+
+        return $normalized === null ? $dash : MoneyHelperService::formatPlain(amount: $normalized);
     }
 }

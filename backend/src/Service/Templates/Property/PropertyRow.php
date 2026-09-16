@@ -16,6 +16,15 @@ final readonly class PropertyRow
         private string $managerValuation,
         private string $appraiserValuation,
         private string $exclusionText,
+        private string $accountType,
+        private string $openedAt,
+        private string $amount,
+        private string $currency,
+        private string $issuer,
+        private string $participationShare,
+        private string $quantity,
+        private string $obligationContent,
+        private string $basisText,
     ) {
     }
 
@@ -62,5 +71,50 @@ final readonly class PropertyRow
     public function getExclusionText(): string
     {
         return $this->exclusionText;
+    }
+
+    public function getAccountType(): string
+    {
+        return $this->accountType;
+    }
+
+    public function getOpenedAt(): string
+    {
+        return $this->openedAt;
+    }
+
+    public function getAmount(): string
+    {
+        return $this->amount;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function getIssuer(): string
+    {
+        return $this->issuer;
+    }
+
+    public function getParticipationShare(): string
+    {
+        return $this->participationShare;
+    }
+
+    public function getQuantity(): string
+    {
+        return $this->quantity;
+    }
+
+    public function getObligationContent(): string
+    {
+        return $this->obligationContent;
+    }
+
+    public function getBasisText(): string
+    {
+        return $this->basisText;
     }
 }

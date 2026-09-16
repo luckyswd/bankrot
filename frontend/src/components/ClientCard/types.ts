@@ -139,7 +139,16 @@ export type CreditorsClaimItem = {
   repaidAmount?: string | null
 }
 
-export type PropertyKind = "real_estate" | "movable"
+export type PropertyKind =
+  | "real_estate"
+  | "movable"
+  | "bank_account"
+  | "cash"
+  | "shares"
+  | "securities"
+  | "valuables"
+  | "receivables"
+  | "exclusive_rights"
 
 export type PropertySubtype =
   | "land_plot"
@@ -154,6 +163,16 @@ export type PropertySubtype =
   | "water_transport"
   | "air_transport"
   | "other_vehicle"
+  | "bank_account"
+  | "cash"
+  | "shares"
+  | "securities"
+  | "jewelry"
+  | "art"
+  | "professional_equipment"
+  | "other_valuables"
+  | "receivables"
+  | "exclusive_rights"
 
 export type PropertyItem = {
   id?: number | null
@@ -170,6 +189,15 @@ export type PropertyItem = {
   isExcludedFromEstate?: boolean | null
   exclusionReason?: string | null
   excludedValuation?: string | null
+  accountType?: string | null
+  openedAt?: string | null
+  amount?: string | null
+  currency?: string | null
+  issuer?: string | null
+  participationShare?: string | null
+  quantity?: string | null
+  obligationContent?: string | null
+  basisText?: string | null
 }
 
 export type ProcedureExtensionStatus = "extended" | "not_extended" | "no_acts"

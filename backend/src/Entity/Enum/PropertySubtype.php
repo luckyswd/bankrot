@@ -18,6 +18,16 @@ enum PropertySubtype: string
     case WATER_TRANSPORT = 'water_transport';
     case AIR_TRANSPORT = 'air_transport';
     case OTHER_VEHICLE = 'other_vehicle';
+    case BANK_ACCOUNT = 'bank_account';
+    case CASH = 'cash';
+    case SHARES = 'shares';
+    case SECURITIES = 'securities';
+    case JEWELRY = 'jewelry';
+    case ART = 'art';
+    case PROFESSIONAL_EQUIPMENT = 'professional_equipment';
+    case OTHER_VALUABLES = 'other_valuables';
+    case RECEIVABLES = 'receivables';
+    case EXCLUSIVE_RIGHTS = 'exclusive_rights';
 
     public function getKind(): PropertyKind
     {
@@ -34,6 +44,16 @@ enum PropertySubtype: string
             self::WATER_TRANSPORT,
             self::AIR_TRANSPORT,
             self::OTHER_VEHICLE => PropertyKind::MOVABLE,
+            self::BANK_ACCOUNT => PropertyKind::BANK_ACCOUNT,
+            self::CASH => PropertyKind::CASH,
+            self::SHARES => PropertyKind::SHARES,
+            self::SECURITIES => PropertyKind::SECURITIES,
+            self::JEWELRY,
+            self::ART,
+            self::PROFESSIONAL_EQUIPMENT,
+            self::OTHER_VALUABLES => PropertyKind::VALUABLES,
+            self::RECEIVABLES => PropertyKind::RECEIVABLES,
+            self::EXCLUSIVE_RIGHTS => PropertyKind::EXCLUSIVE_RIGHTS,
         };
     }
 
@@ -52,6 +72,16 @@ enum PropertySubtype: string
             self::WATER_TRANSPORT => 'Водный транспорт',
             self::AIR_TRANSPORT => 'Воздушный транспорт',
             self::OTHER_VEHICLE => 'Иные транспортные средства',
+            self::JEWELRY => 'Драгоценности, в том числе ювелирные украшения, и другие предметы роскоши',
+            self::ART => 'Предметы искусства',
+            self::PROFESSIONAL_EQUIPMENT => 'Имущество, необходимое для профессиональных занятий',
+            self::OTHER_VALUABLES => 'Иное ценное имущество',
+            self::BANK_ACCOUNT,
+            self::CASH,
+            self::SHARES,
+            self::SECURITIES,
+            self::RECEIVABLES,
+            self::EXCLUSIVE_RIGHTS => $this->getKind()->getLabel(),
         };
     }
 

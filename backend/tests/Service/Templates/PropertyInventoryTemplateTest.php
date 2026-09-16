@@ -83,6 +83,72 @@ class PropertyInventoryTemplateTest extends TestCase
         $this->assertStringNotContainsString('Земельные участки:', $text);
     }
 
+    public function testRemainingCategoriesAreFilledFromCase(): void
+    {
+        $contract = $this->contract()
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::BANK_ACCOUNT)
+                    ->setName('ПАО «Сбербанк России»')
+                    ->setAccountType('текущий, рубли')
+                    ->setOpenedAt(new \DateTime('2019-03-12'))
+                    ->setAmount('50 000,00')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::CASH)
+                    ->setName('наличные денежные средства')
+                    ->setAmount('20 000,00')
+                    ->setCurrency('рубли')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::SHARES)
+                    ->setName('ООО «Ромашка»')
+                    ->setLocation('г. Архангельск, ул. Ленина, д. 1')
+                    ->setAmount('10 000,00')
+                    ->setParticipationShare('25%')
+                    ->setBasisText('решение учредителя от 12.05.2018 г.')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::SECURITIES)
+                    ->setName('облигация')
+                    ->setIssuer('ПАО «Газпром»')
+                    ->setAmount('1 000,00')
+                    ->setQuantity('100')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::ART)
+                    ->setName('картина «Рассвет»')
+                    ->setLocation('сейф в банке')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::RECEIVABLES)
+                    ->setName('Иванов Иван Иванович')
+                    ->setAmount('30 000,00')
+                    ->setObligationContent('заём по расписке')
+                    ->setBasisText('расписка от 01.02.2020 г.')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::EXCLUSIVE_RIGHTS)
+                    ->setName('товарный знак № 123456')
+            );
+
+        $text = $this->text(xml: $this->process(contract: $contract));
+
+        $this->assertStringContainsString('ПАО «Сбербанк России»текущий, рубли12.03.201950000,00', $text);
+        $this->assertStringContainsString('20000,00рубли', $text);
+        $this->assertStringContainsString('ООО «Ромашка»г. Архангельск, ул. Ленина, д. 110000,0025%решение учредителя от 12.05.2018 г.', $text);
+        $this->assertStringContainsString('облигацияПАО «Газпром»1000,00100', $text);
+        $this->assertStringContainsString('Предметы искусства: картина «Рассвет»сейф в банке', $text);
+        $this->assertStringContainsString('Иванов Иван Иванович30000,00заём по распискерасписка от 01.02.2020 г.', $text);
+        $this->assertStringContainsString('товарный знак № 123456', $text);
+    }
+
     public function testPropertyTablesStayFormTextWithoutProperty(): void
     {
         $text = $this->text(xml: $this->process(contract: $this->contract()));

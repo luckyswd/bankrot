@@ -635,7 +635,20 @@ class ContractorService
                 ->setAppraiserValuation(MoneyHelperService::normalize(amount: $item['appraiserValuation'] ?? null))
                 ->setIsExcludedFromEstate(isset($item['isExcludedFromEstate']) ? (bool)$item['isExcludedFromEstate'] : null)
                 ->setExclusionReason($this->toNullableTrimmedString(value: $item['exclusionReason'] ?? null))
-                ->setExcludedValuation(MoneyHelperService::normalize(amount: $item['excludedValuation'] ?? null));
+                ->setExcludedValuation(MoneyHelperService::normalize(amount: $item['excludedValuation'] ?? null))
+                ->setAccountType($this->toNullableTrimmedString(value: $item['accountType'] ?? null))
+                ->setAmount(MoneyHelperService::normalize(amount: $item['amount'] ?? null))
+                ->setCurrency($this->toNullableTrimmedString(value: $item['currency'] ?? null))
+                ->setIssuer($this->toNullableTrimmedString(value: $item['issuer'] ?? null))
+                ->setParticipationShare($this->toNullableTrimmedString(value: $item['participationShare'] ?? null))
+                ->setQuantity($this->toNullableTrimmedString(value: $item['quantity'] ?? null))
+                ->setObligationContent($this->toNullableTrimmedString(value: $item['obligationContent'] ?? null))
+                ->setBasisText($this->toNullableTrimmedString(value: $item['basisText'] ?? null));
+
+            $this->applyDate(
+                value: $item['openedAt'] ?? null,
+                apply: static fn (?\DateTimeInterface $date): ContractsProperty => $property->setOpenedAt($date),
+            );
 
             $propertyId = $property->getId();
 
@@ -672,14 +685,14 @@ class ContractorService
     private function updateClaimRegistryFields(ContractsCreditorsClaim $claim, array $claimData): void
     {
         if (array_key_exists(self::CLAIM_REGISTRY_ENTRY_DATE_KEY, $claimData)) {
-            $this->applyClaimDate(
+            $this->applyDate(
                 value: $claimData[self::CLAIM_REGISTRY_ENTRY_DATE_KEY],
                 apply: static fn (?\DateTimeInterface $date): ContractsCreditorsClaim => $claim->setRegistryEntryDate($date),
             );
         }
 
         if (array_key_exists(self::CLAIM_ORIGIN_DATE_KEY, $claimData)) {
-            $this->applyClaimDate(
+            $this->applyDate(
                 value: $claimData[self::CLAIM_ORIGIN_DATE_KEY],
                 apply: static fn (?\DateTimeInterface $date): ContractsCreditorsClaim => $claim->setOriginDate($date),
             );
@@ -718,7 +731,7 @@ class ContractorService
     /**
      * @param callable(?\DateTimeInterface): mixed $apply
      */
-    private function applyClaimDate(mixed $value, callable $apply): void
+    private function applyDate(mixed $value, callable $apply): void
     {
         if ($value === null || $value === '') {
             $apply(null);

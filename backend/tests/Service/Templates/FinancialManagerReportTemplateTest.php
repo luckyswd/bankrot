@@ -78,6 +78,25 @@ class FinancialManagerReportTemplateTest extends TestCase
                     ->setSubtype(PropertySubtype::CAR)
                     ->setName('LADA GRANTA, 2019 г. в.')
                     ->setManagerValuation('253 453,82')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::BANK_ACCOUNT)
+                    ->setName('ПАО «Сбербанк России»')
+                    ->setAmount('50 000,00')
+                    ->setManagerValuation('50 000,00')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::RECEIVABLES)
+                    ->setName('Иванов Иван Иванович')
+                    ->setManagerValuation('30 000,00')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::ART)
+                    ->setName('картина «Рассвет»')
+                    ->setManagerValuation('5 000,00')
             );
 
         $text = html_entity_decode(strip_tags($this->process(contract: $contract)), ENT_QUOTES | ENT_XML1, 'UTF-8');
@@ -87,7 +106,12 @@ class FinancialManagerReportTemplateTest extends TestCase
         $this->assertStringContainsString('1000000,00, единственное пригодное для проживания жильё', $text);
         $this->assertStringContainsString('2. Движимое имущество всего, в том числе:253453,820,00–0,00', $text);
         $this->assertStringContainsString('LADA GRANTA, 2019 г. в.253453,82', $text);
-        $this->assertStringContainsString('Всего имущества1253453,821200000,00–1000000,00', $text);
+        $this->assertStringContainsString('3. Денежные средства всего, в том числе:50000,000,00–0,00', $text);
+        $this->assertStringContainsString('ПАО «Сбербанк России»50000,00', $text);
+        $this->assertStringContainsString('4. Дебиторская задолженность всего, в том числе:30000,000,00–0,00', $text);
+        $this->assertStringContainsString('7. Иное имущество всего, в том числе:5000,000,00–0,00', $text);
+        $this->assertStringContainsString('картина «Рассвет»5000,00', $text);
+        $this->assertStringContainsString('Всего имущества1338453,821200000,00–1000000,00', $text);
     }
 
     public function testPropertyTableKeepsFormWhenCaseHasNoProperty(): void
@@ -96,6 +120,8 @@ class FinancialManagerReportTemplateTest extends TestCase
 
         $this->assertStringContainsString('1. Недвижимое имущество всего, в том числе:0,000,00–0,00', $text);
         $this->assertStringContainsString('2. Движимое имущество всего, в том числе:0,000,00–0,00', $text);
+        $this->assertStringContainsString('3. Денежные средства всего, в том числе:0,000,00–0,00', $text);
+        $this->assertStringContainsString('7. Иное имущество всего, в том числе:0,000,00–0,00', $text);
         $this->assertStringContainsString('Всего имущества0,000,00–0,00', $text);
     }
 

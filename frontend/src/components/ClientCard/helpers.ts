@@ -199,6 +199,8 @@ const normalizeProperty = (value: unknown): PropertyItem[] => {
     managerValuation: toAmount(item.managerValuation),
     appraiserValuation: toAmount(item.appraiserValuation),
     excludedValuation: toAmount(item.excludedValuation),
+    amount: toAmount(item.amount),
+    openedAt: toDateOnly(item.openedAt) || null,
   }));
 };
 

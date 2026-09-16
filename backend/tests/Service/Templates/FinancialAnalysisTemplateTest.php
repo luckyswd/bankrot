@@ -88,9 +88,25 @@ class FinancialAnalysisTemplateTest extends TestCase
                 (new ContractsProperty())
                     ->setSubtype(PropertySubtype::CAR)
                     ->setName('LADA GRANTA, 2019 г. в.')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::BANK_ACCOUNT)
+                    ->setName('ПАО «Сбербанк России»')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::RECEIVABLES)
+                    ->setName('Иванов Иван Иванович')
             );
 
         $text = $this->text(xml: $this->process(contract: $contract));
+
+        $this->assertStringContainsString(
+            'Денежные средства на счетах Должника в банках (кредитных организациях) – ПАО «Сбербанк России».',
+            $text,
+        );
+        $this->assertStringContainsString('Дебиторская задолженность – Иванов Иван Иванович.', $text);
 
         $this->assertStringContainsString(
             'Недвижимое имущество, зарегистрированное за Должником – квартира в многоквартирном доме, г. Санкт-Петербург, ул. Пушкина, д. 98, кв. 6.',
@@ -108,6 +124,12 @@ class FinancialAnalysisTemplateTest extends TestCase
 
         $this->assertStringContainsString('Недвижимое имущество, зарегистрированное за Должником – не выявлено.', $text);
         $this->assertStringContainsString('Движимое имущество, зарегистрированное за Должником – не выявлено.', $text);
+        $this->assertStringContainsString('Денежные средства на счетах Должника в банках (кредитных организациях) – не выявлены.', $text);
+        $this->assertStringContainsString('Акции и (или) участие в коммерческих организациях Должника – не выявлены.', $text);
+        $this->assertStringContainsString('Иные ценные бумаги – не выявлены.', $text);
+        $this->assertStringContainsString('Наличные денежные средства – не выявлены.', $text);
+        $this->assertStringContainsString('Драгоценности, предметы искусства и иное ценное имущество, принадлежащее Должнику – не выявлены.', $text);
+        $this->assertStringContainsString('Дебиторская задолженность – не выявлена.', $text);
     }
 
     public function testAllPlaceholdersAreReplacedAndGreenRemoved(): void
