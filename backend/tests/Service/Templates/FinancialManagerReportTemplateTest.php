@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Templates;
 
+use App\Entity\Contracts;
+use App\Entity\ContractsProperty;
 use App\Entity\DocumentTemplate;
+use App\Entity\Enum\PropertySubtype;
 use App\Entity\Enum\BankruptcyStage;
 use App\Service\Templates\CustomFunction;
 use App\Service\Templates\DocumentTemplateProcessor;
@@ -31,13 +34,69 @@ class FinancialManagerReportTemplateTest extends TestCase
             ->setCategory(BankruptcyStage::JUDICIAL_REPORT)
             ->setPath(dirname(__DIR__, 3) . self::TEMPLATE_FILE);
 
-        $outputPath = $processor->processTemplate(template: $template, contract: ReportContractFactory::create());
+        $this->documentXml = $this->process(contract: ReportContractFactory::create());
+    }
+
+    private function process(Contracts $contract): string
+    {
+        $processor = new DocumentTemplateProcessor(
+            entityDataResolver: new EntityDataResolver(propertyAccessor: PropertyAccess::createPropertyAccessor()),
+            customFunction: new CustomFunction(),
+        );
+
+        $template = (new DocumentTemplate())
+            ->setName('1. Отчёт финансового управляющего о результатах реализации имущества')
+            ->setCategory(BankruptcyStage::JUDICIAL_REPORT)
+            ->setPath(dirname(__DIR__, 3) . self::TEMPLATE_FILE);
+
+        $outputPath = $processor->processTemplate(template: $template, contract: $contract);
 
         $archive = new \ZipArchive();
         $archive->open($outputPath);
-        $this->documentXml = (string)$archive->getFromName('word/document.xml');
+        $documentXml = (string)$archive->getFromName('word/document.xml');
         $archive->close();
         unlink($outputPath);
+
+        return $documentXml;
+    }
+
+    public function testPropertyTableIsFilledFromCase(): void
+    {
+        $contract = ReportContractFactory::create()
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::APARTMENT)
+                    ->setName('квартира в многоквартирном доме, кадастровый номер 78:15:0000:15:350')
+                    ->setManagerValuation('1 000 000,00')
+                    ->setAppraiserValuation('1 200 000,00')
+                    ->setIsExcludedFromEstate(true)
+                    ->setExcludedValuation('1 000 000,00')
+                    ->setExclusionReason('единственное пригодное для проживания жильё')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::CAR)
+                    ->setName('LADA GRANTA, 2019 г. в.')
+                    ->setManagerValuation('253 453,82')
+            );
+
+        $text = html_entity_decode(strip_tags($this->process(contract: $contract)), ENT_QUOTES | ENT_XML1, 'UTF-8');
+
+        $this->assertStringContainsString('1. Недвижимое имущество всего, в том числе:1000000,001200000,00–1000000,00', $text);
+        $this->assertStringContainsString('квартира в многоквартирном доме, кадастровый номер 78:15:0000:15:3501000000,00', $text);
+        $this->assertStringContainsString('1000000,00, единственное пригодное для проживания жильё', $text);
+        $this->assertStringContainsString('2. Движимое имущество всего, в том числе:253453,820,00–0,00', $text);
+        $this->assertStringContainsString('LADA GRANTA, 2019 г. в.253453,82', $text);
+        $this->assertStringContainsString('Всего имущества1253453,821200000,00–1000000,00', $text);
+    }
+
+    public function testPropertyTableKeepsFormWhenCaseHasNoProperty(): void
+    {
+        $text = $this->documentText();
+
+        $this->assertStringContainsString('1. Недвижимое имущество всего, в том числе:0,000,00–0,00', $text);
+        $this->assertStringContainsString('2. Движимое имущество всего, в том числе:0,000,00–0,00', $text);
+        $this->assertStringContainsString('Всего имущества0,000,00–0,00', $text);
     }
 
     public function testAllPlaceholdersAreReplaced(): void
@@ -63,7 +122,6 @@ class FinancialManagerReportTemplateTest extends TestCase
     public function testManualFragmentsStayRed(): void
     {
         foreach ([
-            'квартира в многоквартирном доме',
             '* указана кадастровая стоимость объекта недвижимости',
             '30.12.2025 г.',
             'Постановлением Правительства Санкт-Петербурга № 682',

@@ -8,6 +8,7 @@ use App\DataFixtures\Test\TestUserFixtures;
 use App\Entity\Contracts;
 use App\Entity\Enum\ContractStatus;
 use App\Repository\ContractsRepository;
+use App\Service\MoneyHelperService;
 use App\Tests\BaseTestCase;
 
 class ContractsControllerTest extends BaseTestCase
@@ -612,6 +613,76 @@ class ContractsControllerTest extends BaseTestCase
                 $this->assertNullNotInArray($groupData);
             }
         }
+    }
+
+    public function testPropertyIsSavedAndRemoved(): void
+    {
+        $token = $this->getAuthToken(user: $this->getUser(reference: 'user1'));
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
+        $this->client->disableReboot();
+
+        $contract = self::$em->getRepository(Contracts::class)->findOneBy(['contractNumber' => 'CONTRACT-001']);
+        $this->assertNotNull($contract);
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract->getId(),
+            content: json_encode([
+                'judicial_procedure' => [
+                    'property' => [
+                        [
+                            'subtype' => 'apartment',
+                            'name' => 'квартира в многоквартирном доме',
+                            'ownershipType' => 'общая долевая собственность, доля в праве ½',
+                            'location' => 'г. Санкт-Петербург, ул. Савушкина, д. 18, кв. 18',
+                            'area' => '78,8',
+                            'managerValuation' => '1 000 000,00',
+                        ],
+                        [
+                            'subtype' => 'car',
+                            'name' => 'LADA GRANTA, 2019 г. в.',
+                            'identificationNumber' => 'XTA219010K0512345',
+                            'managerValuation' => '253 453,82',
+                        ],
+                    ],
+                ],
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+        $property = $response['judicial_procedure']['property'];
+
+        $this->assertCount(2, $property);
+        $this->assertSame('apartment', $property[0]['subtype']);
+        $this->assertSame('real_estate', $property[0]['kind']);
+        $this->assertSame('78,8', $property[0]['area']);
+        $this->assertSame('movable', $property[1]['kind']);
+        $this->assertSame('XTA219010K0512345', $property[1]['identificationNumber']);
+
+        $this->client->request(
+            method: 'PUT',
+            uri: '/api/v1/contracts/' . $contract->getId(),
+            content: json_encode([
+                'judicial_procedure' => [
+                    'property' => [
+                        [
+                            'id' => $property[0]['id'],
+                            'subtype' => 'apartment',
+                            'name' => 'квартира в многоквартирном доме',
+                            'managerValuation' => '1 500 000,00',
+                        ],
+                    ],
+                ],
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+        $property = $response['judicial_procedure']['property'];
+
+        $this->assertCount(1, $property);
+        $this->assertSame(MoneyHelperService::normalize(amount: '1 500 000,00'), $property[0]['managerValuation']);
     }
 
     /**

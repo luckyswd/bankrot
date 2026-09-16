@@ -139,10 +139,44 @@ export type CreditorsClaimItem = {
   repaidAmount?: string | null
 }
 
+export type PropertyKind = "real_estate" | "movable"
+
+export type PropertySubtype =
+  | "land_plot"
+  | "house"
+  | "apartment"
+  | "garage"
+  | "other_real_estate"
+  | "car"
+  | "truck"
+  | "motorcycle"
+  | "agricultural_machinery"
+  | "water_transport"
+  | "air_transport"
+  | "other_vehicle"
+
+export type PropertyItem = {
+  id?: number | null
+  kind?: PropertyKind
+  subtype: PropertySubtype
+  name: string
+  ownershipType?: string | null
+  location?: string | null
+  area?: string | null
+  identificationNumber?: string | null
+  pledgeInfo?: string | null
+  managerValuation?: string | null
+  appraiserValuation?: string | null
+  isExcludedFromEstate?: boolean | null
+  exclusionReason?: string | null
+  excludedValuation?: string | null
+}
+
 export type ProcedureExtensionStatus = "extended" | "not_extended" | "no_acts"
 
 export type ProcedureFields = {
   creditorsClaims?: CreditorsClaimItem[]
+  property?: PropertyItem[]
   procedureExtensionStatus?: ProcedureExtensionStatus | null
   procedureExtensionDates?: string[]
   propertyInventoryDate?: string | null

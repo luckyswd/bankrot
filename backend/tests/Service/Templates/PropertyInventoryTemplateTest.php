@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Service\Templates;
 
 use App\Entity\Contracts;
+use App\Entity\ContractsProperty;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
+use App\Entity\Enum\PropertySubtype;
 use App\Service\Templates\CustomFunction;
 use App\Service\Templates\DocumentTemplateProcessor;
 use App\Service\Templates\EntityDataResolver;
@@ -53,13 +55,43 @@ class PropertyInventoryTemplateTest extends TestCase
         $this->assertSame(0, preg_match_all('/<w:color w:val="(?:00B050|FF0000)"\/>/', $documentXml));
     }
 
-    public function testPropertyTablesStayFormText(): void
+    public function testPropertyTablesAreFilledFromCase(): void
+    {
+        $contract = $this->contract()
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::APARTMENT)
+                    ->setName('квартира в многоквартирном доме')
+                    ->setOwnershipType('общая долевая собственность, доля в праве ½')
+                    ->setLocation('г. Санкт-Петербург, ул. Савушкина, д. 18, кв. 18')
+                    ->setArea('78,8')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::CAR)
+                    ->setName('LADA GRANTA, 2019 г. в.')
+                    ->setIdentificationNumber('XTA219010K0512345')
+            );
+
+        $text = $this->text(xml: $this->process(contract: $contract));
+
+        $this->assertStringContainsString(
+            'Квартиры: квартира в многоквартирном домеобщая долевая собственность, доля в праве ½г. Санкт-Петербург, ул. Савушкина, д. 18, кв. 1878,8',
+            $text,
+        );
+        $this->assertStringContainsString('Автомобили легковые: LADA GRANTA, 2019 г. в.XTA219010K0512345', $text);
+        $this->assertStringNotContainsString('Земельные участки:', $text);
+    }
+
+    public function testPropertyTablesStayFormTextWithoutProperty(): void
     {
         $text = $this->text(xml: $this->process(contract: $this->contract()));
 
         foreach ([
             'Земельные участки:',
+            'Квартиры:',
             'Автомобили легковые:',
+            'Иные транспортные средства:',
             'Денежные средства на расчетных счетах',
             'Наличные денежные средства',
             'Акции и иное участие в коммерческих организациях',

@@ -24,6 +24,7 @@ import { Trash2 } from "lucide-react";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
 import { ProcedureReportSections } from "./ProcedureReportSections";
+import { PropertySection } from "./PropertySection";
 import { isNegativeNumber } from "../utils/judicialCalculations";
 import type { ReferenceData } from "@/types/reference";
 
@@ -625,6 +626,8 @@ export const ProcedureTab = ({
               );
             })}
           </div>
+
+          <PropertySection />
 
           <ProcedureReportSections />
 

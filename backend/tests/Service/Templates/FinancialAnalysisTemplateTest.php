@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Service\Templates;
 
 use App\Entity\Contracts;
+use App\Entity\ContractsProperty;
 use App\Entity\Court;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
+use App\Entity\Enum\PropertySubtype;
 use App\Entity\FinancialManager;
 use App\Service\Templates\CustomFunction;
 use App\Service\Templates\DocumentTemplateProcessor;
@@ -71,6 +73,41 @@ class FinancialAnalysisTemplateTest extends TestCase
         $this->assertStringContainsString('социальных выплат должник является.', $text);
         $this->assertStringContainsString('для населения Санкт-Петербурга установлен Постановлением Правительства Санкт-Петербурга', $text);
         $this->assertStringContainsString('величина прожиточного минимума на 2026 год', $text);
+    }
+
+    public function testPropertyIsListedFromCase(): void
+    {
+        $contract = $this->contract()
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::APARTMENT)
+                    ->setName('квартира в многоквартирном доме')
+                    ->setLocation('г. Санкт-Петербург, ул. Пушкина, д. 98, кв. 6')
+            )
+            ->addProperty(
+                (new ContractsProperty())
+                    ->setSubtype(PropertySubtype::CAR)
+                    ->setName('LADA GRANTA, 2019 г. в.')
+            );
+
+        $text = $this->text(xml: $this->process(contract: $contract));
+
+        $this->assertStringContainsString(
+            'Недвижимое имущество, зарегистрированное за Должником – квартира в многоквартирном доме, г. Санкт-Петербург, ул. Пушкина, д. 98, кв. 6.',
+            $text,
+        );
+        $this->assertStringContainsString(
+            'Движимое имущество, зарегистрированное за Должником – LADA GRANTA, 2019 г. в..',
+            $text,
+        );
+    }
+
+    public function testPropertyIsNotFound(): void
+    {
+        $text = $this->text(xml: $this->process(contract: $this->contract()));
+
+        $this->assertStringContainsString('Недвижимое имущество, зарегистрированное за Должником – не выявлено.', $text);
+        $this->assertStringContainsString('Движимое имущество, зарегистрированное за Должником – не выявлено.', $text);
     }
 
     public function testAllPlaceholdersAreReplacedAndGreenRemoved(): void

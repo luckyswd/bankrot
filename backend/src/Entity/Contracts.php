@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
+use App\Entity\Enum\PropertyKind;
 use App\Entity\Enum\ProcedureExtensionStatus;
 use App\Repository\ContractsRepository;
 use App\Service\DateHelperService;
@@ -13,6 +14,8 @@ use App\Service\MoneyHelperService;
 use App\Service\Templates\CreditorsRegister\RegisterMethods;
 use App\Service\Templates\CreditorsRegister\RegistryClaimRow;
 use App\Service\Templates\JudicialReport\ReportMethods;
+use App\Service\Templates\Property\PropertyMethods;
+use App\Service\Templates\Property\PropertyRow;
 use App\Service\Templates\PreCourt\PreCourtMethods;
 use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -345,6 +348,14 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Требования кредиторов', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
     private Collection $creditorsClaims;
 
+    /**
+     * @var Collection<int, ContractsProperty>
+     */
+    #[ORM\OneToMany(targetEntity: ContractsProperty::class, mappedBy: 'contract', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Имущество должника', type: 'array', items: new OA\Items(type: 'object'), nullable: true)]
+    private Collection $property;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
     #[OA\Property(description: 'Адрес для направления корреспонденции', type: Types::STRING, example: '195112, г. Санкт-Петербург, а/я 16', nullable: true)]
@@ -623,6 +634,7 @@ class Contracts extends BaseEntity
         parent::__construct();
         $this->preCourtCreditors = new ArrayCollection();
         $this->creditorsClaims = new ArrayCollection();
+        $this->property = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -1499,6 +1511,35 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    /**
+     * @return Collection<int, ContractsProperty>
+     */
+    public function getProperty(): Collection
+    {
+        return $this->property;
+    }
+
+    public function addProperty(ContractsProperty $property): self
+    {
+        if (!$this->property->contains($property)) {
+            $this->property->add($property);
+            $property->setContract($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProperty(ContractsProperty $property): self
+    {
+        if ($this->property->removeElement($property)) {
+            if ($property->getContract() === $this) {
+                $property->setContract(new Contracts());
+            }
+        }
+
+        return $this;
+    }
+
     public function getCorrespondenceAddress(): ?string
     {
         return $this->correspondenceAddress;
@@ -2298,6 +2339,93 @@ class Contracts extends BaseEntity
     public function getFinancialAnalysisSupplementText(): string
     {
         return ReportMethods::financialAnalysisSupplementText(contract: $this);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryRealEstates(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getInventoryMovables(): Collection
+    {
+        return PropertyMethods::inventoryRows(contract: $this, kind: PropertyKind::MOVABLE);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportRealEstates(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    /**
+     * @return Collection<int, PropertyRow>
+     */
+    public function getReportMovables(): Collection
+    {
+        return PropertyMethods::reportRows(contract: $this, kind: PropertyKind::MOVABLE);
+    }
+
+    public function getRealEstateManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    public function getRealEstateAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    public function getRealEstateExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    public function getMovableManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this, kind: PropertyKind::MOVABLE);
+    }
+
+    public function getMovableAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this, kind: PropertyKind::MOVABLE);
+    }
+
+    public function getMovableExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this, kind: PropertyKind::MOVABLE);
+    }
+
+    public function getPropertyManagerTotal(): string
+    {
+        return PropertyMethods::managerTotal(contract: $this);
+    }
+
+    public function getPropertyAppraiserTotal(): string
+    {
+        return PropertyMethods::appraiserTotal(contract: $this);
+    }
+
+    public function getPropertyExcludedTotal(): string
+    {
+        return PropertyMethods::excludedTotal(contract: $this);
+    }
+
+    public function getRealEstateSummaryText(): string
+    {
+        return PropertyMethods::summaryText(contract: $this, kind: PropertyKind::REAL_ESTATE);
+    }
+
+    public function getMovableSummaryText(): string
+    {
+        return PropertyMethods::summaryText(contract: $this, kind: PropertyKind::MOVABLE);
     }
 
     public function getReportHearingHeaderText(): string

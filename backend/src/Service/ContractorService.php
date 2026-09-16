@@ -5,12 +5,15 @@ namespace App\Service;
 use App\Entity\Contracts;
 use App\Entity\ContractsCreditorsClaim;
 use App\Entity\ContractsPreCourtCreditor;
+use App\Entity\ContractsProperty;
 use App\Entity\Enum\BankruptcyStage;
 use App\Entity\Enum\ContractStatus;
 use App\Entity\Enum\ProcedureExtensionStatus;
+use App\Entity\Enum\PropertySubtype;
 use App\Repository\BailiffRepository;
 use App\Repository\ContractsCreditorsClaimRepository;
 use App\Repository\ContractsPreCourtCreditorRepository;
+use App\Repository\ContractsPropertyRepository;
 use App\Repository\CourtRepository;
 use App\Repository\CreditorRepository;
 use App\Repository\DocumentTemplateRepository;
@@ -33,6 +36,9 @@ class ContractorService
     private const string CLAIM_DISPUTE_NUMBER_KEY = 'disputeNumber';
     private const string CLAIM_ORIGIN_DATE_KEY = 'originDate';
     private const string CLAIM_REPAID_AMOUNT_KEY = 'repaidAmount';
+    private const string PROPERTY_KEY = 'property';
+    private const string PROPERTY_SUBTYPE_KEY = 'subtype';
+    private const string PROPERTY_NAME_KEY = 'name';
 
     public function __construct(
         private readonly DocumentTemplateProcessor $documentTemplateProcessor,
@@ -47,6 +53,7 @@ class ContractorService
         private readonly RosgvardiaRepository $rosgvardiaRepository,
         private readonly ContractsCreditorsClaimRepository $contractsCreditorsClaimRepository,
         private readonly ContractsPreCourtCreditorRepository $contractsPreCourtCreditorRepository,
+        private readonly ContractsPropertyRepository $contractsPropertyRepository,
         private readonly FinancialManagerRepository $financialManagerRepository,
     ) {
     }
@@ -502,6 +509,12 @@ class ContractorService
                 continue;
             }
 
+            if ($key === self::PROPERTY_KEY) {
+                $this->updateProperty(contract: $contract, items: is_array($value) ? $value : []);
+
+                continue;
+            }
+
             if ($key === 'manager') {
                 if (empty($value)) {
                     $contract->setFinancialManager(null);
@@ -583,8 +596,79 @@ class ContractorService
     }
 
     /**
-     * @param array<string, mixed> $claimData
+     * @param array<int|string, mixed> $items
      */
+    private function updateProperty(Contracts $contract, array $items): void
+    {
+        $keptIds = [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $subtype = PropertySubtype::tryFrom((string)($item[self::PROPERTY_SUBTYPE_KEY] ?? ''));
+            $name = $this->toNullableTrimmedString(value: $item[self::PROPERTY_NAME_KEY] ?? null);
+
+            if ($subtype === null || $name === null) {
+                continue;
+            }
+
+            $property = $this->findProperty(contract: $contract, id: $item['id'] ?? null);
+
+            if ($property === null) {
+                $property = new ContractsProperty();
+                $property->setContract(contract: $contract);
+                $this->entityManager->persist($property);
+                $contract->addProperty($property);
+            }
+
+            $property
+                ->setSubtype($subtype)
+                ->setName($name)
+                ->setOwnershipType($this->toNullableTrimmedString(value: $item['ownershipType'] ?? null))
+                ->setLocation($this->toNullableTrimmedString(value: $item['location'] ?? null))
+                ->setArea($this->toNullableTrimmedString(value: $item['area'] ?? null))
+                ->setIdentificationNumber($this->toNullableTrimmedString(value: $item['identificationNumber'] ?? null))
+                ->setPledgeInfo($this->toNullableTrimmedString(value: $item['pledgeInfo'] ?? null))
+                ->setManagerValuation(MoneyHelperService::normalize(amount: $item['managerValuation'] ?? null))
+                ->setAppraiserValuation(MoneyHelperService::normalize(amount: $item['appraiserValuation'] ?? null))
+                ->setIsExcludedFromEstate(isset($item['isExcludedFromEstate']) ? (bool)$item['isExcludedFromEstate'] : null)
+                ->setExclusionReason($this->toNullableTrimmedString(value: $item['exclusionReason'] ?? null))
+                ->setExcludedValuation(MoneyHelperService::normalize(amount: $item['excludedValuation'] ?? null));
+
+            $propertyId = $property->getId();
+
+            if ($propertyId !== null) {
+                $keptIds[$propertyId] = true;
+            }
+        }
+
+        foreach ($contract->getProperty() as $property) {
+            $propertyId = $property->getId();
+
+            if ($propertyId !== null && !isset($keptIds[$propertyId])) {
+                $contract->removeProperty($property);
+                $this->entityManager->remove($property);
+            }
+        }
+    }
+
+    private function findProperty(Contracts $contract, mixed $id): ?ContractsProperty
+    {
+        if (!is_numeric($id)) {
+            return null;
+        }
+
+        $property = $this->contractsPropertyRepository->find((int)$id);
+
+        if ($property === null || $property->getContract()->getId() !== $contract->getId()) {
+            return null;
+        }
+
+        return $property;
+    }
+
     private function updateClaimRegistryFields(ContractsCreditorsClaim $claim, array $claimData): void
     {
         if (array_key_exists(self::CLAIM_REGISTRY_ENTRY_DATE_KEY, $claimData)) {

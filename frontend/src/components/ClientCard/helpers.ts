@@ -8,6 +8,7 @@ import {
   PretrialFields,
   PrimaryInfoFields,
   ProcedureFields,
+  PropertyItem,
 } from "./types";
 import { DEFAULT_ZAGS_DEPARTMENT, toDateOnly } from "./utils/judicialCalculations";
 
@@ -182,6 +183,22 @@ const normalizeCreditorsClaims = (value: unknown): CreditorsClaimItem[] => {
       typeof claim.repaidAmount === "string" || typeof claim.repaidAmount === "number"
         ? String(claim.repaidAmount)
         : null,
+  }));
+};
+
+const normalizeProperty = (value: unknown): PropertyItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const toAmount = (amount: unknown): string | null =>
+    typeof amount === "string" || typeof amount === "number" ? String(amount) : null;
+
+  return value.filter(isRecord).map((item) => ({
+    ...(item as PropertyItem),
+    managerValuation: toAmount(item.managerValuation),
+    appraiserValuation: toAmount(item.appraiserValuation),
+    excludedValuation: toAmount(item.excludedValuation),
   }));
 };
 
@@ -364,6 +381,7 @@ export const convertApiDataToFormValues = (
       ...defaults.judicial_procedure,
       ...asPartial<ProcedureFields>(apiData.judicial_procedure),
       creditorsClaims: normalizeCreditorsClaims(procedureRecord.creditorsClaims),
+      property: normalizeProperty(procedureRecord.property),
       procedureExtensionDates: Array.isArray(procedureRecord.procedureExtensionDates)
         ? procedureRecord.procedureExtensionDates.filter((date): date is string => typeof date === "string")
         : [],

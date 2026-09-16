@@ -54,6 +54,9 @@ function ClientCard() {
     if (!normalized.judicial_procedure) {
       normalized.judicial_procedure = {};
     }
+    if (!normalized.judicial_procedure.property) {
+      normalized.judicial_procedure.property = [];
+    }
     if (!normalized.judicial_procedure.creditorsClaims) {
       normalized.judicial_procedure.creditorsClaims = [];
     }
@@ -126,6 +129,21 @@ function ClientCard() {
           disputeNumber: claim.disputeNumber ?? null,
           originDate: claim.originDate ?? null,
           repaidAmount: claim.repaidAmount ?? null,
+        })),
+        property: (currentValues.judicial_procedure?.property ?? []).map((item) => ({
+          id: item.id ?? null,
+          subtype: item.subtype,
+          name: item.name,
+          ownershipType: item.ownershipType ?? null,
+          location: item.location ?? null,
+          area: item.area ?? null,
+          identificationNumber: item.identificationNumber ?? null,
+          pledgeInfo: item.pledgeInfo ?? null,
+          managerValuation: item.managerValuation ?? null,
+          appraiserValuation: item.appraiserValuation ?? null,
+          isExcludedFromEstate: item.isExcludedFromEstate ?? null,
+          exclusionReason: item.exclusionReason ?? null,
+          excludedValuation: item.excludedValuation ?? null,
         })),
       },
     };
