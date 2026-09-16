@@ -319,6 +319,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Дата составления доверенности', type: Types::STRING, format: 'date', example: '2024-01-15', nullable: true)]
     private ?\DateTimeInterface $powerOfAttorneyDate = null;
 
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::PRE_COURT->value])]
+    #[OA\Property(description: 'Дата подачи заявления в арбитражный суд', type: Types::STRING, format: 'date', example: '2025-04-01', nullable: true)]
+    private ?\DateTimeInterface $courtApplicationSubmissionDate = null;
+
     /**
      * @var Collection<int, ContractsPreCourtCreditor>
      */
@@ -369,6 +374,17 @@ class Contracts extends BaseEntity
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Дата расторжения брака', type: Types::STRING, format: 'date-time', example: '2025-01-15T14:00:00', nullable: true)]
     private ?\DateTimeInterface $marriageTerminationDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
+    #[OA\Property(
+        description: 'Дата возбуждения дела о банкротстве',
+        type: Types::STRING,
+        format: 'date',
+        example: '2025-04-08',
+        nullable: true
+    )]
+    private ?\DateTimeInterface $caseInitiationDate = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE_INITIATION->value])]
@@ -1384,6 +1400,30 @@ class Contracts extends BaseEntity
         return $this->powerOfAttorneyDate;
     }
 
+    public function getCourtApplicationSubmissionDate(): ?\DateTimeInterface
+    {
+        return $this->courtApplicationSubmissionDate;
+    }
+
+    public function setCourtApplicationSubmissionDate(?\DateTimeInterface $courtApplicationSubmissionDate): self
+    {
+        $this->courtApplicationSubmissionDate = $courtApplicationSubmissionDate;
+
+        return $this;
+    }
+
+    public function getCaseInitiationDate(): ?\DateTimeInterface
+    {
+        return $this->caseInitiationDate;
+    }
+
+    public function setCaseInitiationDate(?\DateTimeInterface $caseInitiationDate): self
+    {
+        $this->caseInitiationDate = $caseInitiationDate;
+
+        return $this;
+    }
+
     public function setPowerOfAttorneyDate(?\DateTimeInterface $powerOfAttorneyDate): self
     {
         $this->powerOfAttorneyDate = $powerOfAttorneyDate;
@@ -2204,6 +2244,21 @@ class Contracts extends BaseEntity
     public function getPropertyInventoryDateText(): string
     {
         return DateHelperService::formatGenitive(date: $this->propertyInventoryDate);
+    }
+
+    public function getCourtApplicationSubmissionDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->courtApplicationSubmissionDate);
+    }
+
+    public function getCaseInitiationDateText(): string
+    {
+        return DateHelperService::formatGenitive(date: $this->caseInitiationDate);
+    }
+
+    public function getTransactionsAnalysisStartDateText(): string
+    {
+        return ReportMethods::transactionsAnalysisStartDateText(contract: $this);
     }
 
     public function getProcedureInitiationKommersantPublicationDateText(): string

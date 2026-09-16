@@ -14,6 +14,7 @@ class ReportMethods
     private const string YEAR_SUFFIX = ' г.';
     private const string SHORT_DATE_FORMAT = 'd.m.Y';
     private const string STORED_DATE_FORMAT = '!Y-m-d';
+    private const string SUSPICION_PERIOD = '-3 years';
     private const string GENDER_FEMALE = 'female';
     private const string MARITAL_STATUS_MARRIED = 'married';
     private const string MARITAL_STATUS_FORMERLY_MARRIED = 'married_3y_ago';
@@ -34,6 +35,19 @@ class ReportMethods
         9 => 'девятеро',
         10 => 'десятеро',
     ];
+
+    public static function transactionsAnalysisStartDateText(Contracts $contract): string
+    {
+        $submissionDate = $contract->getCourtApplicationSubmissionDate();
+
+        if ($submissionDate === null) {
+            return '';
+        }
+
+        $startDate = \DateTimeImmutable::createFromInterface($submissionDate)->modify(self::SUSPICION_PERIOD);
+
+        return DateHelperService::formatGenitive(date: $startDate);
+    }
 
     public static function previousFullName(Contracts $contract): string
     {

@@ -16,6 +16,30 @@ use PHPUnit\Framework\TestCase;
 class ReportMethodsTest extends TestCase
 {
     /**
+     * @return array<string, array{?string, string}>
+     */
+    public static function analysisStartDates(): array
+    {
+        return [
+            'обычная дата' => ['2025-04-01', '«01» апреля 2022 г.'],
+            'високосный день' => ['2024-02-29', '«01» марта 2021 г.'],
+            'дата не заполнена' => [null, ''],
+        ];
+    }
+
+    #[DataProvider('analysisStartDates')]
+    public function testTransactionsAnalysisStartDate(?string $submissionDate, string $expected): void
+    {
+        $contract = new Contracts();
+
+        if ($submissionDate !== null) {
+            $contract->setCourtApplicationSubmissionDate(new \DateTime($submissionDate));
+        }
+
+        $this->assertSame($expected, ReportMethods::transactionsAnalysisStartDateText(contract: $contract));
+    }
+
+    /**
      * @return array<string, array{string, string, string}>
      */
     public static function spouseVariants(): array

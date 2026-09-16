@@ -343,6 +343,25 @@ export const PretrialTab = ({
                   </div>
 
                   <div className="space-y-1">
+                    <Label htmlFor="pre_court.courtApplicationSubmissionDate">
+                      Дата подачи заявления в арбитражный суд
+                    </Label>
+                    <Controller
+                      name="pre_court.courtApplicationSubmissionDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePickerInput
+                          id="pre_court.courtApplicationSubmissionDate"
+                          name="pre_court.courtApplicationSubmissionDate"
+                          value={(field.value as string) ?? ""}
+                          onChange={field.onChange}
+                          className="space-y-1"
+                        />
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
                     <Label htmlFor="pre_court.powerOfAttorneyNumber">Доверенность</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">

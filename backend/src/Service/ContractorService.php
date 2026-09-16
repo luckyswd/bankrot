@@ -147,6 +147,8 @@ class ContractorService
             'spouseBirthDate',
             'contractDate',
             'powerOfAttorneyDate',
+            'courtApplicationSubmissionDate',
+            'caseInitiationDate',
             'procedureInitiationDecisionDate',
             'procedureInitiationResolutionDate',
             'procedureInitiationDocumentDate',

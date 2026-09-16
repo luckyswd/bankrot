@@ -68,12 +68,14 @@ export const defaultPretrial: PretrialFields = {
   powerOfAttorneyNumber: "",
   caseNumber: "",
   powerOfAttorneyDate: "",
+  courtApplicationSubmissionDate: "",
   efrsbCabinet: "",
   efrsbDateTime: "",
   hearingDateTime: "",
 };
 
 export const defaultIntroduction: IntroductionFields = {
+  caseInitiationDate: "",
   procedureInitiationDecisionDate: "",
   procedureInitiationResolutionDate: "",
   procedureInitiationMchs: "",
@@ -351,6 +353,7 @@ export const convertApiDataToFormValues = (
       procedureInitiationReportHearingDateTime: isRecord(apiData.judicial_procedure_initiation)
         ? ((apiData.judicial_procedure_initiation as any).procedureInitiationReportHearingDateTime ?? "")
         : "",
+      caseInitiationDate: toDateOnly(initiationRecord.caseInitiationDate),
       procedureInitiationEfrsbMessageDate: toDateOnly(initiationRecord.procedureInitiationEfrsbMessageDate),
       procedureInitiationKommersantPublicationDate: toDateOnly(initiationRecord.procedureInitiationKommersantPublicationDate),
       procedureInitiationCreditorsNotificationDate: toDateOnly(initiationRecord.procedureInitiationCreditorsNotificationDate),

@@ -85,6 +85,21 @@ export const IntroductionTab = ({
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                             <Controller
+                                name="judicial_procedure_initiation.caseInitiationDate"
+                                control={control}
+                                render={({field}) => (
+                                    <DatePickerInput
+                                        id="judicial_procedure_initiation.caseInitiationDate"
+                                        name="judicial_procedure_initiation.caseInitiationDate"
+                                        label="Дата возбуждения дела о банкротстве"
+                                        value={(field.value as string) ?? ""}
+                                        onChange={field.onChange}
+                                    />
+                                )}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Controller
                                 name="judicial_procedure_initiation.procedureInitiationDecisionDate"
                                 control={control}
                                 render={({field}) => (
