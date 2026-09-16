@@ -7,6 +7,7 @@ namespace App\Service\Templates;
 use App\Entity\Contracts;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
+use App\Service\Templates\CreditorsRegister\RegisterMethods;
 use App\Service\Templates\JudicialReport\ReportMethods;
 use App\Service\Templates\PreCourt\PreCourtMethods;
 use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
@@ -20,7 +21,10 @@ readonly class DocumentTemplateProcessor
         'PreCourtMethods' => PreCourtMethods::class,
         'ProcedureInitiationMethods' => ProcedureInitiationMethods::class,
         'ReportMethods' => ReportMethods::class,
+        'RegisterMethods' => RegisterMethods::class,
     ];
+    private const string CREDIT_CARD_CLAIMS_BLOCK = 'creditors_claims_registry';
+    private const string NUMBER_VARIABLE = 'number';
 
     public function __construct(
         private EntityDataResolver $entityDataResolver,
@@ -197,37 +201,23 @@ readonly class DocumentTemplateProcessor
         return $parameters;
     }
 
-    /**
-     * Обрабатывает все FOR-блоки в шаблоне (${blockName} ... ${/blockName}).
-     *
-     * @param string $outputPath Путь к файлу шаблона
-     * @param Contracts $contract Контракт для получения данных
-     *
-     * @throws \RuntimeException Если блок не найден или коллекция не найдена
-     */
     private function handeFORVariables(string $outputPath, Contracts $contract): void
     {
-        // Используем стандартные макросы для cloneBlock
         $templateProcessor = new OptimizedTemplateProcessor(documentTemplate: $outputPath);
         $templateProcessor->setMacroChars('${', '}');
 
-        $variables = $templateProcessor->getVariables();
-        $blocks = $this->findBlocks(variables: $variables);
+        $blocks = $this->findBlocks(variables: $templateProcessor->getMainPartVariableOccurrences());
 
         foreach ($blocks as $block) {
             $collection = $this->getCollection(contract: $contract, collectionName: $block['collectionName']);
 
-            if (!$collection || $collection->isEmpty()) {
-                continue;
+            if ($collection !== null && $block['blockName'] === self::CREDIT_CARD_CLAIMS_BLOCK) {
+                $collection = $collection->filter(
+                    static fn (object $item): bool => method_exists($item, 'getIsCreditCard') && $item->getIsCreditCard() === true
+                );
             }
 
-            if ($block['blockName'] === 'creditors_claims_registry') {
-                $collection = $collection->filter(function ($item) {
-                    return method_exists($item, 'getIsCreditCard') && $item->getIsCreditCard() === true;
-                });
-            }
-
-            if ($collection->isEmpty()) {
+            if ($collection === null || $collection->isEmpty()) {
                 $templateProcessor->cloneBlock(
                     blockName: $block['blockName'],
                     clones: 0,
@@ -242,11 +232,6 @@ readonly class DocumentTemplateProcessor
                 itemName: $block['itemName']
             );
 
-            if (empty($blockVariables)) {
-                continue;
-            }
-
-            // Подготавливаем замены для всех элементов коллекции
             $variableReplacements = [];
             $index = 1;
 
@@ -254,14 +239,11 @@ readonly class DocumentTemplateProcessor
                 $itemReplacements = [];
 
                 foreach ($blockVariables as $originalVariable => $propertyPath) {
-                    if ($propertyPath === 'number') {
-                        $itemReplacements[$originalVariable] = (string)$index;
+                    $value = $propertyPath === self::NUMBER_VARIABLE
+                        ? (string)$index
+                        : $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
 
-                        continue;
-                    }
-
-                    $value = $this->entityDataResolver->resolveValueFromObject(object: $item, path: $propertyPath);
-                    $itemReplacements[$originalVariable] = $value;
+                    $itemReplacements[$originalVariable] = htmlspecialchars($value, ENT_XML1 | ENT_NOQUOTES, 'UTF-8');
                 }
 
                 $variableReplacements[] = $itemReplacements;
@@ -396,7 +378,7 @@ readonly class DocumentTemplateProcessor
             $cleaned = trim(strip_tags($originalVariable));
 
             if ($cleaned === '$number') {
-                $blockVariables[$originalVariable] = 'number';
+                $blockVariables[$originalVariable] = self::NUMBER_VARIABLE;
 
                 continue;
             }

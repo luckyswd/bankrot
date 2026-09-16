@@ -1,0 +1,39 @@
+## 1. Backend: поля требования кредитора
+
+- [x] 1.1 В `src/Entity/ContractsCreditorsClaim.php` добавить свойства `registryEntryDate` (DATE), `obligationType` и `disputeNumber` (VARCHAR 255), `originDate` (DATE), `repaidAmount` (DECIMAL 15,2) с `#[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]`, `#[OA\Property]`, геттерами и сеттерами. Проверка: `make stan` без ошибок; поля видны в `GET /api/v1/contracts/{id}` после задачи 1.3.
+- [x] 1.2 Сгенерировать миграцию `make db-diff`: пять nullable-колонок в `contracts_creditors_claim`, шум `CHANGE … JSON` вычистить вручную, `down()` удаляет колонки. Применить `make db-migrate`. Проверка: `doctrine:migrations:status` не показывает неприменённых миграций, колонки есть в локальной базе.
+- [x] 1.3 В `src/Service/ContractorService.php`, в ветке `creditorsClaims`, сохранять новые поля через `array_key_exists`: пустая строка — `null`, даты строго `Y-m-d`. Проверка: функциональный тест `tests/Controller/ContractsCreditorsClaimsControllerTest.php` — PUT с пятью полями сохраняет значения, повторный PUT с пустой `registryEntryDate` даёт `null` и не трогает остальные поля (один запрос на тест, проверка через EntityManager).
+
+## 2. Backend: суммы и правила реестра
+
+- [x] 2.1 Добавить в `src/Service/MoneyHelperService.php` методы `parse()`, `add()`, `min()`, `formatPlain()` и `percent()`, все расчёты в копейках. Проверка: `tests/Service/MoneyHelperServiceTest.php` — «363 300,48» → `363300.48`, «1490» → `1490.00`, «1 490.00» и значение с неразрывным пробелом разбираются, «около 300» → `0.00`; `formatPlain('3616862.59')` → «3616862,59», `null` → «0,00»; `percent('2116862.59', '3616862.59')` → «58,53», нулевой итог → «0,00».
+- [x] 2.2 Создать `src/Service/Templates/CreditorsRegister/RegistryClaimRow.php` (readonly DTO) и `RegisterMethods.php`: выборка требований с датой внесения, сортировка по дате и положению в коллекции, номера по реестру, размеры частей 2 и 4 с запасным вариантом «Сумма долга минус часть 4», распределение погашения. Проверка: `tests/Service/Templates/RegisterMethodsTest.php` на сценарии `specs/contracts/creditors-claims` — требование без даты, нумерация по дате внесения, разбивка сумм, только сумма долга, требование без санкций, погашение 2 200 000,00 и 100 000,00.
+- [x] 2.3 Добавить в `RegisterMethods` тексты строк (`kind`, `basisText`, `determinationText`, даты `d.m.Y`, `amountText`) и итоги частей (кредиторы, требования, размер, погашение, процент). Проверка: тот же тест — «Штраф, пени, неустойка», одно и два основания, кредитная карта с основанием и без, пустой номер спора → номер дела, пустая дата акта без « от … г.», итоги по примеру и с погашением из `specs/documents/creditors-claims-register`.
+- [x] 2.4 Добавить в `src/Entity/Contracts.php` геттеры-обёртки из design (коллекции `registryMainClaims` и `registrySanctionClaims`, счётчики, `*AmountText`, `*RepaidAmountText`, `*RepaidPercentText`, `registryOpeningDateShort`, `registryClosingDateShort`, `registrationAddressWithPostalCode`) без `#[Groups]`; добавить `RegisterMethods` в `DocumentTemplateProcessor::FORMULATION_CLASSES`. Проверка: `tests/Service/Templates/CreditorsRegisterPlaceholdersTest.php` разрешает каждый `{{ }}` из спецификации через `EntityDataResolver` на деле из `tests/Service/Templates/RegisterContractFactory.php`; `DocumentTemplateProcessorFieldsTest` — `extractFields()` для `{{ registryMainAmountText }}` возвращает `judicial_procedure.creditorsClaims`; `GET /api/v1/contracts/{id}` не содержит новых геттеров.
+
+## 3. Backend: FOR-блоки шаблонизатора
+
+- [x] 3.1 В `src/Service/Templates/OptimizedTemplateProcessor.php` доработать `cloneBlock()`: если маркеры начала и конца стоят в одной строке `<w:tr>`, клонировать всю строку без маркеров, при нуле клонов удалять строку; текстовые блоки не менять. Проверка: `tests/Service/Templates/OptimizedTemplateProcessorTest.php` на `.docx`, собранном в тесте, — строка с маркерами повторена дважды с номерами 1 и 2, при нуле клонов строки нет, соседние строки и текстовый блок не изменились, `word/document.xml` загружается `DOMDocument`.
+- [x] 3.2 В `DocumentTemplateProcessor::handeFORVariables()` для `null` или пустой коллекции вызывать `cloneBlock(clones: 0)` и экранировать значения переменных элемента `htmlspecialchars(…, ENT_XML1 | ENT_NOQUOTES)`. Проверка: функциональный тест — «Публикация о получении требования кредитора» по делу без требований не содержит `${`; требование кредитора «ООО «М&К Финанс»» даёт валидный XML с текстом «М&К».
+
+## 4. Шаблон реестра
+
+- [x] 4.1 Скриптом по runs разметить в `new_docs/2. Реестр требований кредиторов.docx` шапку, даты открытия и закрытия, размеры третьей очереди, итоговые записи частей 2 и 4 и дату в колонтитуле; подставляемые фрагменты — обычным цветом, «0» исключённых в частях 2 и 4 — красным. Сохранить как `backend/src/document-templates/2_creditors_claims_register.docx`. Проверка: скрипт находит каждый плейсхолдер `{{ }}` целиком в одном run; других красных и зелёных фрагментов нет.
+- [x] 4.2 Разметить таблицы 11, 12, 17 и 18: оставить по одной строке данных, расставить маркеры блоков `registry_main_creditors`, `registry_main_claims`, `registry_sanction_creditors`, `registry_sanction_claims` и переменные строк по спецификации. Проверка: скрипт видит маркеры начала и конца каждого блока в одной строке таблицы и каждую переменную в одном run; файл открывается в LibreOffice.
+- [x] 4.3 Добавить `tests/Service/Templates/CreditorsRegisterTemplateTest.php`: `processTemplate()` по шаблону из 4.2 и делу из `RegisterContractFactory`. Проверка: в результате нет `{{` и `${`; есть «3616862,59», «2206637,98», «17.07.2025 г.» и «Кредитные договоры № 625/0055-123 от 01.02.2020 г., № 633/0055-456 от 03.04.2021 г.»; в таблицах 12 и 18 по две строки данных; красными остаются только два «0» исключённых; `make test` зелёный.
+
+## 5. Frontend: карточка требования
+
+- [x] 5.1 Расширить `CreditorsClaimItem` в `src/components/ClientCard/types.ts` пятью полями; в `helpers.ts` дополнить пустое требование и разбор ответа (даты через `toDateOnly`, сумма погашения строкой); в `src/components/ClientCard/index.tsx` добавить поля в явный список полей требования при сохранении. Проверка: `npx tsc --noEmit` без ошибок.
+- [x] 5.2 В `src/components/ClientCard/JudicialTab/Procedure.tsx` добавить в карточку требования после «Дата конкретного судебного акта»: «Дата внесения в реестр» и «Дата возникновения требования» (`DatePickerInput` через `Controller`), «Вид обязательства» (пример «Кредит»), «Номер обособленного спора» (пример «А56-117152/2018/тр.1», подсказка «Если не заполнен, в реестр попадёт номер дела»), «Сумма погашения, руб.» (числовое поле, «Сумма не может быть отрицательной»); подписи с `htmlFor="judicial_procedure.creditorsClaims.${index}.<поле>"`. Проверка: `npm run build`; ручные сценарии «Сохранение полей требования», «Очистка поля», «Отрицательная сумма погашения» — в 6.2.
+
+## 6. Проверки и приёмка
+
+- [x] 6.1 Прогнать в контейнере `bankruptcy-php` `make stan`, `make lint`, `make test`, во фронтенде — `npx tsc --noEmit` и `npm run build`; исправить все ошибки. Проверка: все команды завершаются без ошибок.
+- [x] 6.2 Пройти сквозную проверку по `openspec/specs/documents/end-to-end-check`:
+  - загрузить шаблон через `/documents` в категорию «Судебка отчет»;
+  - на деле 209 завести через интерфейс второе требование другого кредитора;
+  - у обоих требований заполнить все поля реестра, суммы для частей 2 и 4 и погашение у одного из них, сохранить и перезагрузить страницу;
+  - скачать реестр с вкладки «Судебка → Отчёт», открыть и сверить шапку, даты, строки таблиц 11, 12, 17, 18 и итоги с введёнными данными.
+
+  Проверка: сохранение без ошибок, значения на месте после перезагрузки, в файле нет `{{` и `${`, итоги и проценты совпадают с расчётом по правилам спецификации, файл открывается без ошибок. Моковые данные не откатывать.

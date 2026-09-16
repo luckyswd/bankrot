@@ -24,6 +24,7 @@ import { Trash2 } from "lucide-react";
 import { FormValues } from "../types";
 import { DocumentsList } from "../DocumentsList";
 import { ProcedureReportSections } from "./ProcedureReportSections";
+import { isNegativeNumber } from "../utils/judicialCalculations";
 import type { ReferenceData } from "@/types/reference";
 
 interface ProcedureTabProps {
@@ -78,6 +79,11 @@ export const ProcedureTab = ({
     isCreditCard: null,
     creditCardDate: null,
     judicialActDate: null,
+    registryEntryDate: null,
+    obligationType: null,
+    disputeNumber: null,
+    originDate: null,
+    repaidAmount: null,
   });
 
   return (
@@ -110,6 +116,9 @@ export const ProcedureTab = ({
               const isCreditCardEnabled =
                 formValues?.judicial_procedure?.creditorsClaims?.[index]
                   ?.isCreditCard;
+              const repaidAmount =
+                formValues?.judicial_procedure?.creditorsClaims?.[index]
+                  ?.repaidAmount;
 
               return (
                 <Card key={field.id}>
@@ -357,6 +366,102 @@ export const ProcedureTab = ({
                           )}
                         />
                       </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.registryEntryDate`}
+                          >
+                            Дата внесения в реестр
+                          </Label>
+                          <Controller
+                            control={control}
+                            name={`judicial_procedure.creditorsClaims.${index}.registryEntryDate`}
+                            render={({ field: registryEntryDateField }) => (
+                              <DatePickerInput
+                                id={`judicial_procedure.creditorsClaims.${index}.registryEntryDate`}
+                                value={registryEntryDateField.value ?? ""}
+                                placeholder="Выберите дату"
+                                onChange={registryEntryDateField.onChange}
+                              />
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.obligationType`}
+                          >
+                            Вид обязательства
+                          </Label>
+                          <Input
+                            id={`judicial_procedure.creditorsClaims.${index}.obligationType`}
+                            placeholder="Кредит"
+                            {...register(
+                              `judicial_procedure.creditorsClaims.${index}.obligationType`
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.disputeNumber`}
+                          >
+                            Номер обособленного спора
+                          </Label>
+                          <Input
+                            id={`judicial_procedure.creditorsClaims.${index}.disputeNumber`}
+                            placeholder="А56-117152/2018/тр.1"
+                            {...register(
+                              `judicial_procedure.creditorsClaims.${index}.disputeNumber`
+                            )}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Если не заполнен, в реестр попадёт номер дела
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.originDate`}
+                          >
+                            Дата возникновения требования
+                          </Label>
+                          <Controller
+                            control={control}
+                            name={`judicial_procedure.creditorsClaims.${index}.originDate`}
+                            render={({ field: originDateField }) => (
+                              <DatePickerInput
+                                id={`judicial_procedure.creditorsClaims.${index}.originDate`}
+                                value={originDateField.value ?? ""}
+                                placeholder="Выберите дату"
+                                onChange={originDateField.onChange}
+                              />
+                            )}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`judicial_procedure.creditorsClaims.${index}.repaidAmount`}
+                          >
+                            Сумма погашения, руб.
+                          </Label>
+                          <Input
+                            id={`judicial_procedure.creditorsClaims.${index}.repaidAmount`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            placeholder="0.00"
+                            {...register(
+                              `judicial_procedure.creditorsClaims.${index}.repaidAmount`
+                            )}
+                          />
+                          {isNegativeNumber(repaidAmount) && (
+                            <p className="text-sm text-destructive">
+                              Сумма не может быть отрицательной
+                            </p>
+                          )}
+                        </div>
 
                         <div className="col-span-full space-y-3">
                           <div className="flex items-center justify-between">

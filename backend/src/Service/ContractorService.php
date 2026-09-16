@@ -28,6 +28,11 @@ class ContractorService
     private const string PROCEDURE_EXTENSION_STATUS_KEY = 'procedureExtensionStatus';
     private const string PROCEDURE_EXTENSION_DATES_KEY = 'procedureExtensionDates';
     private const string ISO_DATE_FORMAT = 'Y-m-d';
+    private const string CLAIM_REGISTRY_ENTRY_DATE_KEY = 'registryEntryDate';
+    private const string CLAIM_OBLIGATION_TYPE_KEY = 'obligationType';
+    private const string CLAIM_DISPUTE_NUMBER_KEY = 'disputeNumber';
+    private const string CLAIM_ORIGIN_DATE_KEY = 'originDate';
+    private const string CLAIM_REPAID_AMOUNT_KEY = 'repaidAmount';
 
     public function __construct(
         private readonly DocumentTemplateProcessor $documentTemplateProcessor,
@@ -485,6 +490,8 @@ class ContractorService
                             }
                         }
 
+                        $this->updateClaimRegistryFields(claim: $contractCreditorClaim, claimData: $claimData);
+
                         $contract->addCreditorsClaim($contractCreditorClaim);
                     }
                 }
@@ -570,6 +577,90 @@ class ContractorService
             : $contract->getProcedureExtensionDates() ?? [];
 
         $contract->changeProcedureExtension(status: $status, dates: $dates);
+    }
+
+    /**
+     * @param array<string, mixed> $claimData
+     */
+    private function updateClaimRegistryFields(ContractsCreditorsClaim $claim, array $claimData): void
+    {
+        if (array_key_exists(self::CLAIM_REGISTRY_ENTRY_DATE_KEY, $claimData)) {
+            $this->applyClaimDate(
+                value: $claimData[self::CLAIM_REGISTRY_ENTRY_DATE_KEY],
+                apply: static fn (?\DateTimeInterface $date): ContractsCreditorsClaim => $claim->setRegistryEntryDate($date),
+            );
+        }
+
+        if (array_key_exists(self::CLAIM_ORIGIN_DATE_KEY, $claimData)) {
+            $this->applyClaimDate(
+                value: $claimData[self::CLAIM_ORIGIN_DATE_KEY],
+                apply: static fn (?\DateTimeInterface $date): ContractsCreditorsClaim => $claim->setOriginDate($date),
+            );
+        }
+
+        if (array_key_exists(self::CLAIM_OBLIGATION_TYPE_KEY, $claimData)) {
+            $claim->setObligationType($this->toNullableTrimmedString(value: $claimData[self::CLAIM_OBLIGATION_TYPE_KEY]));
+        }
+
+        if (array_key_exists(self::CLAIM_DISPUTE_NUMBER_KEY, $claimData)) {
+            $claim->setDisputeNumber($this->toNullableTrimmedString(value: $claimData[self::CLAIM_DISPUTE_NUMBER_KEY]));
+        }
+
+        if (array_key_exists(self::CLAIM_REPAID_AMOUNT_KEY, $claimData)) {
+            $this->applyClaimRepaidAmount(claim: $claim, value: $claimData[self::CLAIM_REPAID_AMOUNT_KEY]);
+        }
+    }
+
+    private function applyClaimRepaidAmount(ContractsCreditorsClaim $claim, mixed $value): void
+    {
+        $amount = $this->toNullableTrimmedString(value: $value);
+
+        if ($amount === null) {
+            $claim->setRepaidAmount(null);
+
+            return;
+        }
+
+        $normalized = MoneyHelperService::normalize(amount: $amount);
+
+        if ($normalized !== null) {
+            $claim->setRepaidAmount($normalized);
+        }
+    }
+
+    /**
+     * @param callable(?\DateTimeInterface): mixed $apply
+     */
+    private function applyClaimDate(mixed $value, callable $apply): void
+    {
+        if ($value === null || $value === '') {
+            $apply(null);
+
+            return;
+        }
+
+        if (!is_string($value)) {
+            return;
+        }
+
+        $parsed = \DateTime::createFromFormat('!' . self::ISO_DATE_FORMAT, $value);
+
+        if ($parsed === false || $parsed->format(self::ISO_DATE_FORMAT) !== $value) {
+            return;
+        }
+
+        $apply($parsed);
+    }
+
+    private function toNullableTrimmedString(mixed $value): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $trimmed = trim((string)$value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 
     /**

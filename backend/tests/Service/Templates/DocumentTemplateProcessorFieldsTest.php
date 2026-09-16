@@ -17,43 +17,72 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class DocumentTemplateProcessorFieldsTest extends TestCase
 {
-    private string $templatePath;
-
-    protected function setUp(): void
-    {
-        $this->templatePath = sys_get_temp_dir() . '/' . uniqid('report_fields_', true) . '.docx';
-
-        $phpWord = new PhpWord();
-        $section = $phpWord->addSection();
-        $section->addText('Дата закрытия реестра кредиторов {{ registryClosingDateText }}');
-        $section->addText('за должником{{ spouseInstrumental }} автотранспортных средствах');
-
-        IOFactory::createWriter($phpWord, 'Word2007')->save($this->templatePath);
-    }
+    /**
+     * @var array<int, string>
+     */
+    private array $templatePaths = [];
 
     protected function tearDown(): void
     {
-        if (file_exists($this->templatePath)) {
-            unlink($this->templatePath);
+        foreach ($this->templatePaths as $templatePath) {
+            if (file_exists($templatePath)) {
+                unlink($templatePath);
+            }
         }
     }
 
     public function testFieldsInsideReportMethodsAreDetected(): void
     {
+        $fields = $this->extractFields(lines: [
+            'Дата закрытия реестра кредиторов {{ registryClosingDateText }}',
+            'за должником{{ spouseInstrumental }} автотранспортных средствах',
+        ]);
+
+        $this->assertContains('judicial_procedure_initiation.procedureInitiationKommersantPublicationDate', $fields);
+        $this->assertContains('basic_info.maritalStatus', $fields);
+        $this->assertContains('basic_info.gender', $fields);
+    }
+
+    public function testFieldsInsideRegisterMethodsAreDetected(): void
+    {
+        $fields = $this->extractFields(lines: [
+            'Размер требований кредиторов третьей очереди {{ registryMainAmountText }} руб.',
+            'Дата открытия: {{ registryOpeningDateShort }}',
+        ]);
+
+        $this->assertContains('judicial_procedure.creditorsClaims', $fields);
+        $this->assertContains('judicial_procedure_initiation.procedureInitiationKommersantPublicationDate', $fields);
+    }
+
+    /**
+     * @param array<int, string> $lines
+     *
+     * @return array<int, string>
+     */
+    private function extractFields(array $lines): array
+    {
+        $templatePath = sys_get_temp_dir() . '/' . uniqid('template_fields_', true) . '.docx';
+        $this->templatePaths[] = $templatePath;
+
+        $phpWord = new PhpWord();
+        $section = $phpWord->addSection();
+
+        foreach ($lines as $line) {
+            $section->addText($line);
+        }
+
+        IOFactory::createWriter($phpWord, 'Word2007')->save($templatePath);
+
         $processor = new DocumentTemplateProcessor(
             entityDataResolver: new EntityDataResolver(propertyAccessor: PropertyAccess::createPropertyAccessor()),
             customFunction: new CustomFunction(),
         );
 
         $template = (new DocumentTemplate())
-            ->setName('1. Отчёт финансового управляющего')
+            ->setName('Шаблон для проверки полей')
             ->setCategory(BankruptcyStage::JUDICIAL_REPORT)
-            ->setPath($this->templatePath);
+            ->setPath($templatePath);
 
-        $fields = $processor->extractFields(template: $template, contract: new Contracts())['fields'];
-
-        $this->assertContains('judicial_procedure_initiation.procedureInitiationKommersantPublicationDate', $fields);
-        $this->assertContains('basic_info.maritalStatus', $fields);
-        $this->assertContains('basic_info.gender', $fields);
+        return $processor->extractFields(template: $template, contract: new Contracts())['fields'];
     }
 }

@@ -1,5 +1,6 @@
 import {
   ChildInfo,
+  CreditorsClaimItem,
   FormSections,
   FormValues,
   IntroductionFields,
@@ -163,6 +164,22 @@ const normalizePreCourtCreditors = (value: unknown): PreCourtCreditorItem[] => {
       };
     })
     .filter((item): item is PreCourtCreditorItem => item !== null);
+};
+
+const normalizeCreditorsClaims = (value: unknown): CreditorsClaimItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(isRecord).map((claim) => ({
+    ...(claim as CreditorsClaimItem),
+    registryEntryDate: toDateOnly(claim.registryEntryDate) || null,
+    originDate: toDateOnly(claim.originDate) || null,
+    repaidAmount:
+      typeof claim.repaidAmount === "string" || typeof claim.repaidAmount === "number"
+        ? String(claim.repaidAmount)
+        : null,
+  }));
 };
 
 export const normalizeChild = (child: unknown): ChildInfo => {
@@ -341,6 +358,7 @@ export const convertApiDataToFormValues = (
     judicial_procedure: {
       ...defaults.judicial_procedure,
       ...asPartial<ProcedureFields>(apiData.judicial_procedure),
+      creditorsClaims: normalizeCreditorsClaims(procedureRecord.creditorsClaims),
       procedureExtensionDates: Array.isArray(procedureRecord.procedureExtensionDates)
         ? procedureRecord.procedureExtensionDates.filter((date): date is string => typeof date === "string")
         : [],

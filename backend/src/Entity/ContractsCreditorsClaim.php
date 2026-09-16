@@ -119,6 +119,31 @@ class ContractsCreditorsClaim extends BaseEntity
     #[OA\Property(description: 'Дата конкретного судебного акта', type: 'string', format: 'date', example: '2025-01-15', nullable: true)]
     private ?\DateTimeInterface $judicialActDate = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата внесения записи о требовании в реестр', type: 'string', format: 'date', example: '2025-07-21', nullable: true)]
+    private ?\DateTimeInterface $registryEntryDate = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Вид обязательства', type: Types::STRING, example: 'Кредит', nullable: true)]
+    private ?string $obligationType = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Номер обособленного спора', type: Types::STRING, example: 'А56-117152/2023/тр.1', nullable: true)]
+    private ?string $disputeNumber = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата возникновения требования', type: 'string', format: 'date', example: '2019-03-15', nullable: true)]
+    private ?\DateTimeInterface $originDate = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 2, nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Сумма погашения требования', type: Types::STRING, example: '0.00', nullable: true)]
+    private ?string $repaidAmount = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -306,6 +331,66 @@ class ContractsCreditorsClaim extends BaseEntity
     public function setJudicialActDate(?\DateTimeInterface $judicialActDate): self
     {
         $this->judicialActDate = $judicialActDate;
+
+        return $this;
+    }
+
+    public function getRegistryEntryDate(): ?\DateTimeInterface
+    {
+        return $this->registryEntryDate;
+    }
+
+    public function setRegistryEntryDate(?\DateTimeInterface $registryEntryDate): self
+    {
+        $this->registryEntryDate = $registryEntryDate;
+
+        return $this;
+    }
+
+    public function getObligationType(): ?string
+    {
+        return $this->obligationType;
+    }
+
+    public function setObligationType(?string $obligationType): self
+    {
+        $this->obligationType = $obligationType;
+
+        return $this;
+    }
+
+    public function getDisputeNumber(): ?string
+    {
+        return $this->disputeNumber;
+    }
+
+    public function setDisputeNumber(?string $disputeNumber): self
+    {
+        $this->disputeNumber = $disputeNumber;
+
+        return $this;
+    }
+
+    public function getOriginDate(): ?\DateTimeInterface
+    {
+        return $this->originDate;
+    }
+
+    public function setOriginDate(?\DateTimeInterface $originDate): self
+    {
+        $this->originDate = $originDate;
+
+        return $this;
+    }
+
+    public function getRepaidAmount(): ?string
+    {
+        return $this->repaidAmount;
+    }
+
+    public function setRepaidAmount(?string $repaidAmount): self
+    {
+        $this->repaidAmount = $repaidAmount;
 
         return $this;
     }

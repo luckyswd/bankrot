@@ -129,6 +129,11 @@ export type CreditorsClaimItem = {
   isCreditCard?: boolean | null
   creditCardDate?: string | null
   judicialActDate?: string | null
+  registryEntryDate?: string | null
+  obligationType?: string | null
+  disputeNumber?: string | null
+  originDate?: string | null
+  repaidAmount?: string | null
 }
 
 export type ProcedureExtensionStatus = "extended" | "not_extended" | "no_acts"

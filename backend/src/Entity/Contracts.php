@@ -10,6 +10,8 @@ use App\Entity\Enum\ProcedureExtensionStatus;
 use App\Repository\ContractsRepository;
 use App\Service\DateHelperService;
 use App\Service\MoneyHelperService;
+use App\Service\Templates\CreditorsRegister\RegisterMethods;
+use App\Service\Templates\CreditorsRegister\RegistryClaimRow;
 use App\Service\Templates\JudicialReport\ReportMethods;
 use App\Service\Templates\PreCourt\PreCourtMethods;
 use App\Service\Templates\ProcedureInitiation\ProcedureInitiationMethods;
@@ -2287,6 +2289,87 @@ class Contracts extends BaseEntity
     public function getFutureEfrsbExpensesUnpaidText(): string
     {
         return MoneyHelperService::format(amount: $this->getFutureEfrsbExpensesUnpaid());
+    }
+
+    /**
+     * @return Collection<int, RegistryClaimRow>
+     */
+    public function getRegistryMainClaims(): Collection
+    {
+        return RegisterMethods::mainClaims(contract: $this);
+    }
+
+    /**
+     * @return Collection<int, RegistryClaimRow>
+     */
+    public function getRegistrySanctionClaims(): Collection
+    {
+        return RegisterMethods::sanctionClaims(contract: $this);
+    }
+
+    public function getRegistryMainCreditorsCount(): int
+    {
+        return RegisterMethods::mainCreditorsCount(contract: $this);
+    }
+
+    public function getRegistrySanctionCreditorsCount(): int
+    {
+        return RegisterMethods::sanctionCreditorsCount(contract: $this);
+    }
+
+    public function getRegistryMainClaimsCount(): int
+    {
+        return RegisterMethods::mainClaimsCount(contract: $this);
+    }
+
+    public function getRegistrySanctionClaimsCount(): int
+    {
+        return RegisterMethods::sanctionClaimsCount(contract: $this);
+    }
+
+    public function getRegistryMainAmountText(): string
+    {
+        return RegisterMethods::mainAmountText(contract: $this);
+    }
+
+    public function getRegistrySanctionAmountText(): string
+    {
+        return RegisterMethods::sanctionAmountText(contract: $this);
+    }
+
+    public function getRegistryMainRepaidAmountText(): string
+    {
+        return RegisterMethods::mainRepaidAmountText(contract: $this);
+    }
+
+    public function getRegistrySanctionRepaidAmountText(): string
+    {
+        return RegisterMethods::sanctionRepaidAmountText(contract: $this);
+    }
+
+    public function getRegistryMainRepaidPercentText(): string
+    {
+        return RegisterMethods::mainRepaidPercentText(contract: $this);
+    }
+
+    public function getRegistrySanctionRepaidPercentText(): string
+    {
+        return RegisterMethods::sanctionRepaidPercentText(contract: $this);
+    }
+
+    public function getRegistryOpeningDateShort(): string
+    {
+        return RegisterMethods::openingDateShort(contract: $this);
+    }
+
+    public function getRegistryClosingDateShort(): string
+    {
+        return RegisterMethods::closingDateShort(contract: $this);
+    }
+
+    public function getRegistrationAddressWithPostalCode(): string
+    {
+        return RegisterMethods::registrationAddressWithPostalCode(contract: $this);
     }
 
     private function calculateUnpaid(?string $amount, ?string $paid): ?string

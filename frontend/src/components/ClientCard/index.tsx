@@ -121,6 +121,11 @@ function ClientCard() {
           isCreditCard: claim.isCreditCard,
           creditCardDate: claim.creditCardDate,
           judicialActDate: claim.judicialActDate,
+          registryEntryDate: claim.registryEntryDate ?? null,
+          obligationType: claim.obligationType ?? null,
+          disputeNumber: claim.disputeNumber ?? null,
+          originDate: claim.originDate ?? null,
+          repaidAmount: claim.repaidAmount ?? null,
         })),
       },
     };
