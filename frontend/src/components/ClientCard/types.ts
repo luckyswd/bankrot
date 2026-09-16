@@ -42,6 +42,7 @@ export type PrimaryInfoFields = {
   hasMinorChildren?: boolean | null
   children: ChildInfo[]
   isStudent?: boolean | null
+  isSocialPaymentsRecipient?: boolean | null
   employerName?: string | null
   employerAddress?: string | null
   employerInn?: string | null
@@ -158,6 +159,7 @@ export type ProcedureFields = {
   futureEfrsbExpensesAmount?: string | null
   futureEfrsbExpensesPaid?: string | null
   bankruptcySignsEfrsbPublicationDate?: string | null
+  financialAnalysisSupplementDate?: string | null
 }
 
 export type FormSections = {

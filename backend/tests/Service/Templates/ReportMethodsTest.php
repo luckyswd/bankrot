@@ -16,6 +16,62 @@ use PHPUnit\Framework\TestCase;
 class ReportMethodsTest extends TestCase
 {
     /**
+     * @return array<string, array{?string, ?string, string}>
+     */
+    public static function subsistenceRegions(): array
+    {
+        return [
+            'город Санкт-Петербург' => [null, 'Санкт-Петербург', 'Санкт-Петербурга'],
+            'Ленинградская область' => ['Ленинградская обл.', 'Всеволожск', 'Ленинградской области'],
+            'другой регион' => ['Архангельская обл.', 'Северодвинск', ''],
+            'адрес не заполнен' => [null, null, ''],
+        ];
+    }
+
+    #[DataProvider('subsistenceRegions')]
+    public function testSubsistenceMinimumRegion(?string $region, ?string $city, string $expected): void
+    {
+        $contract = (new Contracts())
+            ->setRegistrationRegion($region)
+            ->setRegistrationCity($city);
+
+        $this->assertSame($expected, ReportMethods::subsistenceMinimumRegionText(contract: $contract));
+    }
+
+    public function testFinancialAnalysisSupplementText(): void
+    {
+        $contract = new Contracts();
+
+        $this->assertSame('', ReportMethods::financialAnalysisSupplementText(contract: $contract));
+
+        $contract->setFinancialAnalysisSupplementDate(new \DateTime('2026-08-09'));
+
+        $this->assertSame('Дополнен «09» августа 2026 г.', ReportMethods::financialAnalysisSupplementText(contract: $contract));
+    }
+
+    public function testSocialPaymentsRecipientText(): void
+    {
+        $contract = new Contracts();
+
+        $this->assertSame('не является', ReportMethods::socialPaymentsRecipientText(contract: $contract));
+
+        $contract->setIsSocialPaymentsRecipient(true);
+
+        $this->assertSame('является', ReportMethods::socialPaymentsRecipientText(contract: $contract));
+    }
+
+    public function testSubsistenceMinimumYear(): void
+    {
+        $contract = new Contracts();
+
+        $this->assertSame('', ReportMethods::subsistenceMinimumYear(contract: $contract));
+
+        $contract->setBankruptcySignsEfrsbPublicationDate(new \DateTime('2026-05-14'));
+
+        $this->assertSame('2026', ReportMethods::subsistenceMinimumYear(contract: $contract));
+    }
+
+    /**
      * @return array<string, array{?string, string}>
      */
     public static function analysisStartDates(): array

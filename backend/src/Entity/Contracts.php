@@ -253,6 +253,11 @@ class Contracts extends BaseEntity
     #[OA\Property(description: 'Есть работа', type: 'boolean', example: false, nullable: true)]
     private ?bool $work = null;
 
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups([BankruptcyStage::BASIC_INFO->value])]
+    #[OA\Property(description: 'Получатель пенсий, пособий и иных социальных выплат', type: 'boolean', example: false, nullable: true)]
+    private ?bool $isSocialPaymentsRecipient = null;
+
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups([BankruptcyStage::BASIC_INFO->value])]
     #[OA\Property(description: 'Телефон', type: Types::STRING, example: '+7 (999) 123-45-67', nullable: true)]
@@ -607,6 +612,11 @@ class Contracts extends BaseEntity
     #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
     #[OA\Property(description: 'Дата публикации в ЕФРСБ о признаках фиктивного и преднамеренного банкротства', type: Types::STRING, format: 'date', example: '2026-05-14', nullable: true)]
     private ?\DateTimeInterface $bankruptcySignsEfrsbPublicationDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups([BankruptcyStage::JUDICIAL_PROCEDURE->value])]
+    #[OA\Property(description: 'Дата дополнения финансового анализа', type: Types::STRING, format: 'date', example: '2026-08-09', nullable: true)]
+    private ?\DateTimeInterface $financialAnalysisSupplementDate = null;
 
     public function __construct()
     {
@@ -2126,6 +2136,30 @@ class Contracts extends BaseEntity
         return $this;
     }
 
+    public function getIsSocialPaymentsRecipient(): ?bool
+    {
+        return $this->isSocialPaymentsRecipient;
+    }
+
+    public function setIsSocialPaymentsRecipient(?bool $isSocialPaymentsRecipient): self
+    {
+        $this->isSocialPaymentsRecipient = $isSocialPaymentsRecipient;
+
+        return $this;
+    }
+
+    public function getFinancialAnalysisSupplementDate(): ?\DateTimeInterface
+    {
+        return $this->financialAnalysisSupplementDate;
+    }
+
+    public function setFinancialAnalysisSupplementDate(?\DateTimeInterface $financialAnalysisSupplementDate): self
+    {
+        $this->financialAnalysisSupplementDate = $financialAnalysisSupplementDate;
+
+        return $this;
+    }
+
     public function getBankruptcySignsEfrsbPublicationDate(): ?\DateTimeInterface
     {
         return $this->bankruptcySignsEfrsbPublicationDate;
@@ -2259,6 +2293,26 @@ class Contracts extends BaseEntity
     public function getTransactionsAnalysisStartDateText(): string
     {
         return ReportMethods::transactionsAnalysisStartDateText(contract: $this);
+    }
+
+    public function getFinancialAnalysisSupplementText(): string
+    {
+        return ReportMethods::financialAnalysisSupplementText(contract: $this);
+    }
+
+    public function getSocialPaymentsRecipientText(): string
+    {
+        return ReportMethods::socialPaymentsRecipientText(contract: $this);
+    }
+
+    public function getSubsistenceMinimumRegionText(): string
+    {
+        return ReportMethods::subsistenceMinimumRegionText(contract: $this);
+    }
+
+    public function getSubsistenceMinimumYear(): string
+    {
+        return ReportMethods::subsistenceMinimumYear(contract: $this);
     }
 
     public function getProcedureInitiationKommersantPublicationDateText(): string

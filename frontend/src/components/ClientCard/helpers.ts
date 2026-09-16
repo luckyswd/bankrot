@@ -47,6 +47,7 @@ export const defaultPrimaryInfo: PrimaryInfoFields = {
   hasMinorChildren: null,
   children: [],
   isStudent: null,
+  isSocialPaymentsRecipient: null,
   employerName: null,
   employerAddress: null,
   employerInn: null,
@@ -302,6 +303,7 @@ export const convertApiDataToFormValues = (
       hasMinorChildren: basicInfo.hasMinorChildren ?? null,
       children: normalizeChildren(basicInfo.children),
       isStudent: basicInfo.isStudent ?? null,
+      isSocialPaymentsRecipient: basicInfo.isSocialPaymentsRecipient ?? null,
       employerName: basicInfo.employerName ?? null,
       employerAddress: basicInfo.employerAddress ?? null,
       employerInn: basicInfo.employerInn ?? null,
@@ -372,6 +374,7 @@ export const convertApiDataToFormValues = (
       claimsIncludedCount: toCountString(procedureRecord.claimsIncludedCount),
       claimsRejectedCount: toCountString(procedureRecord.claimsRejectedCount),
       bankruptcySignsEfrsbPublicationDate: toDateOnly(procedureRecord.bankruptcySignsEfrsbPublicationDate),
+      financialAnalysisSupplementDate: toDateOnly(procedureRecord.financialAnalysisSupplementDate),
     },
   };
 };

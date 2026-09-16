@@ -61,6 +61,24 @@ export const WorkInfo: FC<Props> = ({ register, control }) => {
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="basic_info.isSocialPaymentsRecipient">
+            Получатель пенсий, пособий и иных социальных выплат
+          </Label>
+          <Controller
+            control={control}
+            name="basic_info.isSocialPaymentsRecipient"
+            render={({ field }) => (
+              <SelectField
+                id="basic_info.isSocialPaymentsRecipient"
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+                options={yesNoOptions}
+              />
+            )}
+          />
+        </div>
+
         <div className="space-y-1 lg:col-span-2">
           <Label htmlFor="basic_info.employerName">
             Наименование работодателя

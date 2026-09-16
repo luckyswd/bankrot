@@ -15,6 +15,13 @@ class ReportMethods
     private const string SHORT_DATE_FORMAT = 'd.m.Y';
     private const string STORED_DATE_FORMAT = '!Y-m-d';
     private const string SUSPICION_PERIOD = '-3 years';
+    private const string SUPPLEMENT_PREFIX = 'Дополнен ';
+    private const string SOCIAL_PAYMENTS_RECIPIENT = 'является';
+    private const string SOCIAL_PAYMENTS_NOT_RECIPIENT = 'не является';
+    private const string SAINT_PETERSBURG = 'Санкт-Петербург';
+    private const string SAINT_PETERSBURG_GENITIVE = 'Санкт-Петербурга';
+    private const string LENINGRAD_REGION = 'Ленинградск';
+    private const string LENINGRAD_REGION_GENITIVE = 'Ленинградской области';
     private const string GENDER_FEMALE = 'female';
     private const string MARITAL_STATUS_MARRIED = 'married';
     private const string MARITAL_STATUS_FORMERLY_MARRIED = 'married_3y_ago';
@@ -35,6 +42,44 @@ class ReportMethods
         9 => 'девятеро',
         10 => 'десятеро',
     ];
+
+    public static function financialAnalysisSupplementText(Contracts $contract): string
+    {
+        $supplementDate = $contract->getFinancialAnalysisSupplementDate();
+
+        if ($supplementDate === null) {
+            return '';
+        }
+
+        return self::SUPPLEMENT_PREFIX . DateHelperService::formatGenitive(date: $supplementDate);
+    }
+
+    public static function socialPaymentsRecipientText(Contracts $contract): string
+    {
+        return $contract->getIsSocialPaymentsRecipient() === true
+            ? self::SOCIAL_PAYMENTS_RECIPIENT
+            : self::SOCIAL_PAYMENTS_NOT_RECIPIENT;
+    }
+
+    public static function subsistenceMinimumRegionText(Contracts $contract): string
+    {
+        $address = $contract->getRegistrationRegion() . ' ' . $contract->getRegistrationCity();
+
+        if (mb_stripos($address, self::SAINT_PETERSBURG) !== false) {
+            return self::SAINT_PETERSBURG_GENITIVE;
+        }
+
+        if (mb_stripos($address, self::LENINGRAD_REGION) !== false) {
+            return self::LENINGRAD_REGION_GENITIVE;
+        }
+
+        return '';
+    }
+
+    public static function subsistenceMinimumYear(Contracts $contract): string
+    {
+        return (string)$contract->getBankruptcySignsEfrsbPublicationDate()?->format('Y');
+    }
 
     public static function transactionsAnalysisStartDateText(Contracts $contract): string
     {

@@ -21,6 +21,7 @@ type ProcedureDateField =
   | "judicial_procedure.zagsCertificatePeriodFrom"
   | "judicial_procedure.zagsCertificatePeriodTo"
   | "judicial_procedure.bankruptcySignsEfrsbPublicationDate"
+  | "judicial_procedure.financialAnalysisSupplementDate"
 
 type ExpenseAmountField =
   | "judicial_procedure.efrsbExpensesAmount"
@@ -318,6 +319,7 @@ export const ProcedureReportSections = (): JSX.Element => {
         </AccordionTrigger>
         <AccordionContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {renderDateField("judicial_procedure.bankruptcySignsEfrsbPublicationDate", "Дата публикации в ЕФРСБ")}
+          {renderDateField("judicial_procedure.financialAnalysisSupplementDate", "Дата дополнения финансового анализа")}
         </AccordionContent>
       </AccordionItem>
     </Accordion>
