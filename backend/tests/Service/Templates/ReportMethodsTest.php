@@ -38,6 +38,19 @@ class ReportMethodsTest extends TestCase
         $this->assertSame($expected, ReportMethods::subsistenceMinimumRegionText(contract: $contract));
     }
 
+    public function testReportHearingTexts(): void
+    {
+        $contract = new Contracts();
+
+        $this->assertSame('', ReportMethods::reportHearingHeaderText(contract: $contract));
+        $this->assertSame('', ReportMethods::reportHearingSentenceText(contract: $contract));
+
+        $contract->setProcedureInitiationReportHearingDateTime(new \DateTime('2026-03-21 11:45'));
+
+        $this->assertSame('«21» марта 2026 г. в 11 час. 45 мин.', ReportMethods::reportHearingHeaderText(contract: $contract));
+        $this->assertSame('21 марта 2026 года в 11 час. 45 мин.', ReportMethods::reportHearingSentenceText(contract: $contract));
+    }
+
     public function testFinancialAnalysisSupplementText(): void
     {
         $contract = new Contracts();

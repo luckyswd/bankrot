@@ -2300,6 +2300,16 @@ class Contracts extends BaseEntity
         return ReportMethods::financialAnalysisSupplementText(contract: $this);
     }
 
+    public function getReportHearingHeaderText(): string
+    {
+        return ReportMethods::reportHearingHeaderText(contract: $this);
+    }
+
+    public function getReportHearingSentenceText(): string
+    {
+        return ReportMethods::reportHearingSentenceText(contract: $this);
+    }
+
     public function getSocialPaymentsRecipientText(): string
     {
         return ReportMethods::socialPaymentsRecipientText(contract: $this);

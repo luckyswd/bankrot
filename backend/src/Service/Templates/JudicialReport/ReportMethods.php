@@ -22,6 +22,8 @@ class ReportMethods
     private const string SAINT_PETERSBURG_GENITIVE = 'Санкт-Петербурга';
     private const string LENINGRAD_REGION = 'Ленинградск';
     private const string LENINGRAD_REGION_GENITIVE = 'Ленинградской области';
+    private const string HEARING_HEADER_FORMAT = '«%s» %s %s г. в %s час. %s мин.';
+    private const string HEARING_SENTENCE_FORMAT = '%s %s %s года в %s час. %s мин.';
     private const string GENDER_FEMALE = 'female';
     private const string MARITAL_STATUS_MARRIED = 'married';
     private const string MARITAL_STATUS_FORMERLY_MARRIED = 'married_3y_ago';
@@ -42,6 +44,34 @@ class ReportMethods
         9 => 'девятеро',
         10 => 'десятеро',
     ];
+
+    public static function reportHearingHeaderText(Contracts $contract): string
+    {
+        return self::reportHearingText(contract: $contract, format: self::HEARING_HEADER_FORMAT);
+    }
+
+    public static function reportHearingSentenceText(Contracts $contract): string
+    {
+        return self::reportHearingText(contract: $contract, format: self::HEARING_SENTENCE_FORMAT);
+    }
+
+    private static function reportHearingText(Contracts $contract, string $format): string
+    {
+        $hearingDateTime = $contract->getProcedureInitiationReportHearingDateTime();
+
+        if ($hearingDateTime === null) {
+            return '';
+        }
+
+        return sprintf(
+            $format,
+            $hearingDateTime->format('d'),
+            DateHelperService::getMonthNameGenitive(monthNumber: $hearingDateTime->format('n')),
+            $hearingDateTime->format('Y'),
+            (int)$hearingDateTime->format('G'),
+            $hearingDateTime->format('i'),
+        );
+    }
 
     public static function financialAnalysisSupplementText(Contracts $contract): string
     {
