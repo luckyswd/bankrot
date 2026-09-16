@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Service\Templates\DocumentTemplateRegistrar;
 use App\Service\Templates\DocumentTemplateSynchronizer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,24 +14,33 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:document-templates:sync',
-    description: 'Раскладывает шаблоны документов из образа и из старого каталога var в src/document-templates',
+    description: 'Раскладывает шаблоны документов из образа в src/document-templates и регистрирует их в базе',
 )]
 class SyncDocumentTemplatesCommand extends Command
 {
     public function __construct(
         private readonly DocumentTemplateSynchronizer $documentTemplateSynchronizer,
+        private readonly DocumentTemplateRegistrar $documentTemplateRegistrar,
     ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $result = $this->documentTemplateSynchronizer->synchronize();
+        $files = $this->documentTemplateSynchronizer->synchronize();
+        $records = $this->documentTemplateRegistrar->register();
 
-        (new SymfonyStyle($input, $output))->success(sprintf(
-            'Шаблонов из образа: %d, перенесено из var/document-templates: %d',
-            $result['bundled'],
-            $result['migrated'],
+        $style = new SymfonyStyle($input, $output);
+        $style->success(sprintf(
+            'Файлов из образа: %d, перенесено из var/document-templates: %d',
+            $files['bundled'],
+            $files['migrated'],
+        ));
+        $style->success(sprintf(
+            'Записей создано: %d, обновлено: %d, удалено: %d',
+            $records['created'],
+            $records['updated'],
+            $records['removed'],
         ));
 
         return Command::SUCCESS;

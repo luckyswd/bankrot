@@ -7,7 +7,6 @@ namespace App\Tests\Controller;
 use App\DataFixtures\Test\TestUserFixtures;
 use App\Entity\DocumentTemplate;
 use App\Entity\Enum\BankruptcyStage;
-use App\Repository\DocumentTemplateRepository;
 use App\Tests\BaseTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -206,99 +205,16 @@ class DocumentTemplateControllerTest extends BaseTestCase
      * Тест загрузки шаблона документа.
      * Проверяет, что API успешно загружает шаблон.
      */
-    public function testCreateDocumentTemplate(): void
-    {
-        $admin = $this->getUser(reference: 'admin');
-
-        $token = $this->getAuthToken(user: $admin);
-        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
-
-        $file = $this->createTestDocxFile();
-
-        $this->client->request(
-            method: 'POST',
-            uri: '/api/v1/document-templates',
-            parameters: [
-                'name' => 'Тестовый шаблон',
-                'category' => 'basic_info',
-            ],
-            files: [
-                'file' => $file,
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(expectedCode: 201);
-        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
-
-        $this->assertIsArray($response);
-        $this->assertArrayHasKey('id', $response);
-        $this->assertArrayHasKey('name', $response);
-        $this->assertArrayHasKey('category', $response);
-        $this->assertEquals('Тестовый шаблон', $response['name']);
-        $this->assertEquals('Основная информация', $response['category']);
-
-        // Проверяем, что файл сохранен
-        /** @var DocumentTemplateRepository $repository */
-        $repository = self::$em->getRepository(DocumentTemplate::class);
-        $template = $repository->find($response['id']);
-
-        $this->assertNotNull($template);
-        $this->assertFileExists($template->getPath());
-        $this->testFilePaths[] = $template->getPath();
-    }
 
     /**
      * Тест загрузки шаблона без файла.
      * Проверяет, что API возвращает ошибку 400.
      */
-    public function testCreateDocumentTemplateWithoutFile(): void
-    {
-        $admin = $this->getUser(reference: 'admin');
-
-        $token = $this->getAuthToken(user: $admin);
-        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
-
-        $this->client->request(
-            method: 'POST',
-            uri: '/api/v1/document-templates',
-            parameters: [
-                'name' => 'Тестовый шаблон',
-                'category' => 'basic_info',
-            ],
-            server: [
-                'CONTENT_TYPE' => 'multipart/form-data',
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(expectedCode: 400);
-        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
-
-        $this->assertIsArray($response);
-        $this->assertArrayHasKey('error', $response);
-    }
 
     /**
      * Тест загрузки шаблона без авторизации.
      * Проверяет, что API возвращает ошибку 401.
      */
-    public function testCreateDocumentTemplateWithoutAuth(): void
-    {
-        $file = $this->createTestDocxFile();
-
-        $this->client->request(
-            method: 'POST',
-            uri: '/api/v1/document-templates',
-            parameters: [
-                'name' => 'Тестовый шаблон',
-                'category' => 'basic_info',
-            ],
-            files: [
-                'file' => $file,
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(expectedCode: 401);
-    }
 
     /**
      * Тест скачивания шаблона документа.
@@ -353,98 +269,57 @@ class DocumentTemplateControllerTest extends BaseTestCase
         $this->assertResponseStatusCodeSame(expectedCode: 401);
     }
 
-    /**
-     * Тест обновления шаблона документа.
-     * Проверяет, что API успешно обновляет шаблон.
-     */
-    public function testUpdateDocumentTemplate(): void
+    public function testDocumentTemplateCannotBeUploaded(): void
     {
-        $admin = $this->getUser(reference: 'admin');
+        $token = $this->getAuthToken(user: $this->getUser(reference: 'admin'));
+        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
 
-        $token = $this->getAuthToken(user: $admin);
+        $this->client->request(
+            method: 'POST',
+            uri: '/api/v1/document-templates',
+            parameters: [
+                'name' => 'Тестовый шаблон',
+                'category' => 'basic_info',
+            ],
+            files: [
+                'file' => $this->createTestDocxFile(),
+            ]
+        );
+
+        $this->assertResponseStatusCodeSame(expectedCode: 405);
+
+        self::$em->clear();
+
+        $this->assertNull(
+            self::$em->getRepository(DocumentTemplate::class)->findOneBy(['name' => 'Тестовый шаблон'])
+        );
+    }
+
+    public function testDocumentTemplateFileCannotBeReplaced(): void
+    {
+        $token = $this->getAuthToken(user: $this->getUser(reference: 'admin'));
         $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
 
         $template = $this->createTestTemplate();
-        $oldPath = $template->getPath();
-        // Отслеживаем старый файл для очистки
-        $this->testFilePaths[] = $oldPath;
-
-        $file = $this->createTestDocxFile();
+        $templateId = $template->getId();
+        $filePath = $template->getPath();
 
         $this->client->request(
             method: 'PUT',
-            uri: '/api/v1/document-templates/' . $template->getId(),
+            uri: '/api/v1/document-templates/' . $templateId,
             files: [
-                'file' => $file,
+                'file' => $this->createTestDocxFile(),
             ]
         );
 
-        $this->assertResponseIsSuccessful();
-        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
+        $this->assertResponseStatusCodeSame(expectedCode: 405);
 
-        $this->assertIsArray($response);
-        $this->assertArrayHasKey('id', $response);
-        $this->assertEquals($template->getId(), $response['id']);
+        self::$em->clear();
 
-        // Проверяем, что старый файл удален, а новый создан
-        self::$em->refresh($template);
-        $this->assertFileDoesNotExist($oldPath);
-        $this->assertFileExists($template->getPath());
-        $this->testFilePaths[] = $template->getPath();
-    }
-
-    /**
-     * Тест обновления несуществующего шаблона.
-     * Проверяет, что API возвращает ошибку 404.
-     */
-    public function testUpdateNonExistentDocumentTemplate(): void
-    {
-        $admin = $this->getUser(reference: 'admin');
-
-        $token = $this->getAuthToken(user: $admin);
-        $this->client->setServerParameter(key: 'HTTP_AUTHORIZATION', value: 'Bearer ' . $token);
-
-        $file = $this->createTestDocxFile();
-
-        $this->client->request(
-            method: 'PUT',
-            uri: '/api/v1/document-templates/99999',
-            files: [
-                'file' => $file,
-            ],
-            server: [
-                'CONTENT_TYPE' => 'multipart/form-data',
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(expectedCode: 404);
-        $response = json_decode(json: $this->client->getResponse()->getContent(), associative: true);
-
-        $this->assertIsArray($response);
-        $this->assertArrayHasKey('error', $response);
-    }
-
-    /**
-     * Тест обновления шаблона без авторизации.
-     * Проверяет, что API возвращает ошибку 401.
-     */
-    public function testUpdateDocumentTemplateWithoutAuth(): void
-    {
-        $template = $this->createTestTemplate();
-        $file = $this->createTestDocxFile();
-
-        $this->client->request(
-            method: 'PUT',
-            uri: '/api/v1/document-templates/' . $template->getId(),
-            files: [
-                'file' => $file,
-            ],
-            server: [
-                'CONTENT_TYPE' => 'multipart/form-data',
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(expectedCode: 401);
+        $storedTemplate = self::$em->getRepository(DocumentTemplate::class)->find($templateId);
+        $this->assertNotNull($storedTemplate);
+        $this->assertSame($filePath, $storedTemplate->getPath());
+        $this->assertFileExists($filePath);
     }
 
     public function testDocumentTemplateCannotBeDeleted(): void

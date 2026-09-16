@@ -12,13 +12,9 @@ use App\Repository\DocumentTemplateRepository;
 use App\Service\Templates\DocumentTemplateProcessor;
 use App\Service\Templates\DocumentXlsxService;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,25 +28,10 @@ class DocumentTemplateController extends AbstractController
 {
     public function __construct(
         private readonly DocumentTemplateRepository $documentTemplateRepository,
-        private readonly EntityManagerInterface $entityManager,
         private readonly DocumentTemplateProcessor $templateProcessor,
         private readonly ContractsRepository $contractsRepository,
         private readonly DocumentXlsxService $documentXlsxService,
-        #[Autowire(param: 'app.document_templates_dir')]
-        private readonly string $documentTemplatesDir,
     ) {
-    }
-
-    private function getUploadDir(): string
-    {
-        return $this->documentTemplatesDir;
-    }
-
-    private function ensureUploadDirExists(string $uploadDir): void
-    {
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
     }
 
     #[Route('', name: 'api_document_templates_list', methods: ['GET'])]
@@ -172,127 +153,6 @@ class DocumentTemplateController extends AbstractController
         ]);
     }
 
-    #[Route('', name: 'api_document_templates_create', methods: ['POST'])]
-    #[OA\Post(
-        path: '/api/v1/document-templates',
-        summary: 'Загрузить шаблон документа',
-        security: [['Bearer' => []]],
-        requestBody: new OA\RequestBody(
-            description: 'Файл шаблона и метаданные',
-            required: true,
-            content: new OA\MediaType(
-                mediaType: 'multipart/form-data',
-                schema: new OA\Schema(
-                    required: ['file', 'name', 'category'],
-                    properties: [
-                        new OA\Property(property: 'file', description: 'DOCX файл', type: Types::STRING, format: 'binary'),
-                        new OA\Property(property: 'name', description: 'Название файла', type: Types::STRING, example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', description: 'Категория шаблона', type: Types::STRING, enum: BankruptcyStage::class, example: 'Досудебка'),
-                    ]
-                )
-            )
-        ),
-        tags: ['DocumentTemplates'],
-        responses: [
-            new OA\Response(
-                response: 201,
-                description: 'Шаблон успешно загружен',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: Types::STRING, example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', type: Types::STRING, example: 'Досудебка'),
-                    ],
-                    type: 'object'
-                )
-            ),
-            new OA\Response(
-                response: 400,
-                description: 'Ошибка валидации'
-            ),
-            new OA\Response(
-                response: 401,
-                description: 'Неавторизован'
-            ),
-            new OA\Response(
-                response: 403,
-                description: 'Доступ запрещен (требуется роль ROLE_ADMIN)'
-            ),
-        ]
-    )]
-    public function create(Request $request): JsonResponse
-    {
-        /** @var UploadedFile|null $file */
-        $file = $request->files->get('file');
-
-        if (!$file instanceof UploadedFile) {
-            return $this->json(data: ['error' => 'Файл не загружен'], status: 400);
-        }
-
-        if (!str_ends_with($file->getClientOriginalName(), '.docx')) {
-            return $this->json(data: ['error' => 'Поддерживаются только DOCX файлы'], status: 400);
-        }
-
-        $name = $request->request->get('name');
-        $categoryValue = $request->request->get('category');
-
-        if (empty($name)) {
-            return $this->json(data: ['error' => 'Название файла обязательно'], status: 400);
-        }
-
-        if (empty($categoryValue)) {
-            return $this->json(data: ['error' => 'Категория обязательна'], status: 400);
-        }
-
-        try {
-            $category = BankruptcyStage::from($categoryValue);
-        } catch (\ValueError $e) {
-            return $this->json(data: ['error' => 'Неверная категория'], status: 400);
-        }
-
-        $existingTemplate = $this->documentTemplateRepository->findByNameAndCategory(name: $name, category: $category);
-
-        $uploadDir = $this->getUploadDir();
-        $this->ensureUploadDirExists($uploadDir);
-
-        $fileName = uniqid('', true) . '_' . $file->getClientOriginalName();
-        $filePath = $uploadDir . '/' . $fileName;
-
-        try {
-            $file->move($uploadDir, $fileName);
-        } catch (FileException $e) {
-            return $this->json(data: ['error' => 'Ошибка при сохранении файла ' . $e->getMessage()], status: 500);
-        }
-
-        if ($existingTemplate instanceof DocumentTemplate) {
-            $oldFilePath = $existingTemplate->getPath();
-
-            if (file_exists($oldFilePath)) {
-                unlink($oldFilePath);
-            }
-
-            $existingTemplate->setPath($filePath);
-            $template = $existingTemplate;
-        } else {
-            $template = new DocumentTemplate();
-            $template->setName($name);
-            $template->setCategory($category);
-            $template->setPath($filePath);
-            $this->entityManager->persist($template);
-        }
-
-        $this->entityManager->flush();
-
-        return $this->json(
-            data: [
-                'id' => $template->getId(),
-                'name' => $template->getName(),
-                'category' => $template->getCategory()->getLabel(),
-            ],
-            status: 201
-        );
-    }
-
     #[Route('/{id}', name: 'api_document_templates_show', methods: ['GET'])]
     #[OA\Get(
         path: '/api/v1/document-templates/{id}',
@@ -352,111 +212,6 @@ class DocumentTemplateController extends AbstractController
         );
 
         return $response;
-    }
-
-    #[Route('/{id}', name: 'api_document_templates_update', methods: ['PUT'])]
-    #[OA\Put(
-        path: '/api/v1/document-templates/{id}',
-        summary: 'Обновить шаблон документа',
-        security: [['Bearer' => []]],
-        requestBody: new OA\RequestBody(
-            description: 'Новый файл шаблона',
-            required: true,
-            content: new OA\MediaType(
-                mediaType: 'multipart/form-data',
-                schema: new OA\Schema(
-                    required: ['file'],
-                    properties: [
-                        new OA\Property(property: 'file', description: 'DOCX файл', type: Types::STRING, format: 'binary'),
-                    ]
-                )
-            )
-        ),
-        tags: ['DocumentTemplates'],
-        parameters: [
-            new OA\Parameter(
-                name: 'id',
-                description: 'ID шаблона',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'integer', example: 1)
-            ),
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Шаблон успешно обновлен',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: Types::STRING, example: 'Шаблон договора'),
-                        new OA\Property(property: 'category', type: Types::STRING, example: 'Досудебка'),
-                    ],
-                    type: 'object'
-                )
-            ),
-            new OA\Response(
-                response: 400,
-                description: 'Ошибка валидации'
-            ),
-            new OA\Response(
-                response: 404,
-                description: 'Шаблон не найден'
-            ),
-            new OA\Response(
-                response: 401,
-                description: 'Неавторизован'
-            ),
-            new OA\Response(
-                response: 403,
-                description: 'Доступ запрещен (требуется роль ROLE_ADMIN)'
-            ),
-        ]
-    )]
-    public function update(int $id, Request $request): JsonResponse
-    {
-        $template = $this->documentTemplateRepository->find($id);
-
-        if (!$template instanceof DocumentTemplate) {
-            return $this->json(data: ['error' => 'Шаблон не найден'], status: 404);
-        }
-
-        /** @var UploadedFile|null $file */
-        $file = $request->files->get('file');
-
-        if (!$file instanceof UploadedFile) {
-            return $this->json(data: ['error' => 'Файл не загружен'], status: 400);
-        }
-
-        if (!str_ends_with($file->getClientOriginalName(), '.docx')) {
-            return $this->json(data: ['error' => 'Поддерживаются только DOCX файлы'], status: 400);
-        }
-
-        $oldFilePath = $template->getPath();
-
-        if (file_exists($oldFilePath)) {
-            unlink($oldFilePath);
-        }
-
-        $uploadDir = $this->getUploadDir();
-        $this->ensureUploadDirExists($uploadDir);
-        $fileName = uniqid('', true) . '_' . $file->getClientOriginalName();
-        $newFilePath = $uploadDir . '/' . $fileName;
-
-        try {
-            $file->move($uploadDir, $fileName);
-        } catch (FileException $e) {
-            return $this->json(data: ['error' => 'Ошибка при сохранении файла'], status: 500);
-        }
-
-        $template->setPath($newFilePath);
-        $this->entityManager->flush();
-
-        return $this->json(data: [
-            'id' => $template->getId(),
-            'name' => $template->getName(),
-            'category' => $template->getCategory()->getLabel(),
-        ]);
     }
 
     #[Route('/{id}/generate', name: 'api_document_templates_generate', methods: ['POST'])]

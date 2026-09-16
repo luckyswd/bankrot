@@ -14,7 +14,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class FinancialManagerReportTemplateTest extends TestCase
 {
-    private const string TEMPLATE_FILE = '/src/document-templates/1_financial_manager_report.docx';
+    private const string TEMPLATE_FILE = '/src/document-templates/judicial_report/1. Отчёт финансового управляющего о результатах реализации имущества.docx';
     private const string NBSP = "\u{00A0}";
 
     private string $documentXml;

@@ -15,7 +15,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class CreditorsRegisterTemplateTest extends TestCase
 {
-    private const string TEMPLATE_FILE = '/src/document-templates/2_creditors_claims_register.docx';
+    private const string TEMPLATE_FILE = '/src/document-templates/judicial_report/2. Реестр требований кредиторов.docx';
     private const int MAIN_CLAIMS_TABLE = 12;
     private const int SANCTION_CLAIMS_TABLE = 17;
     private const int HEADER_ROWS = 2;

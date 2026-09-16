@@ -5,10 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 import { Badge } from './ui/badge'
 import { Input } from './ui/input'
-import { Label } from './ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { notify } from './ui/toast'
-import { Upload, Download, FileText, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { Download, FileText, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import Loading from './shared/Loading'
 
 const CATEGORIES = [
@@ -29,11 +28,7 @@ interface Template {
 export default function DocumentsPage() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [templateName, setTemplateName] = useState('')
-  const [templateCategory, setTemplateCategory] = useState('')
-  
+
   // Поиск и фильтры
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -105,82 +100,6 @@ export default function DocumentsPage() {
     setPage(1)
   }, [debouncedSearch, categoryFilter])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.name.endsWith('.docx')) {
-      notify({ message: 'Поддерживаются только DOCX файлы', type: 'error' })
-      e.target.value = ''
-      return
-    }
-
-    setSelectedFile(file)
-    // Автоматически устанавливаем название из имени файла
-    const fileNameWithoutExtension = file.name.replace(/\.docx$/i, '')
-    setTemplateName(fileNameWithoutExtension)
-  }
-
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
-      notify({ message: 'Выберите файл', type: 'error' })
-      return
-    }
-
-    if (!templateCategory) {
-      notify({ message: 'Выберите категорию', type: 'error' })
-      return
-    }
-
-    try {
-      setUploading(true)
-
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('name', templateName.trim())
-      formData.append('category', templateCategory)
-
-      await apiRequest('/document-templates', {
-        method: 'POST',
-        body: formData,
-        headers: {},
-      })
-
-      setSelectedFile(null)
-      setTemplateName('')
-      setTemplateCategory('')
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement
-      if (fileInput) {
-        fileInput.value = ''
-      }
-      notify({ message: 'Шаблон успешно загружен', type: 'success' })
-      
-      // Перезагружаем список шаблонов
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      if (debouncedSearch && debouncedSearch.length >= 3) {
-        params.append('search', debouncedSearch)
-      }
-      if (categoryFilter && categoryFilter !== '') {
-        params.append('category', categoryFilter)
-      }
-      const data = await apiRequest(`/document-templates?${params.toString()}`)
-      if (data && typeof data === 'object') {
-        setTemplates(data.items || [])
-        setTotal(data.total || 0)
-        setPages(data.pages || 1)
-      }
-    } catch (error: unknown) {
-      console.error('Ошибка при загрузке шаблона:', error)
-      const errorMessage = (error as { body?: { error?: string } })?.body?.error || 'Не удалось загрузить шаблон'
-      notify({ message: errorMessage, type: 'error' })
-    } finally {
-      setUploading(false)
-    }
-  }
-
   const handleDownload = async (template: Template) => {
     try {
       const blob = await apiRequest(`/document-templates/${template.id}`, { responseType: 'blob' })
@@ -214,77 +133,6 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Upload Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Загрузить новый шаблон</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileSelect}
-                accept=".docx"
-                disabled={uploading}
-              />
-              <label htmlFor="file-upload">
-                <Button asChild disabled={uploading} variant="outline">
-                  <span>
-                    <Upload className="h-4 w-4 mr-2" />
-                    {selectedFile ? selectedFile.name : 'Выбрать шаблон'}
-                  </span>
-                </Button>
-              </label>
-              <p className="text-sm text-muted-foreground">
-                Поддерживаются только .docx файлы
-              </p>
-            </div>
-
-            {selectedFile && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="template-name">Название шаблона</Label>
-                  <Input
-                    id="template-name"
-                    value={templateName}
-                    placeholder="Введите название"
-                    disabled={true}
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Название берётся из названия файла
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="template-category">Категория</Label>
-                  <Select value={templateCategory} onValueChange={setTemplateCategory} disabled={uploading}>
-                    <SelectTrigger id="template-category">
-                      <SelectValue placeholder="Выберите категорию" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            {selectedFile && (
-              <Button onClick={handleFileUpload} disabled={uploading}>
-                {uploading ? 'Загрузка...' : 'Загрузить шаблон'}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Templates Table */}
       <Card>
         <CardHeader>
@@ -346,7 +194,7 @@ export default function DocumentsPage() {
                       <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
                         {(debouncedSearch && debouncedSearch.length >= 3) || (categoryFilter && categoryFilter !== '')
                           ? 'Шаблоны не найдены'
-                          : 'Нет шаблонов. Загрузите первый шаблон!'}
+                          : 'Нет шаблонов'}
                       </TableCell>
                     </TableRow>
                   ) : (

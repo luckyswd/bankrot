@@ -23,19 +23,49 @@ readonly class DocumentTemplateSynchronizer
      */
     public function synchronize(): array
     {
-        if (!is_dir($this->templatesDir) && !mkdir($this->templatesDir, 0775, true) && !is_dir($this->templatesDir)) {
-            throw new \RuntimeException(sprintf('Не удалось создать каталог шаблонов %s', $this->templatesDir));
-        }
+        $this->ensureDirectory(path: $this->templatesDir);
 
         return [
-            'bundled' => $this->copyFiles(sourceDir: $this->bundleDir, overwrite: true),
-            'migrated' => $this->copyFiles(sourceDir: $this->legacyDir, overwrite: false),
+            'bundled' => $this->copyTree(sourceDir: $this->bundleDir),
+            'migrated' => $this->copyFlat(sourceDir: $this->legacyDir),
         ];
     }
 
-    private function copyFiles(string $sourceDir, bool $overwrite): int
+    private function copyTree(string $sourceDir): int
     {
-        if (!is_dir($sourceDir) || realpath($sourceDir) === realpath($this->templatesDir)) {
+        if (!$this->isCopyableSource(sourceDir: $sourceDir)) {
+            return 0;
+        }
+
+        $copied = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($sourceDir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || str_starts_with($file->getFilename(), '.')) {
+                continue;
+            }
+
+            $target = $this->templatesDir . '/' . ltrim(substr($file->getPathname(), strlen($sourceDir)), '/');
+
+            if ($file->isDir()) {
+                $this->ensureDirectory(path: $target);
+
+                continue;
+            }
+
+            $this->copyFile(source: $file->getPathname(), target: $target);
+            ++$copied;
+        }
+
+        return $copied;
+    }
+
+    private function copyFlat(string $sourceDir): int
+    {
+        if (!$this->isCopyableSource(sourceDir: $sourceDir)) {
             return 0;
         }
 
@@ -48,17 +78,35 @@ readonly class DocumentTemplateSynchronizer
 
             $target = $this->templatesDir . '/' . $file->getFilename();
 
-            if (!$overwrite && file_exists($target)) {
+            if (file_exists($target)) {
                 continue;
             }
 
-            if (!copy($file->getPathname(), $target)) {
-                throw new \RuntimeException(sprintf('Не удалось скопировать шаблон %s', $file->getPathname()));
-            }
-
+            $this->copyFile(source: $file->getPathname(), target: $target);
             ++$copied;
         }
 
         return $copied;
+    }
+
+    private function isCopyableSource(string $sourceDir): bool
+    {
+        return is_dir($sourceDir) && realpath($sourceDir) !== realpath($this->templatesDir);
+    }
+
+    private function copyFile(string $source, string $target): void
+    {
+        $this->ensureDirectory(path: dirname($target));
+
+        if (!copy($source, $target)) {
+            throw new \RuntimeException(sprintf('Не удалось скопировать шаблон %s', $source));
+        }
+    }
+
+    private function ensureDirectory(string $path): void
+    {
+        if (!is_dir($path) && !mkdir($path, 0775, true) && !is_dir($path)) {
+            throw new \RuntimeException(sprintf('Не удалось создать каталог шаблонов %s', $path));
+        }
     }
 }

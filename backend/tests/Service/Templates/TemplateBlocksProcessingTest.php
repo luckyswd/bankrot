@@ -19,8 +19,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class TemplateBlocksProcessingTest extends TestCase
 {
-    private const string TEMPLATES_DIRECTORY = '/src/document-templates';
-    private const string CLAIM_RECEIPT_PUBLICATION_SUFFIX = '_2. Публикация о получении требования кредитора.docx';
+    private const string CLAIM_RECEIPT_PUBLICATION_FILE = '/src/document-templates/judicial_procedure/2. Публикация о получении требования кредитора.docx';
     private const string MAIN_PART = 'word/document.xml';
 
     /**
@@ -116,15 +115,10 @@ class TemplateBlocksProcessingTest extends TestCase
 
     private function claimReceiptPublicationPath(): string
     {
-        $directory = dirname(__DIR__, 3) . self::TEMPLATES_DIRECTORY;
+        $path = dirname(__DIR__, 3) . self::CLAIM_RECEIPT_PUBLICATION_FILE;
+        $this->assertFileExists($path);
 
-        foreach (scandir($directory) ?: [] as $fileName) {
-            if (str_ends_with((string)\Normalizer::normalize($fileName, \Normalizer::FORM_C), self::CLAIM_RECEIPT_PUBLICATION_SUFFIX)) {
-                return $directory . '/' . $fileName;
-            }
-        }
-
-        $this->fail('Шаблон «Публикация о получении требования кредитора» не найден в ' . $directory);
+        return $path;
     }
 
     /**

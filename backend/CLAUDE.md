@@ -138,14 +138,20 @@ tests/              функциональные тесты
 `DocumentTemplate` хранит путь к загруженному `.docx` / `.xlsx` и
 категорию-стадию. Обработчик — `Service\Templates\DocumentTemplateProcessor`.
 
-Все файлы шаблонов лежат в `src/document-templates` — параметр
-`app.document_templates_dir`, в тестах он указывает на `var/test/document-templates`.
-Загрузка через `/documents` пишет туда же. На проде этот каталог — том
-`app_document_templates`, чтобы загруженные через интерфейс шаблоны пережили
-пересборку образа. При деплое `make templates-sync` докладывает в том шаблоны из
-репозитория (образ хранит их копию в `/opt/document-templates`) и без перезаписи
-переносит загрузки, сделанные до переноса в `var/document-templates`. Шаг идёт до
-`make db-migrate`.
+Шаблоны заводятся только из кода: файлы лежат в репозитории в
+`src/document-templates/<стадия>/<Название>.docx` (или `.xlsx`), папка задаёт
+категорию, имя файла без расширения — название записи. Загрузки через интерфейс
+нет: `POST /api/v1/document-templates` и `PUT /api/v1/document-templates/{id}`
+удалены, на `/documents` остались список, просмотр и скачивание. Новый шаблон
+добавляется коммитом файла в нужную папку.
+
+Каталог задаёт параметр `app.document_templates_dir`, в тестах он указывает на
+`var/test/document-templates`. На проде это том `app_document_templates`. При
+деплое `make templates-sync` докладывает в том шаблоны из репозитория (образ
+хранит их копию в `/opt/document-templates`) с сохранением подпапок, а затем
+`DocumentTemplateRegistrar` заводит недостающие записи `document_templates`,
+переставляет путь у существующих и удаляет записи, для которых файла больше нет.
+Шаг идёт после `make db-migrate`, потому что пишет в базу.
 
 | Конструкция | Пример | Кто обрабатывает |
 |---|---|---|
